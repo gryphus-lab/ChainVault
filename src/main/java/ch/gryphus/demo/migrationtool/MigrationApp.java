@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +84,7 @@ public class MigrationApp {
         }
 
         @Job(name = "Migrate document {0}")
-        public void migrate(String id) throws Exception {
+        public void migrate(String id) throws IOException, NoSuchAlgorithmException {
             log.info("Starting {}", id);
 
             // 1. Fetch payload (ZIP of TIFFs)
@@ -159,7 +160,7 @@ public class MigrationApp {
             log.info("Completed {} (pages: {})", id, tiffs.size());
         }
 
-        private String sha256(Path file) throws Exception {
+        private String sha256(Path file) throws NoSuchAlgorithmException, IOException {
             return Hex.encodeHexString(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file)));
         }
 
