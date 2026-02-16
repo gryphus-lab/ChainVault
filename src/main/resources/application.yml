@@ -2,18 +2,27 @@ jobrunr:
   dashboard:
     enabled: true
     username: admin
-    password: admin123   # CHANGE THIS
+    password: ${JOBRUNR_PW:change-me}
+  background-job-server:
+    worker-count: 4
+  miscellaneous:
+    background-job-server-delete-succeeded-jobs-after: 7d
 
 target:
   sftp:
-    host: localhost
-    port: 2222           # ← change to real
-    username: test
-    password: test
-    remote-directory: /incoming
-    allow-unknown-keys: true   # ← false + known_hosts in production
+    host: sftp.target-archive.ch
+    port: 22
+    username: migration_user
+    password: ${SFTP_PASSWORD:}
+    private-key-path: /run/secrets/id_rsa
+    known-hosts: /run/secrets/known_hosts
+    remote-directory: /incoming/migration/${YEAR}/${MONTH}
 
 source:
   api:
-    base-url: http://localhost:8081   # ← fake / real legacy API
-    token: dummy-token
+    base-url: https://legacy-archive-api.finma.ch
+    token: ${SOURCE_API_TOKEN:}
+
+migration:
+  temp-dir: /tmp/migration-${random.uuid}
+  chunk-size-for-inventory: 500   # when fetching lists
