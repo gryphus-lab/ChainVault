@@ -1,0 +1,19 @@
+jobrunr:
+  dashboard:
+    enabled: true
+    username: admin
+    password: admin123   # CHANGE THIS
+
+target:
+  sftp:
+    host: localhost
+    port: 2222           # ← change to real
+    username: test
+    password: test
+    remote-directory: /incoming
+    allow-unknown-keys: true   # ← false + known_hosts in production
+
+source:
+  api:
+    base-url: http://localhost:8081   # ← fake / real legacy API
+    token: dummy-token

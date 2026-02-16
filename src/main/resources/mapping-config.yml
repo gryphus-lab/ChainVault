@@ -1,0 +1,15 @@
+mappings:
+  - source: "title"
+    target: "title"
+    namespace: "http://purl.org/dc/elements/1.1/"
+  - source: "creationDate"
+    target: "created"
+    namespace: "http://purl.org/dc/terms/"
+    transform: "toIso8601"  # implement simple transforms
+enrichment:
+  migration:
+    eventType: "Migration"
+    tool: "SwissArchiveMigrator v1.0"
+    eventDateTime: "${now}"  # placeholder
+  integrity:
+    algorithm: "SHA-256"
