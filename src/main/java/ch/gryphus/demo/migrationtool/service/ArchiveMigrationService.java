@@ -76,7 +76,7 @@ public class ArchiveMigrationService {
             Path finalPdfPath = pdfPath;
             sftp.execute(s -> {
                 s.mkdir(folder);
-                s.write(Files.newInputStream(Objects.requireNonNull(finalZipPath).toFile().toPath()), folder + "/" + docId + "_chain.zipPath");
+                s.write(Files.newInputStream(finalZipPath.toFile().toPath()), folder + "/" + docId + "_chain.zipPath");
                 s.write(Files.newInputStream(finalPdfPath.toFile().toPath()), folder + "/" + docId + ".pdf");
                 s.write(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), folder + "/" + docId + "_meta.xml");
                 return null;

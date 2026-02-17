@@ -1,5 +1,6 @@
 package ch.gryphus.demo.migrationtool.service;
 
+import ch.gryphus.demo.migrationtool.config.SftpTargetConfig;
 import ch.gryphus.demo.migrationtool.domain.ArchivalMetadata;
 import ch.gryphus.demo.migrationtool.domain.MigrationContext;
 import ch.gryphus.demo.migrationtool.domain.SourceMetadata;
@@ -18,6 +19,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.web.client.RestClient;
 
 import java.io.ByteArrayOutputStream;
@@ -26,6 +30,7 @@ import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -35,19 +40,32 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class MigrationServiceTest {
     @Mock
     private RestClient restClient;
 
     @Mock
-    private XmlMapper xmlMapper;
+    private RestClient.RequestHeadersUriSpec requestSpec;
 
     @Mock
-    private ObjectMapper jsonMapper;  // used inside createChainZip
+    private RestClient.ResponseSpec responseSpec;
+
+    @Mock
+    private SftpRemoteFileTemplate sftp;
+
+    @Mock
+    private SftpTargetConfig sftpCfg;
+
+    @Mock
+    private XmlMapper xmlMapper;
 
     @InjectMocks
     private ArchiveMigrationService service;
+
+    @Mock
+    private ObjectMapper jsonMapper;  // used inside createChainZip
 
     @TempDir
     Path tempDir;
@@ -68,6 +86,11 @@ class MigrationServiceTest {
         meta.setCreationDate(Instant.now().toString());
         meta.setClientId("CHE-123.456.789");
         meta.setDocumentType("INVOICE");
+
+        // Make fluent chain return itself (common pattern)
+        when(restClient.get()).thenReturn(requestSpec);
+        when(requestSpec.uri(anyString(), Optional.ofNullable(any()))).thenReturn(requestSpec);
+        when(requestSpec.retrieve()).thenReturn(responseSpec);
     }
 
     // ────────────────────────────────────────────────
@@ -91,13 +114,6 @@ class MigrationServiceTest {
         String hashFromPath = service.sha256(file);
 
         assertThat(hashFromPath).isEqualTo(hashFromBytes);
-    }
-
-    @Test
-    void sha256_shouldThrowOnNullAlgorithm() {
-        assertThatThrownBy(() -> {
-            // simulate broken environment - very hard to test normally
-        }).isInstanceOf(NoSuchAlgorithmException.class);
     }
 
     // ────────────────────────────────────────────────
@@ -149,6 +165,10 @@ class MigrationServiceTest {
     // ────────────────────────────────────────────────
     @Test
     void createChainZip_shouldProduceValidZipWithManifest() throws Exception {
+        // Arrange - ensure meta is non-null and has values
+        assertThat(meta).isNotNull();
+        assertThat(meta.getTitle()).isNotNull(); // fail fast if setup broken
+
         List<TiffPage> pages = List.of(
                 new TiffPage("scan001.tif", "page1".getBytes()),
                 new TiffPage("scan002.tif", "page2".getBytes())
@@ -156,6 +176,7 @@ class MigrationServiceTest {
         ctx.addPageHash("scan001.tif", "hash-page1");
         ctx.addPageHash("scan002.tif", "hash-page2");
 
+        // Act
         Path zip = service.createChainZip("DOC-TEST-001", pages, meta, ctx);
 
         assertThat(Files.exists(zip)).isTrue();
@@ -264,17 +285,39 @@ class MigrationServiceTest {
     // ────────────────────────────────────────────────
     @Test
     void migrateDocument_happyPath_shouldCallAllSteps() throws Exception {
-        // Mock minimal payload (small ZIP)
-        byte[] smallZip = createZipWithTiffs(List.of("test.tif", "fake content"));
-        when(restClient.get().uri(any(), eq("DOC-HAPPY")).retrieve().body(byte[].class))
-                .thenReturn(smallZip);
+        // Arrange - fake small ZIP payload
+        byte[] fakeZipPayload = createZipWithTiffs(List.of("page001.tif", "fake-tiff-data"));
+
+        // In the happy path test
+        SourceMetadata fakeMeta = new SourceMetadata();
+        fakeMeta.setTitle("Test Doc");
+        fakeMeta.setCreationDate("2026-01-01T00:00:00Z");
+        fakeMeta.setClientId("CHE-999.888.777");
+        fakeMeta.setDocumentType("INVOICE");
+
+        // Then
+        when(responseSpec.body(SourceMetadata.class)).thenReturn(fakeMeta);
+
+        // Mock RestClient chain (critical!)
+        when(restClient.get()).thenReturn(requestSpec);
+
+        // Metadata call
+        when(requestSpec.uri("/documents/{id}/metadata", "DOC-HAPPY")).thenReturn(requestSpec);
+        when(requestSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(SourceMetadata.class)).thenReturn(fakeMeta);
+
+        // Payload call (second get)
+        when(requestSpec.uri("/documents/{id}/payload", "DOC-HAPPY")).thenReturn(requestSpec);
+        when(requestSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(byte[].class)).thenReturn(fakeZipPayload);
 
         // Act
         service.migrateDocument("DOC-HAPPY");
 
-        // Assert (at least that key steps were reached)
-        verify(restClient, times(2)).get();
-        // more assertions possible if you expose counters or spies
+        // Assert calls
+        verify(restClient, times(2)).get();  // metadata + payload
+        verify(requestSpec, times(2)).uri(anyString(), eq("DOC-HAPPY"));
+        verify(requestSpec, times(2)).retrieve();
     }
 
     // Helper to create small test ZIP
