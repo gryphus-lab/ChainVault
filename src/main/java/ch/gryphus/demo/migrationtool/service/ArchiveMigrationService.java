@@ -47,6 +47,8 @@ public class ArchiveMigrationService {
     public void migrateDocument(String docId) throws NoSuchAlgorithmException, IOException {
         var ctx = new MigrationContext(docId);
 
+        Path zipPath = null;
+        Path pdfPath = null;
         try {
             // 1. Metadata + payload
             var meta = restClient.get().uri("/documents/{id}/metadata", docId).retrieve().body(SourceMetadata.class);
@@ -58,39 +60,60 @@ public class ArchiveMigrationService {
             List<TiffPage> pages = extractTiffPages(payload, ctx);
 
             // 3. Chain ZIP
-            Path zip = createChainZip(docId, pages, meta, ctx);
-            ctx.setZipHash(sha256(zip));
+            zipPath = createChainZip(docId, pages, meta, ctx);
+            ctx.setZipHash(sha256(zipPath));
 
             // 4. PDF
-            Path pdf = mergeTiffToPdf(pages, docId);
-            ctx.setPdfHash(sha256(pdf));
+            pdfPath = mergeTiffToPdf(pages, docId);
+            ctx.setPdfHash(sha256(pdfPath));
 
             // 5. XML metadata
             String xml = xmlMapper.writeValueAsString(buildXml(Objects.requireNonNull(meta), ctx));
 
             // 6. SFTP upload
             String folder = sftpCfg.getRemoteDirectory() + "/" + docId;
+            Path finalZipPath = zipPath;
+            Path finalPdfPath = pdfPath;
             sftp.execute(s -> {
                 s.mkdir(folder);
-                s.write(Files.newInputStream(Objects.requireNonNull(zip).toFile().toPath()), folder + "/" + docId + "_chain.zip");
-                s.write(Files.newInputStream(pdf.toFile().toPath()), folder + "/" + docId + ".pdf");
+                s.write(Files.newInputStream(finalZipPath.toFile().toPath()), folder + "/" + docId + "_chain.zipPath");
+                s.write(Files.newInputStream(finalPdfPath.toFile().toPath()), folder + "/" + docId + ".pdf");
                 s.write(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), folder + "/" + docId + "_meta.xml");
                 return null;
             });
 
-            log.info("Done {} | zip={} | pdf={}", docId, ctx.getZipHash(), ctx.getPdfHash());
+            log.info("Done {} | zipPath={} | pdf={}", docId, ctx.getZipHash(), ctx.getPdfHash());
 
         } catch (Exception e) {
             log.error("Failed {}", docId, e);
             throw e;
+        } finally {
+            // Cleanup temporary files – always try to delete, even on failure
+            if (zipPath != null) {
+                try {
+                    Files.deleteIfExists(zipPath);
+                    log.debug("Deleted temp ZIP: {}", zipPath);
+                } catch (IOException e) {
+                    log.warn("Failed to delete temp ZIP {}: {}", zipPath, e.getMessage());
+                }
+            }
+
+            if (pdfPath != null) {
+                try {
+                    Files.deleteIfExists(pdfPath);
+                    log.debug("Deleted temp PDF: {}", pdfPath);
+                } catch (IOException e) {
+                    log.warn("Failed to delete temp PDF {}: {}", pdfPath, e.getMessage());
+                }
+            }
         }
     }
 
-    private String sha256(Path path) throws IOException, NoSuchAlgorithmException {
+    String sha256(Path path) throws IOException, NoSuchAlgorithmException {
         return sha256(Files.readAllBytes(path));
     }
 
-    private String sha256(byte[] data) throws NoSuchAlgorithmException {
+    String sha256(byte[] data) throws NoSuchAlgorithmException {
         return Hex.encodeHexString(MessageDigest.getInstance("SHA-256").digest(data));
     }
 
@@ -111,7 +134,7 @@ public class ArchiveMigrationService {
         return pages;
     }
 
-    private Path createChainZip(String docId, List<TiffPage> pages, SourceMetadata meta, MigrationContext ctx)
+    public Path createChainZip(String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
             throws IOException, NoSuchAlgorithmException {
 
         Path zipPath = Files.createTempFile(docId + "_chain", ".zip");
@@ -137,12 +160,14 @@ public class ArchiveMigrationService {
             manifest.put("payloadHash", ctx.getPayloadHash());
 
             // optional: snapshot of source metadata
-            manifest.put("sourceMetadata", Map.of(
-                    "docId", meta.getDocId(),
-                    "title", meta.getTitle(),
-                    "creationDate", meta.getCreationDate(),
-                    "clientId", meta.getClientId()
-            ));
+            if (sourceMetadata != null) {
+                manifest.put("sourceMetadata", Map.of(
+                        "docId", sourceMetadata.getDocId(),
+                        "title", sourceMetadata.getTitle(),
+                        "creationDate", sourceMetadata.getCreationDate(),
+                        "clientId", sourceMetadata.getClientId()
+                ));
+            }
 
             String manifestJson = new ObjectMapper().writerWithDefaultPrettyPrinter()
                     .writeValueAsString(manifest);
@@ -159,7 +184,7 @@ public class ArchiveMigrationService {
         return zipPath;
     }
 
-    private Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
+    Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
         Path pdf = Path.of("/tmp/" + docId + ".pdf");
         try (var doc = new PDDocument()) {
             for (var page : pages) {
@@ -176,15 +201,15 @@ public class ArchiveMigrationService {
         return pdf;
     }
 
-    private ArchivalMetadata buildXml(@NonNull SourceMetadata meta, MigrationContext ctx) {
+    public ArchivalMetadata buildXml(SourceMetadata sourceMetadata, MigrationContext ctx) {
         ArchivalMetadata metadata = new ArchivalMetadata();
 
         // Core document info
         metadata.setDocumentId(ctx.getDocId());
-        metadata.setTitle(meta.getTitle() != null ? meta.getTitle() : "Untitled Document");
-        metadata.setCreationDate(meta.getCreationDate());
-        metadata.setClientId(meta.getClientId());
-        metadata.setDocumentType(meta.getDocumentType());
+        metadata.setTitle(sourceMetadata.getTitle() != null ? sourceMetadata.getTitle() : "Untitled Document");
+        metadata.setCreationDate(sourceMetadata.getCreationDate());
+        metadata.setClientId(sourceMetadata.getClientId());
+        metadata.setDocumentType(sourceMetadata.getDocumentType());
         metadata.setPageCount(ctx.getPageHashes().size());
 
         // Integrity / chain of custody
@@ -201,6 +226,7 @@ public class ArchiveMigrationService {
 
         metadata.setProvenance(provenance);
 
+        metadata.setCustomFields(Map.of("sourceSystem", "legacy-archive-v1"));
         return metadata;
     }
     
