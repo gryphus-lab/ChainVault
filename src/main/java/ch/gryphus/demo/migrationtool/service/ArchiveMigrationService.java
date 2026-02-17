@@ -114,7 +114,7 @@ public class ArchiveMigrationService {
     private Path createChainZip(String docId, List<TiffPage> pages, SourceMetadata meta, MigrationContext ctx)
             throws IOException, NoSuchAlgorithmException {
 
-        Path zipPath = Files.createTempFile("chain-" + docId + "-", ".zip");
+        Path zipPath = Files.createTempFile(docId + "_chain", ".zip");
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
 

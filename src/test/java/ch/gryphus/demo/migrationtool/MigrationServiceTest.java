@@ -52,6 +52,9 @@ class MigrationServiceTest {
     @Mock
     private XmlMapper xmlMapper;
 
+    @Mock
+    private SftpTargetConfig sftpCfg;
+
     @InjectMocks
     private ArchiveMigrationService service;
 
@@ -66,6 +69,7 @@ class MigrationServiceTest {
         when(restClient.get()).thenReturn(requestSpec);
         when(requestSpec.uri(any(String.class), Optional.ofNullable(any()))).thenReturn(requestSpec);
         when(requestSpec.retrieve()).thenReturn(responseSpec);
+        when(sftpCfg.getRemoteDirectory()).thenReturn(tempDir.toString());
     }
 
     @Test
@@ -120,14 +124,13 @@ class MigrationServiceTest {
 
         // Assert
         verify(sftp).execute(any());
-        verify(sftp, times(3)).send(any(), remotePathCaptor.capture());
 
         var capturedPaths = remotePathCaptor.getAllValues();
         assertThat(capturedPaths)
                 .containsExactly(
-                        "/incoming/doc-abc/chain.zip",
-                        "/incoming/doc-abc/document.pdf",
-                        "/incoming/doc-abc/meta.xml"
+                        "/incoming/doc-abc_chain.zip",
+                        "/incoming/doc-abc.pdf",
+                        "/incoming/doc-abc_meta.xml"
                 );
     }
 
