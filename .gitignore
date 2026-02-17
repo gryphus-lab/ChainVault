@@ -19,3 +19,4 @@ kafka.truststore.jks*
 kafka.keystore.jks*
 /.vs
 /logs/
+**/*local*
