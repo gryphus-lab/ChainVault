@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ArchiveMigrationService {
 
     private final RestClient restClient;

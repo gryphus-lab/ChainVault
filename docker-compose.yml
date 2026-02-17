@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:8080"           # JobRunr dashboard + app
     environment:
-      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_PROFILES_ACTIVE=default
       - JOBRUNR_DASHBOARD_USERNAME=admin
       - JOBRUNR_DASHBOARD_PASSWORD=admin123
       # SFTP config for local test server
@@ -39,6 +39,19 @@ services:
     volumes:
       - sftp-data:/home/testuser/upload
     restart: unless-stopped
+
+  fake-source-api:
+    image: node:20-alpine
+    container_name: fake-source-api
+    working_dir: /app
+    command: >
+      sh -c "npm install -g json-server &&
+             echo '{\"documents\": [{\"id\": \"doc-001\"}, {\"id\": \"doc-002\"}]}' > db.json &&
+             json-server --watch db.json --port 9090 --host 0.0.0.0"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./fake-api-data:/app
 
 volumes:
   sftp-data:
