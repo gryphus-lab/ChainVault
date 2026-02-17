@@ -31,6 +31,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <lombok.version>1.18.34</lombok.version>
+        <camunda.version>8.8.0</camunda.version>  <!-- or latest patch 8.8.x / 8.9.x -->
     </properties>
     <dependencies>
         <dependency>
@@ -41,6 +42,20 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId> <!-- RestClient -->
         </dependency>
+        <!-- Camunda 8 Spring Boot Starter (replaces old Spring Zeebe SDK) -->
+        <dependency>
+            <groupId>io.camunda</groupId>
+            <artifactId>camunda-spring-boot-starter</artifactId>
+            <version>${camunda.version}</version>
+        </dependency>
+        <!-- Optional: for local/self-managed Zeebe + Operate visualization -->
+        <dependency>
+            <groupId>io.camunda</groupId>
+            <artifactId>spring-boot-starter-camunda-test</artifactId>
+            <version>${camunda.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.jobrunr</groupId>
             <artifactId>jobrunr-spring-boot-3-starter</artifactId>
