@@ -23,13 +23,13 @@ public class SftpTargetConfig {
     @Value("${target.sftp.username}")
     private String username;
 
-    @Value("${target.sftp.password:}")  // Use secrets manager in prod (Vault / env / Kubernetes secrets)
+    @Value("${target.sftp.password}")
     private String password;
 
-    @Value("${target.sftp.private-key-path:}")
+    @Value("${target.sftp.private-key-path}")
     private Resource privateKey;
 
-    @Value("${target.sftp.known-hosts:}")
+    @Value("${target.sftp.known-hosts}")
     private Resource knownHosts;
 
     // Getter for remote dir (used in service)

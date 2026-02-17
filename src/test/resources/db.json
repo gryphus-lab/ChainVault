@@ -1,0 +1,87 @@
+{
+  "documents": [
+    {
+      "id": "DOC-ARCH-20250115-001",
+      "title": "Invoice #INV-2025-001 - Acme Corp",
+      "creationDate": "2025-01-15T14:30:45Z",
+      "clientId": "CHE-112.233.445",
+      "accountNo": "CH9300762011623852957",
+      "documentType": "INVOICE",
+      "department": "Accounts Payable",
+      "status": "ARCHIVED",
+      "originalSizeBytes": 5242880,
+      "pageCount": 8,
+      "tags": ["finance", "2025", "urgent"],
+      "payloadUrl": "/static/payloads/invoice-001.zip"
+    },
+    {
+      "id": "DOC-CONTRACT-20250201-002",
+      "title": "Service Agreement - Zurich Insurance",
+      "creationDate": "2025-02-01T09:15:22Z",
+      "clientId": "CHE-987.654.321",
+      "accountNo": "CH5604835012345678009",
+      "documentType": "CONTRACT",
+      "department": "Legal",
+      "status": "ARCHIVED",
+      "originalSizeBytes": 1245184,
+      "pageCount": 14,
+      "tags": ["legal", "insurance", "confidential"],
+      "payloadUrl": "/static/payloads/contract-002.zip"
+    },
+    {
+      "id": "DOC-REPORT-20250310-003",
+      "title": "Q1 2025 Compliance Report",
+      "creationDate": "2025-03-10T16:45:10Z",
+      "clientId": "CHE-555.666.777",
+      "accountNo": null,
+      "documentType": "REPORT",
+      "department": "Compliance",
+      "status": "ARCHIVED",
+      "originalSizeBytes": 3670016,
+      "pageCount": 22,
+      "tags": ["compliance", "regulatory", "q1-2025"],
+      "payloadUrl": "/static/payloads/compliance-report-003.zip"
+    },
+    {
+      "id": "DOC-LETTER-20250405-004",
+      "title": "Official Notification - Tax Authority",
+      "creationDate": "2025-04-05T11:20:33Z",
+      "clientId": "CHE-444.555.666",
+      "accountNo": "CH2703000001234567890",
+      "documentType": "OFFICIAL_LETTER",
+      "department": "Tax & Legal",
+      "status": "ARCHIVED",
+      "originalSizeBytes": 819200,
+      "pageCount": 5,
+      "tags": ["tax", "official", "2025"],
+      "payloadUrl": "/static/payloads/tax-letter-004.zip"
+    },
+    {
+      "id": "DOC-EMAIL-20250520-005",
+      "title": "Internal Audit Findings 2025-05",
+      "creationDate": "2025-05-20T08:10:00Z",
+      "clientId": null,
+      "accountNo": null,
+      "documentType": "EMAIL_CHAIN",
+      "department": "Internal Audit",
+      "status": "ARCHIVED",
+      "originalSizeBytes": 262144,
+      "pageCount": 3,
+      "tags": ["audit", "internal", "email"],
+      "payloadUrl": "/static/payloads/audit-email-005.zip"
+    }
+  ],
+
+  "metadata": {
+    "lastUpdated": "2026-02-17T17:30:00Z",
+    "totalDocuments": 5,
+    "documentTypes": [
+      "INVOICE",
+      "CONTRACT",
+      "REPORT",
+      "OFFICIAL_LETTER",
+      "EMAIL_CHAIN"
+    ],
+    "note": "This is a test dataset for migration tool integration tests"
+  }
+}

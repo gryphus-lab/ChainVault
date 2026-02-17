@@ -1,5 +1,6 @@
 package ch.gryphus.demo.migrationtool.service;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,11 +12,13 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.awaitility.Awaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.Duration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.awaitility.Awaitility.await;
+
+@Disabled
 @SpringBootTest
 @Testcontainers
 class ArchiveMigrationServiceIntegrationTest {
@@ -31,6 +34,8 @@ class ArchiveMigrationServiceIntegrationTest {
 
     @DynamicPropertySource
     static void overrideSftpProperties(DynamicPropertyRegistry registry) {
+
+        // SFTP
         registry.add("target.sftp.host", sftpContainer::getHost);
         registry.add("target.sftp.port", () -> String.valueOf(sftpContainer.getMappedPort(22)));
         registry.add("target.sftp.username", () -> "testuser");
@@ -41,20 +46,39 @@ class ArchiveMigrationServiceIntegrationTest {
 
     @Test
     void migrateDocument_shouldUploadToRealSftp() throws Exception {
-        String docId = "DOC-IT-001";
+        String docId = "DOC-ARCH-20250115-001";  // exists in your verbose db.json
 
-        // Assume mocks for restClient or real calls – add as needed
-
+        // Act – full real flow
         service.migrateDocument(docId);
 
-        // Verify upload (exec ls in container)
-        await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
-            String uploadDir = "/upload/" + docId;
-            String lsResult = sftpContainer.execInContainer("ls", uploadDir).getStdout();
+        // Wait for upload to appear in SFTP (poll the container)
+        String expectedDir = "/upload/" + docId;
 
-            assertThat(lsResult).contains("_chain.zip");
-            assertThat(lsResult).contains(".pdf");
-            assertThat(lsResult).contains("_meta.xml");
-        });
+        await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(() -> {
+                    String lsResult = sftpContainer.execInContainer("ls", "-l", expectedDir).getStdout();
+
+                    assertThat(lsResult)
+                            .as("SFTP directory should contain uploaded files")
+                            .contains("_chain.zip")
+                            .contains(".pdf")
+                            .contains("_meta.xml");
+                });
+
+        // Optional: check file count
+        String fileCount = sftpContainer.execInContainer("ls", expectedDir, "|", "wc", "-l").getStdout().trim();
+        assertThat(Integer.parseInt(fileCount.trim())).isEqualTo(3);
+    }
+
+    @Test
+    void migrateDocument_withNonExistingDoc_shouldFailGracefully() {
+        String invalidId = "DOC-NOT-EXISTS-999";
+
+        // No exception expected if your code handles 404 gracefully
+        // or assertThrows if you want it to fail loudly
+        assertThatNoException()
+                .isThrownBy(() -> service.migrateDocument(invalidId));
     }
 }

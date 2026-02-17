@@ -2,31 +2,22 @@ version: '3.9'
 
 services:
 
-  migration-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: finma-migration
-    ports:
-      - "8080:8080"           # JobRunr dashboard + app
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-jobrunr
     environment:
-      - SPRING_PROFILES_ACTIVE=default
-      - JOBRUNR_DASHBOARD_USERNAME=admin
-      - JOBRUNR_DASHBOARD_PASSWORD=admin123
-      # SFTP config for local test server
-      - TARGET_SFTP_HOST=sftp-test
-      - TARGET_SFTP_PORT=22
-      - TARGET_SFTP_USERNAME=testuser
-      - TARGET_SFTP_PASSWORD=testpass123
-      - TARGET_SFTP_REMOTE-DIRECTORY=/incoming
-      - TARGET_SFTP_ALLOW-UNKNOWN-KEYS=true
-      # Source API (fake or real)
-      - SOURCE_API_BASE-URL=http://localhost:9090   # ← change if using fake API
-      - SOURCE_API_TOKEN=dummy
-    depends_on:
-      - sftp-test
+      POSTGRES_DB: jobrunr
+      POSTGRES_USER: jobrunr
+      POSTGRES_PASSWORD: jobrunr
+    ports:
+      - "5433:5432"           # avoid conflict with local Postgres
     volumes:
-      - ./logs:/app/logs      # optional: persist logs outside container
+        - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobrunr"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   sftp-test:
@@ -46,12 +37,18 @@ services:
     working_dir: /app
     command: >
       sh -c "npm install -g json-server &&
-             echo '{\"documents\": [{\"id\": \"doc-001\"}, {\"id\": \"doc-002\"}]}' > db.json &&
-             json-server --watch db.json --port 9090 --host 0.0.0.0"
+        json-server --watch /data/db.json --static /data/static --port 9090 --host 0.0.0.0"
     ports:
       - "9090:9090"
     volumes:
-      - ./fake-api-data:/app
+      - ./src/test/resources/db.json:/data/db.json:ro
+      - ./src/test/resources/static:/data/static:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
+  pgdata:
   sftp-data:
