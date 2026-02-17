@@ -1,9 +1,10 @@
 package ch.gryphus.demo.migrationtool;
 
-import ch.gryphus.demo.migrationtool.domain.MigrationContext;
+import ch.gryphus.demo.migrationtool.config.SftpTargetConfig;
 import ch.gryphus.demo.migrationtool.domain.SourceMetadata;
 import ch.gryphus.demo.migrationtool.domain.TiffPage;
 import ch.gryphus.demo.migrationtool.service.ArchiveMigrationService;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +50,7 @@ class MigrationServiceTest {
     private SftpRemoteFileTemplate sftp;
 
     @Mock
-    private MigrationContext context;
+    private XmlMapper xmlMapper;
 
     @InjectMocks
     private ArchiveMigrationService service;
@@ -112,6 +113,7 @@ class MigrationServiceTest {
         when(responseSpec.body(SourceMetadata.class)).thenReturn(testSourceMetadata);
         byte[] testZip = createTestZipWithTwoTiffs();
         when(responseSpec.body(byte[].class)).thenReturn(testZip);
+        when(xmlMapper.writeValueAsString(any())).thenReturn(xml);
 
         // Act
         service.migrateDocument(docId);  // full flow – but we mock internals if needed
@@ -143,12 +145,12 @@ class MigrationServiceTest {
         try (var baos = new ByteArrayOutputStream();
              var zos = new ZipOutputStream(baos)) {
 
-            zos.putNextEntry(new ZipEntry("page001.tif"));
-            zos.write("TIFF1 content".getBytes());
+            zos.putNextEntry(new ZipEntry("sample1.tif"));
+            zos.write(Files.readAllBytes(Path.of("src/test/resources/sample1.tiff")));
             zos.closeEntry();
 
-            zos.putNextEntry(new ZipEntry("page002.tif"));
-            zos.write("TIFF2 content".getBytes());
+            zos.putNextEntry(new ZipEntry("sample2.tif"));
+            zos.write(Files.readAllBytes(Path.of("src/test/resources/sample2.tiff")));
             zos.closeEntry();
 
             zos.finish();

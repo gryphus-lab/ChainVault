@@ -1,10 +1,7 @@
 package ch.gryphus.demo.migrationtool.service;
 
 import ch.gryphus.demo.migrationtool.config.SftpTargetConfig;
-import ch.gryphus.demo.migrationtool.domain.ArchivalMetadata;
-import ch.gryphus.demo.migrationtool.domain.MigrationContext;
-import ch.gryphus.demo.migrationtool.domain.SourceMetadata;
-import ch.gryphus.demo.migrationtool.domain.TiffPage;
+import ch.gryphus.demo.migrationtool.domain.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +13,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.jobrunr.jobs.annotations.Job;
+import org.jspecify.annotations.NonNull;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -68,7 +66,7 @@ public class ArchiveMigrationService {
             ctx.setPdfHash(sha256(pdf));
 
             // 5. XML metadata
-            String xml = xmlMapper.writeValueAsString(buildXml(meta, ctx));
+            String xml = xmlMapper.writeValueAsString(buildXml(Objects.requireNonNull(meta), ctx));
 
             // 6. SFTP upload
             String folder = sftpCfg.getRemoteDirectory() + "/" + docId;
@@ -178,8 +176,32 @@ public class ArchiveMigrationService {
         return pdf;
     }
 
-    private ArchivalMetadata buildXml(SourceMetadata meta, MigrationContext ctx) {
-        return new ArchivalMetadata();
+    private ArchivalMetadata buildXml(@NonNull SourceMetadata meta, MigrationContext ctx) {
+        ArchivalMetadata metadata = new ArchivalMetadata();
+
+        // Core document info
+        metadata.setDocumentId(ctx.getDocId());
+        metadata.setTitle(meta.getTitle() != null ? meta.getTitle() : "Untitled Document");
+        metadata.setCreationDate(meta.getCreationDate());
+        metadata.setClientId(meta.getClientId());
+        metadata.setDocumentType(meta.getDocumentType());
+        metadata.setPageCount(ctx.getPageHashes().size());
+
+        // Integrity / chain of custody
+        metadata.setPayloadHash(ctx.getPayloadHash());
+        metadata.setZipHash(ctx.getZipHash());
+        metadata.setPdfHash(ctx.getPdfHash());
+
+        // Migration provenance
+        MigrationProvenance provenance = new MigrationProvenance();
+        provenance.setMigrationTimestamp(Instant.now().toString());
+        provenance.setToolVersion("1.0.0");           // or read from pom.properties / build info
+        provenance.setOperator("migration-service");  // or System.getProperty("user.name")
+        provenance.setPageHashes(ctx.getPageHashes()); // Map<String, String> filename → hash
+
+        metadata.setProvenance(provenance);
+
+        return metadata;
     }
     
     public List<TiffPage> unzipTiffPages(byte[] zipBytes) throws IOException {
