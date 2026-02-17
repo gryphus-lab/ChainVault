@@ -81,6 +81,13 @@
             <artifactId>commons-compress</artifactId>
             <version>1.26.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>8.0</version> <!-- or latest 8.x / 9.x in 2026 -->
+        </dependency>
+
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>

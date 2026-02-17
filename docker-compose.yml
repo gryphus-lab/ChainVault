@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+
+  migration-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finma-migration
+    ports:
+      - "8080:8080"           # JobRunr dashboard + app
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - JOBRUNR_DASHBOARD_USERNAME=admin
+      - JOBRUNR_DASHBOARD_PASSWORD=admin123
+      # SFTP config for local test server
+      - TARGET_SFTP_HOST=sftp-test
+      - TARGET_SFTP_PORT=22
+      - TARGET_SFTP_USERNAME=testuser
+      - TARGET_SFTP_PASSWORD=testpass123
+      - TARGET_SFTP_REMOTE-DIRECTORY=/incoming
+      - TARGET_SFTP_ALLOW-UNKNOWN-KEYS=true
+      # Source API (fake or real)
+      - SOURCE_API_BASE-URL=http://localhost:9090   # ← change if using fake API
+      - SOURCE_API_TOKEN=dummy
+    depends_on:
+      - sftp-test
+    volumes:
+      - ./logs:/app/logs      # optional: persist logs outside container
+    restart: unless-stopped
+
+  sftp-test:
+    image: atmoz/sftp:latest
+    container_name: sftp-test
+    ports:
+      - "2222:22"             # map to 2222 so it doesn't conflict with host SSH
+    environment:
+      - SFTP_USERS=testuser:testpass123:::upload
+    volumes:
+      - sftp-data:/home/testuser/upload
+    restart: unless-stopped
+
+volumes:
+  sftp-data:

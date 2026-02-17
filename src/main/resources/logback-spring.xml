@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- ============================================= -->
+    <!-- CONSOLE - human readable during development  -->
+    <!-- ============================================= -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ============================================= -->
+    <!-- JSON FILE - structured for production/audit  -->
+    <!-- ============================================= -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/application.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover + max 30 days history -->
+            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.json</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Add useful fields for traceability / FINMA audit -->
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>docId</includeMdcKeyName>     <!-- if you put docId in MDC -->
+            <includeMdcKeyName>migrationBatch</includeMdcKeyName>
+
+            <customFields>
+                {
+                "app": "${springAppName:-finma-migration}",
+                "env": "${spring.profiles.active:-dev}",
+                "version": "${project.version:-1.0-SNAPSHOT}"
+                }
+            </customFields>
+
+            <!-- Shorten stack traces in JSON -->
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2000</maxLength>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <!-- ============================================= -->
+    <!-- Root logger                                  -->
+    <!-- ============================================= -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="JSON_FILE"/>
+    </root>
+
+    <!-- Quieter packages -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.jobrunr" level="INFO"/>
+    <logger name="ch.abhay.migration" level="DEBUG"/> <!-- your package – set to TRACE for deep debugging -->
+
+</configuration>
