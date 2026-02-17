@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
-class MigrationServiceTest {
+class ArchiveMigrationServiceTest {
     @Mock
     private RestClient restClient;
 
