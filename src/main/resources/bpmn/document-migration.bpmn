@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                  id="Definitions_1"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+
+    <bpmn:process id="document-migration" name="Document Migration" isExecutable="true">
+
+        <bpmn:startEvent id="StartEvent_1">
+            <bpmn:outgoing>Flow_1</bpmn:outgoing>
+        </bpmn:startEvent>
+
+        <!-- Tasks + Error & Compensation Boundaries -->
+        <bpmn:serviceTask id="Task_Fetch" name="Fetch Metadata &amp; Payload">
+            <bpmn:extensionElements>
+                <zeebe:taskDefinition type="fetch-metadata-payload"/>
+            </bpmn:extensionElements>
+            <bpmn:incoming>Flow_1</bpmn:incoming>
+            <bpmn:outgoing>Flow_2</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:boundaryEvent id="Err_Fetch" attachedToRef="Task_Fetch" errorRef="Err_Tech">
+            <bpmn:outgoing>ErrFlow_1</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="Comp_Fetch" attachedToRef="Task_Fetch" isForCompensation="true">
+            <bpmn:outgoing>CompFlow_1</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+
+        <bpmn:serviceTask id="Task_Extract" name="Extract &amp; Hash TIFFs">
+            <bpmn:extensionElements>
+                <zeebe:taskDefinition type="extract-hash-tiffs"/>
+            </bpmn:extensionElements>
+            <bpmn:incoming>Flow_2</bpmn:incoming>
+            <bpmn:outgoing>Flow_3</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:boundaryEvent id="Err_Extract" attachedToRef="Task_Extract" errorRef="Err_Tech">
+            <bpmn:outgoing>ErrFlow_2</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="Comp_Extract" attachedToRef="Task_Extract" isForCompensation="true">
+            <bpmn:outgoing>CompFlow_2</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+
+        <bpmn:serviceTask id="Task_ChainZip" name="Create Chain ZIP">
+            <bpmn:extensionElements>
+                <zeebe:taskDefinition type="create-chain-zip"/>
+            </bpmn:extensionElements>
+            <bpmn:incoming>Flow_3</bpmn:incoming>
+            <bpmn:outgoing>Flow_4</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:boundaryEvent id="Err_ChainZip" attachedToRef="Task_ChainZip" errorRef="Err_Tech">
+            <bpmn:outgoing>ErrFlow_3</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="Comp_ChainZip" attachedToRef="Task_ChainZip" isForCompensation="true">
+            <bpmn:outgoing>CompFlow_3</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+
+        <bpmn:serviceTask id="Task_MergePdf" name="Merge to PDF">
+            <bpmn:extensionElements>
+                <zeebe:taskDefinition type="merge-pdf"/>
+            </bpmn:extensionElements>
+            <bpmn:incoming>Flow_4</bpmn:incoming>
+            <bpmn:outgoing>Flow_5</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:boundaryEvent id="Err_Merge" attachedToRef="Task_MergePdf" errorRef="Err_Tech">
+            <bpmn:outgoing>ErrFlow_4</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="Comp_Merge" attachedToRef="Task_MergePdf" isForCompensation="true">
+            <bpmn:outgoing>CompFlow_4</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+
+        <bpmn:serviceTask id="Task_GenXml" name="Generate XML">
+            <bpmn:extensionElements>
+                <zeebe:taskDefinition type="generate-xml"/>
+            </bpmn:extensionElements>
+            <bpmn:incoming>Flow_5</bpmn:incoming>
+            <bpmn:outgoing>Flow_6</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:boundaryEvent id="Err_GenXml" attachedToRef="Task_GenXml" errorRef="Err_Tech">
+            <bpmn:outgoing>ErrFlow_5</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="Comp_GenXml" attachedToRef="Task_GenXml" isForCompensation="true">
+            <bpmn:outgoing>CompFlow_5</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+
+        <bpmn:serviceTask id="Task_Upload" name="SFTP Upload">
+            <bpmn:extensionElements>
+                <zeebe:taskDefinition type="upload-sftp"/>
+            </bpmn:extensionElements>
+            <bpmn:incoming>Flow_6</bpmn:incoming>
+            <bpmn:outgoing>Flow_7</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:boundaryEvent id="Err_Upload" attachedToRef="Task_Upload" errorRef="Err_Tech">
+            <bpmn:outgoing>ErrFlow_6</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+        <bpmn:boundaryEvent id="Comp_Upload" attachedToRef="Task_Upload" isForCompensation="true">
+            <bpmn:outgoing>CompFlow_6</bpmn:outgoing>
+        </bpmn:boundaryEvent>
+
+        <!-- Success End -->
+        <bpmn:endEvent id="End_Success" name="Completed">
+            <bpmn:incoming>Flow_7</bpmn:incoming>
+        </bpmn:endEvent>
+
+        <!-- Compensation End Events (rollback complete) -->
+        <bpmn:endEvent id="Comp_End1" name="Rollback Fetch">
+            <bpmn:incoming>CompFlow_1</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:endEvent id="Comp_End2" name="Rollback Extract">
+            <bpmn:incoming>CompFlow_2</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:endEvent id="Comp_End3" name="Rollback Chain ZIP">
+            <bpmn:incoming>CompFlow_3</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:endEvent id="Comp_End4" name="Rollback PDF Merge">
+            <bpmn:incoming>CompFlow_4</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:endEvent id="Comp_End5" name="Rollback XML Gen">
+            <bpmn:incoming>CompFlow_5</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:endEvent id="Comp_End6" name="Rollback SFTP">
+            <bpmn:incoming>CompFlow_6</bpmn:incoming>
+        </bpmn:endEvent>
+
+        <!-- Flows -->
+        <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Fetch"/>
+        <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Fetch" targetRef="Task_Extract"/>
+        <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Extract" targetRef="Task_ChainZip"/>
+        <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_ChainZip" targetRef="Task_MergePdf"/>
+        <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_MergePdf" targetRef="Task_GenXml"/>
+        <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_GenXml" targetRef="Task_Upload"/>
+        <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_Upload" targetRef="End_Success"/>
+
+        <bpmn:sequenceFlow id="ErrFlow_1" sourceRef="Err_Fetch" targetRef="End_Err1"/>
+        <bpmn:sequenceFlow id="ErrFlow_2" sourceRef="Err_Extract" targetRef="End_Err2"/>
+        <bpmn:sequenceFlow id="ErrFlow_3" sourceRef="Err_ChainZip" targetRef="End_Err3"/>
+        <bpmn:sequenceFlow id="ErrFlow_4" sourceRef="Err_Merge" targetRef="End_Err4"/>
+        <bpmn:sequenceFlow id="ErrFlow_5" sourceRef="Err_GenXml" targetRef="End_Err5"/>
+        <bpmn:sequenceFlow id="ErrFlow_6" sourceRef="Err_Upload" targetRef="End_Err6"/>
+
+        <bpmn:sequenceFlow id="CompFlow_1" sourceRef="Comp_Fetch" targetRef="Comp_End1"/>
+        <bpmn:sequenceFlow id="CompFlow_2" sourceRef="Comp_Extract" targetRef="Comp_End2"/>
+        <bpmn:sequenceFlow id="CompFlow_3" sourceRef="Comp_ChainZip" targetRef="Comp_End3"/>
+        <bpmn:sequenceFlow id="CompFlow_4" sourceRef="Comp_Merge" targetRef="Comp_End4"/>
+        <bpmn:sequenceFlow id="CompFlow_5" sourceRef="Comp_GenXml" targetRef="Comp_End5"/>
+        <bpmn:sequenceFlow id="CompFlow_6" sourceRef="Comp_Upload" targetRef="Comp_End6"/>
+
+        <bpmn:error id="Err_Tech" name="Technical Error" errorCode="technical-error"/>
+
+    </bpmn:process>
+
+    <!-- Minimal diagram layout -->
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="document-migration">
+
+            <!-- Main flow -->
+            <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+                <dc:Bounds x="150" y="200" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Task_Fetch_di" bpmnElement="Task_Fetch">
+                <dc:Bounds x="230" y="180" width="100" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Task_Extract_di" bpmnElement="Task_Extract">
+                <dc:Bounds x="380" y="180" width="100" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Task_ChainZip_di" bpmnElement="Task_ChainZip">
+                <dc:Bounds x="530" y="180" width="100" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Task_MergePdf_di" bpmnElement="Task_MergePdf">
+                <dc:Bounds x="680" y="180" width="100" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Task_GenXml_di" bpmnElement="Task_GenXml">
+                <dc:Bounds x="830" y="180" width="100" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Task_Upload_di" bpmnElement="Task_Upload">
+                <dc:Bounds x="980" y="180" width="100" height="80"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="End_Success_di" bpmnElement="End_Success">
+                <dc:Bounds x="1130" y="200" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <!-- Error & Compensation Boundaries -->
+            <bpmndi:BPMNShape id="Err_Fetch_di" bpmnElement="Err_Fetch">
+                <dc:Bounds x="280" y="240" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_Fetch_di" bpmnElement="Comp_Fetch">
+                <dc:Bounds x="280" y="140" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="Err_Extract_di" bpmnElement="Err_Extract">
+                <dc:Bounds x="430" y="240" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_Extract_di" bpmnElement="Comp_Extract">
+                <dc:Bounds x="430" y="140" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="Err_ChainZip_di" bpmnElement="Err_ChainZip">
+                <dc:Bounds x="580" y="240" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_ChainZip_di" bpmnElement="Comp_ChainZip">
+                <dc:Bounds x="580" y="140" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="Err_Merge_di" bpmnElement="Err_Merge">
+                <dc:Bounds x="730" y="240" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_Merge_di" bpmnElement="Comp_Merge">
+                <dc:Bounds x="730" y="140" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="Err_GenXml_di" bpmnElement="Err_GenXml">
+                <dc:Bounds x="880" y="240" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_GenXml_di" bpmnElement="Comp_GenXml">
+                <dc:Bounds x="880" y="140" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <bpmndi:BPMNShape id="Err_Upload_di" bpmnElement="Err_Upload">
+                <dc:Bounds x="1030" y="240" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_Upload_di" bpmnElement="Comp_Upload">
+                <dc:Bounds x="1030" y="140" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <!-- Success End -->
+            <bpmndi:BPMNShape id="End_Success_di" bpmnElement="End_Success">
+                <dc:Bounds x="1130" y="200" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <!-- Error Ends -->
+            <bpmndi:BPMNShape id="End_Err1_di" bpmnElement="End_Err1">
+                <dc:Bounds x="230" y="340" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="End_Err2_di" bpmnElement="End_Err2">
+                <dc:Bounds x="380" y="340" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="End_Err3_di" bpmnElement="End_Err3">
+                <dc:Bounds x="530" y="340" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="End_Err4_di" bpmnElement="End_Err4">
+                <dc:Bounds x="680" y="340" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="End_Err5_di" bpmnElement="End_Err5">
+                <dc:Bounds x="830" y="340" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="End_Err6_di" bpmnElement="End_Err6">
+                <dc:Bounds x="980" y="340" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <!-- Compensation Ends (row above) -->
+            <bpmndi:BPMNShape id="Comp_End1_di" bpmnElement="Comp_End1">
+                <dc:Bounds x="230" y="100" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_End2_di" bpmnElement="Comp_End2">
+                <dc:Bounds x="380" y="100" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_End3_di" bpmnElement="Comp_End3">
+                <dc:Bounds x="530" y="100" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_End4_di" bpmnElement="Comp_End4">
+                <dc:Bounds x="680" y="100" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_End5_di" bpmnElement="Comp_End5">
+                <dc:Bounds x="830" y="100" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="Comp_End6_di" bpmnElement="Comp_End6">
+                <dc:Bounds x="980" y="100" width="36" height="36"/>
+            </bpmndi:BPMNShape>
+
+            <!-- Success edges -->
+            <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+                <di:waypoint x="186" y="218"/><di:waypoint x="230" y="220"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+                <di:waypoint x="330" y="220"/><di:waypoint x="380" y="220"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+                <di:waypoint x="480" y="220"/><di:waypoint x="530" y="220"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+                <di:waypoint x="630" y="220"/><di:waypoint x="680" y="220"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+                <di:waypoint x="780" y="220"/><di:waypoint x="830" y="220"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+                <di:waypoint x="930" y="220"/><di:waypoint x="980" y="220"/>
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+                <di:waypoint x="1080" y="220"/><di:waypoint x="1130" y="218"/>
+            </bpmndi:BPMNEdge>
+
+            <!-- Error edges -->
+            <bpmndi:BPMNEdge id="ErrFlow_1_di" bpmnElement="ErrFlow_1">
+                <di:waypoint x="298" y="276"/><di:waypoint x="298" y="340"/>
+            </bpmndi:BPMNEdge>
+            <!-- repeat pattern for ErrFlow_2 to ErrFlow_6 -->
+
+            <!-- Compensation edges -->
+            <bpmndi:BPMNEdge id="CompFlow_1_di" bpmnElement="CompFlow_1">
+                <di:waypoint x="298" y="176"/><di:waypoint x="298" y="100"/>
+            </bpmndi:BPMNEdge>
+            <!-- repeat for CompFlow_2 to CompFlow_6 -->
+
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>

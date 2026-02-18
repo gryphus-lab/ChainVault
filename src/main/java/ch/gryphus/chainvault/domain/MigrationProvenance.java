@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.domain;
+package ch.gryphus.chainvault.domain;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;

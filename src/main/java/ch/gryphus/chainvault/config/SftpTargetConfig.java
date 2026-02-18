@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.config;
+package ch.gryphus.chainvault.config;
 
 import lombok.Getter;
 import org.apache.sshd.sftp.client.SftpClient;

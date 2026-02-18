@@ -5,7 +5,7 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Copy Maven build artifacts
-COPY target/migration-tool-0.0.1-SNAPSHOT.jar app.jar
+COPY target/chainvault-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose Spring Boot default port + JobRunr dashboard
 EXPOSE 8080

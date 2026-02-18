@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool;
+package ch.gryphus.chainvault;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

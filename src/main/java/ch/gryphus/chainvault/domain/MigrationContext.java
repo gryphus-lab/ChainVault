@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.domain;
+package ch.gryphus.chainvault.domain;
 
 import lombok.Data;
 

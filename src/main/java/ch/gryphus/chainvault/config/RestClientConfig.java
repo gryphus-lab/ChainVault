@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.config;
+package ch.gryphus.chainvault.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

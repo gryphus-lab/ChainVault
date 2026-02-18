@@ -1,7 +1,7 @@
-package ch.gryphus.demo.migrationtool.service;
+package ch.gryphus.chainvault.service;
 
-import ch.gryphus.demo.migrationtool.config.SftpTargetConfig;
-import ch.gryphus.demo.migrationtool.domain.*;
+import ch.gryphus.chainvault.config.SftpTargetConfig;
+import ch.gryphus.chainvault.domain.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.RequiredArgsConstructor;
@@ -49,10 +49,11 @@ public class ArchiveMigrationService {
         Path zipPath = null;
         Path pdfPath = null;
         try {
-            // 1. Metadata + payload
+            // 1. Extract
             var meta = restClient.get().uri("/documents/{id}/metadata", docId).retrieve().body(SourceMetadata.class);
             byte[] payload = restClient.get().uri("/documents/{id}/payload", docId).retrieve().body(byte[].class);
 
+            // 1a. Sign
             ctx.setPayloadHash(sha256(payload));
 
             // 2. Extract pages
@@ -70,20 +71,20 @@ public class ArchiveMigrationService {
             String xml = xmlMapper.writeValueAsString(buildXml(Objects.requireNonNull(meta), ctx));
 
             // 6. SFTP upload
-            String folder = sftpCfg.getRemoteDirectory() + "/" + docId;
+            String folder = "%s/%s".formatted(sftpCfg.getRemoteDirectory(), docId);
             Path finalZipPath = zipPath;
             Path finalPdfPath = pdfPath;
             sftp.execute(s -> {
                 s.mkdir(folder);
-                s.write(Files.newInputStream(finalZipPath.toFile().toPath()), folder + "/" + docId + "_chain.zipPath");
-                s.write(Files.newInputStream(finalPdfPath.toFile().toPath()), folder + "/" + docId + ".pdf");
-                s.write(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), folder + "/" + docId + "_meta.xml");
+                s.write(Files.newInputStream(finalZipPath.toFile().toPath()), "%s/%s_chain.zipPath".formatted(folder, docId));
+                s.write(Files.newInputStream(finalPdfPath.toFile().toPath()), "%s/%s.pdf".formatted(folder, docId));
+                s.write(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "%s/%s_meta.xml".formatted(folder, docId));
                 return null;
             });
 
             log.info("Done {} | zipPath={} | pdf={}", docId, ctx.getZipHash(), ctx.getPdfHash());
 
-        } catch (Exception e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             log.error("Failed {}", docId, e);
             throw e;
         } finally {
@@ -136,7 +137,7 @@ public class ArchiveMigrationService {
     public Path createChainZip(String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
             throws IOException, NoSuchAlgorithmException {
 
-        Path zipPath = Files.createTempFile(docId + "_chain", ".zip");
+        Path zipPath = Files.createTempFile("%s_chain".formatted(docId), ".zip");
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
 
@@ -228,7 +229,7 @@ public class ArchiveMigrationService {
         metadata.setCustomFields(Map.of("sourceSystem", "legacy-archive-v1"));
         return metadata;
     }
-    
+
     public List<TiffPage> unzipTiffPages(byte[] zipBytes) throws IOException {
         var pages = new ArrayList<TiffPage>();
 
@@ -252,11 +253,11 @@ public class ArchiveMigrationService {
         return pages;
     }
 
-    public Path zipPages(String id, List<byte[]> pages, Map m) throws IOException {
+    public Path zipPages(String id, List<byte[]> pages, Map<?,?> m) throws IOException {
         var p = Path.of("/tmp/" + id + "-c.zip");
         try (var zos = new ZipOutputStream(Files.newOutputStream(p))) {
             for (int i = 0; i < pages.size(); i++) {
-                zos.putNextEntry(new ZipEntry("p" + (i+1) + ".tif"));
+                zos.putNextEntry(new ZipEntry("p" + (i + 1) + ".tif"));
                 zos.write(pages.get(i));
                 zos.closeEntry();
             }

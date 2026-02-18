@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.service;
+package ch.gryphus.chainvault.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

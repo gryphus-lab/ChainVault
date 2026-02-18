@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.service;
+package ch.gryphus.chainvault.service;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.domain;
+package ch.gryphus.chainvault.domain;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import jakarta.xml.bind.annotation.XmlAccessType;

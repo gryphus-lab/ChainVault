@@ -1,4 +1,4 @@
-package ch.gryphus.demo.migrationtool.config;
+package ch.gryphus.chainvault.config;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.context.annotation.Bean;
