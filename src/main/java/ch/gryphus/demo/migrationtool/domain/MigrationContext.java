@@ -14,5 +14,6 @@ public class MigrationContext {
     private Map<String, String> pageHashes = new HashMap<>();
 
     public void addPageHash(String name, String pageHash) {
+        pageHashes.put(name, pageHash);
     }
 }

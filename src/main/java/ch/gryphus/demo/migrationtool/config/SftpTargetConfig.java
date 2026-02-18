@@ -11,8 +11,6 @@ import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.sftp.session.DefaultSftpSessionFactory;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 
-import java.io.File;
-
 @Configuration
 public class SftpTargetConfig {
 
@@ -25,14 +23,14 @@ public class SftpTargetConfig {
     @Value("${target.sftp.username}")
     private String username;
 
-    @Value("${target.sftp.password:}")  // Use secrets manager in prod (Vault / env / Kubernetes secrets)
+    @Value("${target.sftp.password}")
     private String password;
 
-    @Value("${target.sftp.private-key-path:}")  // Optional: path to id_rsa
-    private String privateKeyPath;
+    @Value("${target.sftp.private-key-path}")
+    private Resource privateKey;
 
-    @Value("${target.sftp.known-hosts:}")
-    private String knownHostsPath;  // For strict checking
+    @Value("${target.sftp.known-hosts}")
+    private Resource knownHosts;
 
     // Getter for remote dir (used in service)
     @Getter
@@ -49,22 +47,17 @@ public class SftpTargetConfig {
 
         if (!password.isEmpty()) {
             factory.setPassword(password);
-        } else if (!privateKeyPath.isEmpty()) {
-            factory.setPrivateKey((Resource) new File(privateKeyPath));
-            // factory.setPrivateKeyPassphrase(...) if encrypted key
+        } else if (privateKey != null && privateKey.exists()) {
+            factory.setPrivateKey(privateKey);
         }
 
         // Strict host key checking (recommended for compliance)
-        if (!knownHostsPath.isEmpty()) {
-            factory.setKnownHostsResource((Resource) new File(knownHostsPath));
+        if (knownHosts != null && knownHosts.exists()) {
+            factory.setKnownHostsResource(knownHosts);
         } else {
             // Fallback: disable strict checking (less secure, log warning)
             factory.setAllowUnknownKeys(true);
         }
-
-        // Optional: tuning
-        //NOSONAR factory.setPreferredAuthentications("publickey,password");
-        //factory.setServerAliveInterval(60_000);  // Keep-alive
 
         // Cache sessions for reuse (critical for performance with many uploads)
         return new CachingSessionFactory<>(factory, 10);  // Cache up to 10 sessions

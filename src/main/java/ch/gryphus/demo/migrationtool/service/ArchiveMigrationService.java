@@ -1,10 +1,8 @@
 package ch.gryphus.demo.migrationtool.service;
 
 import ch.gryphus.demo.migrationtool.config.SftpTargetConfig;
-import ch.gryphus.demo.migrationtool.domain.ArchivalMetadata;
-import ch.gryphus.demo.migrationtool.domain.MigrationContext;
-import ch.gryphus.demo.migrationtool.domain.SourceMetadata;
-import ch.gryphus.demo.migrationtool.domain.TiffPage;
+import ch.gryphus.demo.migrationtool.domain.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +26,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
@@ -47,6 +46,8 @@ public class ArchiveMigrationService {
     public void migrateDocument(String docId) throws NoSuchAlgorithmException, IOException {
         var ctx = new MigrationContext(docId);
 
+        Path zipPath = null;
+        Path pdfPath = null;
         try {
             // 1. Metadata + payload
             var meta = restClient.get().uri("/documents/{id}/metadata", docId).retrieve().body(SourceMetadata.class);
@@ -55,46 +56,67 @@ public class ArchiveMigrationService {
             ctx.setPayloadHash(sha256(payload));
 
             // 2. Extract pages
-            List<TiffPage> pages = extractPages(payload, ctx);
+            List<TiffPage> pages = extractTiffPages(payload, ctx);
 
             // 3. Chain ZIP
-            Path zip = createChainZip(docId, pages, meta, ctx);
-            ctx.setZipHash(sha256(zip));
+            zipPath = createChainZip(docId, pages, meta, ctx);
+            ctx.setZipHash(sha256(zipPath));
 
             // 4. PDF
-            Path pdf = mergeTiffToPdf(pages, docId);
-            ctx.setPdfHash(sha256(pdf));
+            pdfPath = mergeTiffToPdf(pages, docId);
+            ctx.setPdfHash(sha256(pdfPath));
 
             // 5. XML metadata
-            String xml = xmlMapper.writeValueAsString(buildXml(meta, ctx));
+            String xml = xmlMapper.writeValueAsString(buildXml(Objects.requireNonNull(meta), ctx));
 
             // 6. SFTP upload
             String folder = sftpCfg.getRemoteDirectory() + "/" + docId;
+            Path finalZipPath = zipPath;
+            Path finalPdfPath = pdfPath;
             sftp.execute(s -> {
                 s.mkdir(folder);
-                s.write(Files.newInputStream(zip.toFile().toPath()), folder + "/" + docId + "_chain.zip");
-                s.write(Files.newInputStream(pdf.toFile().toPath()), folder + "/" + docId + ".pdf");
+                s.write(Files.newInputStream(finalZipPath.toFile().toPath()), folder + "/" + docId + "_chain.zipPath");
+                s.write(Files.newInputStream(finalPdfPath.toFile().toPath()), folder + "/" + docId + ".pdf");
                 s.write(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), folder + "/" + docId + "_meta.xml");
                 return null;
             });
 
-            log.info("Done {} | zip={} | pdf={}", docId, ctx.getZipHash(), ctx.getPdfHash());
+            log.info("Done {} | zipPath={} | pdf={}", docId, ctx.getZipHash(), ctx.getPdfHash());
 
         } catch (Exception e) {
             log.error("Failed {}", docId, e);
             throw e;
+        } finally {
+            // Cleanup temporary files – always try to delete, even on failure
+            if (zipPath != null) {
+                try {
+                    Files.deleteIfExists(zipPath);
+                    log.debug("Deleted temp ZIP: {}", zipPath);
+                } catch (IOException e) {
+                    log.warn("Failed to delete temp ZIP {}: {}", zipPath, e.getMessage());
+                }
+            }
+
+            if (pdfPath != null) {
+                try {
+                    Files.deleteIfExists(pdfPath);
+                    log.debug("Deleted temp PDF: {}", pdfPath);
+                } catch (IOException e) {
+                    log.warn("Failed to delete temp PDF {}: {}", pdfPath, e.getMessage());
+                }
+            }
         }
     }
 
-    private String sha256(Path path) throws IOException, NoSuchAlgorithmException {
+    String sha256(Path path) throws IOException, NoSuchAlgorithmException {
         return sha256(Files.readAllBytes(path));
     }
 
-    private String sha256(byte[] data) throws NoSuchAlgorithmException {
+    String sha256(byte[] data) throws NoSuchAlgorithmException {
         return Hex.encodeHexString(MessageDigest.getInstance("SHA-256").digest(data));
     }
 
-    private List<TiffPage> extractPages(byte[] payload, MigrationContext ctx) throws IOException, NoSuchAlgorithmException {
+    private List<TiffPage> extractTiffPages(byte[] payload, MigrationContext ctx) throws IOException, NoSuchAlgorithmException {
         List<TiffPage> pages = new ArrayList<>();
 
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
@@ -111,11 +133,57 @@ public class ArchiveMigrationService {
         return pages;
     }
 
-    private Path createChainZip(String id, List<TiffPage> pages, SourceMetadata meta, MigrationContext ctx) {
-        return null;
+    public Path createChainZip(String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
+            throws IOException, NoSuchAlgorithmException {
+
+        Path zipPath = Files.createTempFile(docId + "_chain", ".zip");
+
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
+
+            // 1. Add all TIFF pages
+            for (int i = 0; i < pages.size(); i++) {
+                TiffPage page = pages.get(i);
+                String entryName = String.format("page-%03d_%s", i + 1, page.name());
+
+                zos.putNextEntry(new ZipEntry(entryName));
+                zos.write(page.data());
+                zos.closeEntry();
+            }
+
+            // 2. Add manifest.json
+            Map<String, Object> manifest = new LinkedHashMap<>();
+            manifest.put("docId", docId);
+            manifest.put("timestamp", Instant.now().toString());
+            manifest.put("pageCount", pages.size());
+            manifest.put("pageHashes", ctx.getPageHashes());
+            manifest.put("payloadHash", ctx.getPayloadHash());
+
+            // optional: snapshot of source metadata
+            if (sourceMetadata != null) {
+                manifest.put("sourceMetadata", Map.of(
+                        "docId", sourceMetadata.getDocId(),
+                        "title", sourceMetadata.getTitle(),
+                        "creationDate", sourceMetadata.getCreationDate(),
+                        "clientId", sourceMetadata.getClientId()
+                ));
+            }
+
+            String manifestJson = new ObjectMapper().writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(manifest);
+
+            zos.putNextEntry(new ZipEntry("manifest.json"));
+            zos.write(manifestJson.getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
+        }
+
+        // Optional: log final hash for audit trail
+        String zipHash = sha256(zipPath);
+        log.info("Chain ZIP created: {} | hash = {}", zipPath.getFileName(), zipHash);
+
+        return zipPath;
     }
 
-    private Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
+    Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
         Path pdf = Path.of("/tmp/" + docId + ".pdf");
         try (var doc = new PDDocument()) {
             for (var page : pages) {
@@ -132,8 +200,33 @@ public class ArchiveMigrationService {
         return pdf;
     }
 
-    private ArchivalMetadata buildXml(SourceMetadata meta, MigrationContext ctx) {
-        return new ArchivalMetadata();
+    public ArchivalMetadata buildXml(SourceMetadata sourceMetadata, MigrationContext ctx) {
+        ArchivalMetadata metadata = new ArchivalMetadata();
+
+        // Core document info
+        metadata.setDocumentId(ctx.getDocId());
+        metadata.setTitle(sourceMetadata.getTitle() != null ? sourceMetadata.getTitle() : "Untitled Document");
+        metadata.setCreationDate(sourceMetadata.getCreationDate());
+        metadata.setClientId(sourceMetadata.getClientId());
+        metadata.setDocumentType(sourceMetadata.getDocumentType());
+        metadata.setPageCount(ctx.getPageHashes().size());
+
+        // Integrity / chain of custody
+        metadata.setPayloadHash(ctx.getPayloadHash());
+        metadata.setZipHash(ctx.getZipHash());
+        metadata.setPdfHash(ctx.getPdfHash());
+
+        // Migration provenance
+        MigrationProvenance provenance = new MigrationProvenance();
+        provenance.setMigrationTimestamp(Instant.now().toString());
+        provenance.setToolVersion("1.0.0");           // or read from pom.properties / build info
+        provenance.setOperator("migration-service");  // or System.getProperty("user.name")
+        provenance.setPageHashes(ctx.getPageHashes()); // Map<String, String> filename → hash
+
+        metadata.setProvenance(provenance);
+
+        metadata.setCustomFields(Map.of("sourceSystem", "legacy-archive-v1"));
+        return metadata;
     }
     
     public List<TiffPage> unzipTiffPages(byte[] zipBytes) throws IOException {
@@ -159,10 +252,18 @@ public class ArchiveMigrationService {
         return pages;
     }
 
-    public Path zipPages(String s, List<byte[]> fakePages, Object o) {
-        return null;
-    }
-
-    public void migrate(String docId) {
+    public Path zipPages(String id, List<byte[]> pages, Map m) throws IOException {
+        var p = Path.of("/tmp/" + id + "-c.zip");
+        try (var zos = new ZipOutputStream(Files.newOutputStream(p))) {
+            for (int i = 0; i < pages.size(); i++) {
+                zos.putNextEntry(new ZipEntry("p" + (i+1) + ".tif"));
+                zos.write(pages.get(i));
+                zos.closeEntry();
+            }
+            zos.putNextEntry(new ZipEntry("meta.json"));
+            zos.write(new ObjectMapper().writeValueAsBytes(m));
+            zos.closeEntry();
+        }
+        return p;
     }
 }

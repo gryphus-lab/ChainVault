@@ -1,27 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/jobrunr
+    username: ${JOBRUNR_USERNAME}
+    password: ${JOBRUNR_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format-sql: true
+      show-sql: true
+
 jobrunr:
   dashboard:
     enabled: true
-    username: admin
-    password: ${JOBRUNR_PW:change-me}
   background-job-server:
+    enabled: true
     worker-count: 4
-  miscellaneous:
-    background-job-server-delete-succeeded-jobs-after: 7d
 
 target:
   sftp:
-    host: sftp.target-archive.ch
+    host: localhost
     port: 22
     username: migration_user
     password: ${SFTP_PASSWORD:}
     private-key-path: /run/secrets/id_rsa
     known-hosts: /run/secrets/known_hosts
-    remote-directory: /incoming/migration/${YEAR}/${MONTH}
+    remote-directory: /incoming/migration/
 
 source:
   api:
     base-url: http://fake-source-api:9090
-    token: ${SOURCE_API_TOKEN:}
+    token: dummy-for-test
 migration:
   temp-dir: /tmp/migration-${random.uuid}
   chunk-size-for-inventory: 500   # when fetching lists
