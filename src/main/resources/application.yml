@@ -12,13 +12,6 @@ spring:
         format-sql: true
       show-sql: true
 
-jobrunr:
-  dashboard:
-    enabled: true
-  background-job-server:
-    enabled: true
-    worker-count: 4
-
 target:
   sftp:
     host: localhost

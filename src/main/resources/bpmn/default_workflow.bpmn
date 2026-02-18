@@ -1,333 +1,275 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:drools="http://www.jboss.org/drools" id="_QcC4sO74ED695p3eTmvxOQ" targetNamespace="http://www.omg.org/bpmn20" exporter="Camunda Modeler" exporterVersion="5.44.0" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd http://www.omg.org/spec/DD/20100524/DC DC.xsd http://www.omg.org/spec/DD/20100524/DI DI.xsd ">
-  <bpmn2:itemDefinition id="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_InMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_OutMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_7AEBCB87-0E79-49A3-9BBC-44600E519244_InMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_7AEBCB87-0E79-49A3-9BBC-44600E519244_OutMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_InMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_OutMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_972750E1-BD24-4BAD-A10C-C67D34E7673B_InMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_972750E1-BD24-4BAD-A10C-C67D34E7673B_OutMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_InMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_OutMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_273BB475-4205-4449-A6E3-B1DBE9B77D49_InMessageType" structureRef="" />
-  <bpmn2:itemDefinition id="_273BB475-4205-4449-A6E3-B1DBE9B77D49_OutMessageType" structureRef="" />
-  <bpmn2:message id="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_InMessage" itemRef="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_InMessageType" />
-  <bpmn2:message id="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_OutMessage" itemRef="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_OutMessageType" />
-  <bpmn2:interface id="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_ServiceInterface" name="" implementationRef="">
-    <bpmn2:operation id="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_ServiceOperation" name="" implementationRef="">
-      <bpmn2:inMessageRef>_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_InMessage</bpmn2:inMessageRef>
-      <bpmn2:outMessageRef>_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_OutMessage</bpmn2:outMessageRef>
-    </bpmn2:operation>
-  </bpmn2:interface>
-  <bpmn2:message id="_7AEBCB87-0E79-49A3-9BBC-44600E519244_InMessage" itemRef="_7AEBCB87-0E79-49A3-9BBC-44600E519244_InMessageType" />
-  <bpmn2:message id="_7AEBCB87-0E79-49A3-9BBC-44600E519244_OutMessage" itemRef="_7AEBCB87-0E79-49A3-9BBC-44600E519244_OutMessageType" />
-  <bpmn2:interface id="_7AEBCB87-0E79-49A3-9BBC-44600E519244_ServiceInterface" name="" implementationRef="">
-    <bpmn2:operation id="_7AEBCB87-0E79-49A3-9BBC-44600E519244_ServiceOperation" name="" implementationRef="">
-      <bpmn2:inMessageRef>_7AEBCB87-0E79-49A3-9BBC-44600E519244_InMessage</bpmn2:inMessageRef>
-      <bpmn2:outMessageRef>_7AEBCB87-0E79-49A3-9BBC-44600E519244_OutMessage</bpmn2:outMessageRef>
-    </bpmn2:operation>
-  </bpmn2:interface>
-  <bpmn2:message id="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_InMessage" itemRef="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_InMessageType" />
-  <bpmn2:message id="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_OutMessage" itemRef="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_OutMessageType" />
-  <bpmn2:interface id="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_ServiceInterface" name="" implementationRef="">
-    <bpmn2:operation id="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_ServiceOperation" name="" implementationRef="">
-      <bpmn2:inMessageRef>_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_InMessage</bpmn2:inMessageRef>
-      <bpmn2:outMessageRef>_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_OutMessage</bpmn2:outMessageRef>
-    </bpmn2:operation>
-  </bpmn2:interface>
-  <bpmn2:message id="_972750E1-BD24-4BAD-A10C-C67D34E7673B_InMessage" itemRef="_972750E1-BD24-4BAD-A10C-C67D34E7673B_InMessageType" />
-  <bpmn2:message id="_972750E1-BD24-4BAD-A10C-C67D34E7673B_OutMessage" itemRef="_972750E1-BD24-4BAD-A10C-C67D34E7673B_OutMessageType" />
-  <bpmn2:interface id="_972750E1-BD24-4BAD-A10C-C67D34E7673B_ServiceInterface" name="" implementationRef="">
-    <bpmn2:operation id="_972750E1-BD24-4BAD-A10C-C67D34E7673B_ServiceOperation" name="" implementationRef="">
-      <bpmn2:inMessageRef>_972750E1-BD24-4BAD-A10C-C67D34E7673B_InMessage</bpmn2:inMessageRef>
-      <bpmn2:outMessageRef>_972750E1-BD24-4BAD-A10C-C67D34E7673B_OutMessage</bpmn2:outMessageRef>
-    </bpmn2:operation>
-  </bpmn2:interface>
-  <bpmn2:message id="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_InMessage" itemRef="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_InMessageType" />
-  <bpmn2:message id="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_OutMessage" itemRef="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_OutMessageType" />
-  <bpmn2:interface id="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_ServiceInterface" name="" implementationRef="">
-    <bpmn2:operation id="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_ServiceOperation" name="" implementationRef="">
-      <bpmn2:inMessageRef>_7105ED56-8732-4578-8A91-8B3E4A5FEB29_InMessage</bpmn2:inMessageRef>
-      <bpmn2:outMessageRef>_7105ED56-8732-4578-8A91-8B3E4A5FEB29_OutMessage</bpmn2:outMessageRef>
-    </bpmn2:operation>
-  </bpmn2:interface>
-  <bpmn2:message id="_273BB475-4205-4449-A6E3-B1DBE9B77D49_InMessage" itemRef="_273BB475-4205-4449-A6E3-B1DBE9B77D49_InMessageType" />
-  <bpmn2:message id="_273BB475-4205-4449-A6E3-B1DBE9B77D49_OutMessage" itemRef="_273BB475-4205-4449-A6E3-B1DBE9B77D49_OutMessageType" />
-  <bpmn2:interface id="_273BB475-4205-4449-A6E3-B1DBE9B77D49_ServiceInterface" name="" implementationRef="">
-    <bpmn2:operation id="_273BB475-4205-4449-A6E3-B1DBE9B77D49_ServiceOperation" name="" implementationRef="">
-      <bpmn2:inMessageRef>_273BB475-4205-4449-A6E3-B1DBE9B77D49_InMessage</bpmn2:inMessageRef>
-      <bpmn2:outMessageRef>_273BB475-4205-4449-A6E3-B1DBE9B77D49_OutMessage</bpmn2:outMessageRef>
-    </bpmn2:operation>
-  </bpmn2:interface>
-  <bpmn2:collaboration id="_D157198E-F906-44A6-9224-B74A1D1864B8" name="Default Collaboration">
-    <bpmn2:participant id="_EEC23686-08D5-43DF-B3E5-C56CA462A747" name="Pool Participant" processRef="document_migration" />
-  </bpmn2:collaboration>
-  <bpmn2:process id="document_migration" name="document-migration" processType="Public" isExecutable="true" drools:packageName="com.example" drools:version="1.0" drools:adHoc="false">
-    <bpmn2:laneSet>
-      <bpmn2:lane id="_46E10709-6EBE-48BD-A852-D1E84725CAED" name="Orchestration">
-        <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue>Orchestration</drools:metaValue>
-          </drools:metaData>
-        </bpmn2:extensionElements>
-        <bpmn2:flowNodeRef>_273BB475-4205-4449-A6E3-B1DBE9B77D49</bpmn2:flowNodeRef>
-        <bpmn2:flowNodeRef>_7105ED56-8732-4578-8A91-8B3E4A5FEB29</bpmn2:flowNodeRef>
-        <bpmn2:flowNodeRef>_972750E1-BD24-4BAD-A10C-C67D34E7673B</bpmn2:flowNodeRef>
-        <bpmn2:flowNodeRef>_DF403892-D488-4C25-B030-7817C07C7F8D</bpmn2:flowNodeRef>
-        <bpmn2:flowNodeRef>StartEvent_1</bpmn2:flowNodeRef>
-        <bpmn2:flowNodeRef>EndEvent_1</bpmn2:flowNodeRef>
-      </bpmn2:lane>
-    </bpmn2:laneSet>
-    <bpmn2:sequenceFlow id="_B22EB967-325A-4765-A217-F09D4C21030C" sourceRef="_DF403892-D488-4C25-B030-7817C07C7F8D" targetRef="_273BB475-4205-4449-A6E3-B1DBE9B77D49" />
-    <bpmn2:sequenceFlow id="_508DFBFB-6A0C-4688-BC94-DC0CBFA9B270" sourceRef="_7105ED56-8732-4578-8A91-8B3E4A5FEB29" targetRef="_DF403892-D488-4C25-B030-7817C07C7F8D" />
-    <bpmn2:sequenceFlow id="_406FEFB2-F3BE-49EA-A47C-CF3B7E991510" sourceRef="_972750E1-BD24-4BAD-A10C-C67D34E7673B" targetRef="_7105ED56-8732-4578-8A91-8B3E4A5FEB29" />
-    <bpmn2:sequenceFlow id="_326CE3B4-522F-479C-A0A1-E797E1DF64AD" sourceRef="StartEvent_1" targetRef="_972750E1-BD24-4BAD-A10C-C67D34E7673B" />
-    <bpmn2:sequenceFlow id="_C378D722-8D36-42BC-8B62-C6981BEACACD" sourceRef="_273BB475-4205-4449-A6E3-B1DBE9B77D49" targetRef="EndEvent_1">
-      <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
-      </bpmn2:extensionElements>
-    </bpmn2:sequenceFlow>
-    <bpmn2:serviceTask id="_273BB475-4205-4449-A6E3-B1DBE9B77D49" name="Send" implementation="Java" operationRef="_273BB475-4205-4449-A6E3-B1DBE9B77D49_ServiceOperation" drools:serviceimplementation="Java" drools:serviceinterface="" drools:serviceoperation="">
-      <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Send</drools:metaValue>
-        </drools:metaData>
-      </bpmn2:extensionElements>
-      <bpmn2:incoming>_B22EB967-325A-4765-A217-F09D4C21030C</bpmn2:incoming>
-      <bpmn2:outgoing>_C378D722-8D36-42BC-8B62-C6981BEACACD</bpmn2:outgoing>
-    </bpmn2:serviceTask>
-    <bpmn2:serviceTask id="_7105ED56-8732-4578-8A91-8B3E4A5FEB29" name="Sign" implementation="Java" operationRef="_7105ED56-8732-4578-8A91-8B3E4A5FEB29_ServiceOperation" drools:serviceimplementation="Java" drools:serviceinterface="" drools:serviceoperation="">
-      <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Sign</drools:metaValue>
-        </drools:metaData>
-      </bpmn2:extensionElements>
-      <bpmn2:incoming>_406FEFB2-F3BE-49EA-A47C-CF3B7E991510</bpmn2:incoming>
-      <bpmn2:outgoing>_508DFBFB-6A0C-4688-BC94-DC0CBFA9B270</bpmn2:outgoing>
-    </bpmn2:serviceTask>
-    <bpmn2:startEvent id="StartEvent_1" name="Start">
-      <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Start</drools:metaValue>
-        </drools:metaData>
-      </bpmn2:extensionElements>
-      <bpmn2:outgoing>_326CE3B4-522F-479C-A0A1-E797E1DF64AD</bpmn2:outgoing>
-    </bpmn2:startEvent>
-    <bpmn2:serviceTask id="_972750E1-BD24-4BAD-A10C-C67D34E7673B" name="Extract" implementation="Java" operationRef="_972750E1-BD24-4BAD-A10C-C67D34E7673B_ServiceOperation" drools:serviceimplementation="Java" drools:serviceinterface="" drools:serviceoperation="">
-      <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Extract</drools:metaValue>
-        </drools:metaData>
-      </bpmn2:extensionElements>
-      <bpmn2:incoming>_326CE3B4-522F-479C-A0A1-E797E1DF64AD</bpmn2:incoming>
-      <bpmn2:outgoing>_406FEFB2-F3BE-49EA-A47C-CF3B7E991510</bpmn2:outgoing>
-    </bpmn2:serviceTask>
-    <bpmn2:endEvent id="EndEvent_1" name="End">
-      <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>End</drools:metaValue>
-        </drools:metaData>
-      </bpmn2:extensionElements>
-      <bpmn2:incoming>_C378D722-8D36-42BC-8B62-C6981BEACACD</bpmn2:incoming>
-    </bpmn2:endEvent>
-    <bpmn2:adHocSubProcess id="_DF403892-D488-4C25-B030-7817C07C7F8D" name="Assemble" ordering="Sequential">
-      <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Assemble</drools:metaValue>
-        </drools:metaData>
-      </bpmn2:extensionElements>
-      <bpmn2:incoming>_508DFBFB-6A0C-4688-BC94-DC0CBFA9B270</bpmn2:incoming>
-      <bpmn2:outgoing>_B22EB967-325A-4765-A217-F09D4C21030C</bpmn2:outgoing>
-      <bpmn2:sequenceFlow id="_3B282EBD-9B39-4AB1-BE73-86D37D11A067" sourceRef="_7AEBCB87-0E79-49A3-9BBC-44600E519244" targetRef="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93" />
-      <bpmn2:sequenceFlow id="_EDF2F1FE-0886-410D-86E9-D3CD3EFA882C" sourceRef="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED" targetRef="_7AEBCB87-0E79-49A3-9BBC-44600E519244">
-        <bpmn2:extensionElements>
-          <drools:metaData name="isAutoConnection.target">
-            <drools:metaValue>true</drools:metaValue>
-          </drools:metaData>
-        </bpmn2:extensionElements>
-      </bpmn2:sequenceFlow>
-      <bpmn2:serviceTask id="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93" name="Transform" implementation="Java" operationRef="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93_ServiceOperation" drools:serviceimplementation="Java" drools:serviceinterface="" drools:serviceoperation="">
-        <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue>Transform</drools:metaValue>
-          </drools:metaData>
-        </bpmn2:extensionElements>
-        <bpmn2:incoming>_3B282EBD-9B39-4AB1-BE73-86D37D11A067</bpmn2:incoming>
-      </bpmn2:serviceTask>
-      <bpmn2:serviceTask id="_7AEBCB87-0E79-49A3-9BBC-44600E519244" name="Merge" implementation="Java" operationRef="_7AEBCB87-0E79-49A3-9BBC-44600E519244_ServiceOperation" drools:serviceimplementation="Java" drools:serviceinterface="" drools:serviceoperation="">
-        <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue>Merge</drools:metaValue>
-          </drools:metaData>
-        </bpmn2:extensionElements>
-        <bpmn2:incoming>_EDF2F1FE-0886-410D-86E9-D3CD3EFA882C</bpmn2:incoming>
-        <bpmn2:outgoing>_3B282EBD-9B39-4AB1-BE73-86D37D11A067</bpmn2:outgoing>
-      </bpmn2:serviceTask>
-      <bpmn2:serviceTask id="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED" name="Prepare" implementation="Java" operationRef="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_ServiceOperation" drools:serviceimplementation="Java" drools:serviceinterface="" drools:serviceoperation="">
-        <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue>Prepare</drools:metaValue>
-          </drools:metaData>
-        </bpmn2:extensionElements>
-        <bpmn2:outgoing>_EDF2F1FE-0886-410D-86E9-D3CD3EFA882C</bpmn2:outgoing>
-      </bpmn2:serviceTask>
-      <bpmn2:completionCondition xsi:type="bpmn2:tFormalExpression" language="http://www.mvel.org/2.0">autocomplete</bpmn2:completionCondition>
-    </bpmn2:adHocSubProcess>
-  </bpmn2:process>
-  <bpmndi:BPMNDiagram>
-    <bpmndi:BPMNPlane bpmnElement="document_migration">
-      <bpmndi:BPMNShape id="shape__46E10709-6EBE-48BD-A852-D1E84725CAED" bpmnElement="_46E10709-6EBE-48BD-A852-D1E84725CAED" isHorizontal="true">
-        <dc:Bounds x="159" y="83" width="1465" height="595" />
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_document_migration" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0">
+  <bpmn:error id="Error_ExtractionFailed" name="Extraction Failed" errorCode="EXTRACTION_FAILED" />
+  <bpmn:error id="Error_AssemblyFailed" name="Assembly Failed" errorCode="ASSEMBLY_FAILED" />
+  <bpmn:error id="Error_UploadFailed" name="Upload Failed" errorCode="UPLOAD_FAILED" />
+  <bpmn:process id="chainvault" name="ChainVault Process" isExecutable="true">
+    <bpmn:laneSet>
+      <bpmn:lane id="Lane_Orchestration" name="Orchestration">
+        <bpmn:flowNodeRef>Task_Extract</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Sign</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Send</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HandleError</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubProcess_Assemble</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Start_Assemble</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Assemble</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Success</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>BoundaryError_Sign</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>BoundaryError_Extract</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>BoundaryError_Send</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>BoundaryError_Assemble</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Failed</bpmn:flowNodeRef>
+        <bpmn:childLaneSet id="LaneSet_1njjeca" />
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_1" name="Start Migration">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Extract" name="Extract &#38; Hash">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="extract-and-hash" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryError_Extract" name="Extraction Error" attachedToRef="Task_Extract">
+      <bpmn:outgoing>Flow_ErrorExtract</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_ExtractionFailed" />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_Sign" name="Sign">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="sign-document" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryError_Sign" name="Sign Error" attachedToRef="Task_Sign">
+      <bpmn:outgoing>Flow_ErrorGeneral</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:subProcess id="SubProcess_Assemble" name="Assemble">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:startEvent id="Start_Assemble" name="Assemble Start">
+        <bpmn:outgoing>Flow_Prepare</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="Task_Prepare" name="Prepare">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="prepare-files" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_Prepare</bpmn:incoming>
+        <bpmn:outgoing>Flow_Merge</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="Task_Merge" name="Merge">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="merge-to-pdf" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_Merge</bpmn:incoming>
+        <bpmn:outgoing>Flow_Transform</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="Task_Transform" name="Transform">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="transform-metadata" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_Transform</bpmn:incoming>
+        <bpmn:outgoing>Flow_AssembleEnd</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:endEvent id="End_Assemble" name="Assemble Done">
+        <bpmn:incoming>Flow_AssembleEnd</bpmn:incoming>
+      </bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="BoundaryError_Assemble" name="Assembly Error" attachedToRef="SubProcess_Assemble">
+      <bpmn:outgoing>Flow_ErrorAssemble</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_AssemblyFailed" />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_Send" name="Send / Upload">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="upload-sftp" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Success</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryError_Send" name="Upload Error" attachedToRef="Task_Send">
+      <bpmn:outgoing>Flow_ErrorSend</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_UploadFailed" />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_HandleError" name="Handle Error (Log/Notify)">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="handle-error" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ErrorExtract</bpmn:incoming>
+      <bpmn:incoming>Flow_ErrorGeneral</bpmn:incoming>
+      <bpmn:incoming>Flow_ErrorAssemble</bpmn:incoming>
+      <bpmn:incoming>Flow_ErrorSend</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToFailedEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_Success" name="Migration Completed">
+      <bpmn:incoming>Flow_Success</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_Failed" name="Migration Failed">
+      <bpmn:incoming>Flow_ToFailedEnd</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Extract" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Extract" targetRef="Task_Sign" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Sign" targetRef="SubProcess_Assemble" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="SubProcess_Assemble" targetRef="Task_Send" />
+    <bpmn:sequenceFlow id="Flow_Success" sourceRef="Task_Send" targetRef="EndEvent_Success" />
+    <bpmn:sequenceFlow id="Flow_ErrorExtract" sourceRef="BoundaryError_Extract" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_ErrorGeneral" sourceRef="BoundaryError_Sign" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_ErrorAssemble" sourceRef="BoundaryError_Assemble" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_ErrorSend" sourceRef="BoundaryError_Send" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_ToFailedEnd" sourceRef="Task_HandleError" targetRef="EndEvent_Failed" />
+    <bpmn:sequenceFlow id="Flow_Prepare" sourceRef="Start_Assemble" targetRef="Task_Prepare" />
+    <bpmn:sequenceFlow id="Flow_Merge" sourceRef="Task_Prepare" targetRef="Task_Merge" />
+    <bpmn:sequenceFlow id="Flow_Transform" sourceRef="Task_Merge" targetRef="Task_Transform" />
+    <bpmn:sequenceFlow id="Flow_AssembleEnd" sourceRef="Task_Transform" targetRef="End_Assemble" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="chainvault">
+      <bpmndi:BPMNShape id="Lane_Orchestration_di" bpmnElement="Lane_Orchestration" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1390" height="540" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape__273BB475-4205-4449-A6E3-B1DBE9B77D49" bpmnElement="_273BB475-4205-4449-A6E3-B1DBE9B77D49">
-        <dc:Bounds x="1317" y="440" width="154" height="102" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape__7105ED56-8732-4578-8A91-8B3E4A5FEB29" bpmnElement="_7105ED56-8732-4578-8A91-8B3E4A5FEB29">
-        <dc:Bounds x="284" y="312" width="137" height="100" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape_StartEvent_1" bpmnElement="StartEvent_1">
-        <dc:Bounds x="182" y="158" width="56" height="56" />
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="240" y="280" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="198" y="214" width="24" height="14" />
+          <dc:Bounds x="222" y="316" width="72" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape__972750E1-BD24-4BAD-A10C-C67D34E7673B" bpmnElement="_972750E1-BD24-4BAD-A10C-C67D34E7673B">
-        <dc:Bounds x="284" y="137" width="134" height="101" />
+      <bpmndi:BPMNShape id="Task_Extract_di" bpmnElement="Task_Extract">
+        <dc:Bounds x="340" y="260" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape_EndEvent_1" bpmnElement="EndEvent_1">
-        <dc:Bounds x="1545" y="463" width="56" height="56" />
+      <bpmndi:BPMNShape id="Task_Sign_di" bpmnElement="Task_Sign">
+        <dc:Bounds x="500" y="260" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Send_di" bpmnElement="Task_Send">
+        <dc:Bounds x="1288" y="258" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HandleError_di" bpmnElement="Task_HandleError">
+        <dc:Bounds x="860" y="440" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Success_di" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="1460" y="280" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1563" y="519" width="20" height="14" />
+          <dc:Bounds x="1451" y="316" width="54" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape__DF403892-D488-4C25-B030-7817C07C7F8D" bpmnElement="_DF403892-D488-4C25-B030-7817C07C7F8D" isExpanded="true">
-        <dc:Bounds x="532" y="382" width="649" height="217" />
+      <bpmndi:BPMNShape id="EndEvent_Failed_di" bpmnElement="EndEvent_Failed">
+        <dc:Bounds x="912" y="552" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="891" y="588" width="79" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape__B879D2D5-78BA-42AA-B7AE-DC37D9820B93" bpmnElement="_B879D2D5-78BA-42AA-B7AE-DC37D9820B93">
-        <dc:Bounds x="993" y="447" width="154" height="102" />
+      <bpmndi:BPMNShape id="SubProcess_Assemble_di" bpmnElement="SubProcess_Assemble" isExpanded="true">
+        <dc:Bounds x="660" y="220" width="600" height="180" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape__7AEBCB87-0E79-49A3-9BBC-44600E519244" bpmnElement="_7AEBCB87-0E79-49A3-9BBC-44600E519244">
-        <dc:Bounds x="796" y="447" width="154" height="102" />
+      <bpmndi:BPMNShape id="Start_Assemble_di" bpmnElement="Start_Assemble">
+        <dc:Bounds x="700" y="280" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="681" y="316" width="75" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="shape__B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED" bpmnElement="_B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED">
-        <dc:Bounds x="581" y="447" width="154" height="102" />
+      <bpmndi:BPMNShape id="Task_Prepare_di" bpmnElement="Task_Prepare">
+        <dc:Bounds x="780" y="260" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="edge_shape__7AEBCB87-0E79-49A3-9BBC-44600E519244_to_shape__B879D2D5-78BA-42AA-B7AE-DC37D9820B93" bpmnElement="_3B282EBD-9B39-4AB1-BE73-86D37D11A067">
-        <di:waypoint x="950" y="500" />
-        <di:waypoint x="972" y="500" />
-        <di:waypoint x="972" y="499" />
-        <di:waypoint x="993" y="499" />
+      <bpmndi:BPMNShape id="Task_Merge_di" bpmnElement="Task_Merge">
+        <dc:Bounds x="920" y="260" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Transform_di" bpmnElement="Task_Transform">
+        <dc:Bounds x="1060" y="260" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Assemble_di" bpmnElement="End_Assemble">
+        <dc:Bounds x="1200" y="280" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1179" y="316" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryError_Sign_di" bpmnElement="BoundaryError_Sign">
+        <dc:Bounds x="560" y="320" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="553" y="356" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryError_Extract_di" bpmnElement="BoundaryError_Extract">
+        <dc:Bounds x="400" y="320" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="380" y="356" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryError_Send_di" bpmnElement="BoundaryError_Send">
+        <dc:Bounds x="1348" y="318" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1335" y="354" width="63" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryError_Assemble_di" bpmnElement="BoundaryError_Assemble">
+        <dc:Bounds x="1216" y="380" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1196" y="416" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="276" y="298" />
+        <di:waypoint x="340" y="300" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="edge_shape__B47DD7FB-1998-42D4-9D4D-7CD52ADA40ED_to_shape__7AEBCB87-0E79-49A3-9BBC-44600E519244" bpmnElement="_EDF2F1FE-0886-410D-86E9-D3CD3EFA882C">
-        <di:waypoint x="735" y="498" />
-        <di:waypoint x="796" y="498" />
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="440" y="300" />
+        <di:waypoint x="500" y="300" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="edge_shape__DF403892-D488-4C25-B030-7817C07C7F8D_to_shape__273BB475-4205-4449-A6E3-B1DBE9B77D49" bpmnElement="_B22EB967-325A-4765-A217-F09D4C21030C">
-        <di:waypoint x="1181" y="490" />
-        <di:waypoint x="1317" y="490" />
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="600" y="300" />
+        <di:waypoint x="660" y="300" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="edge_shape__273BB475-4205-4449-A6E3-B1DBE9B77D49_to_shape_EndEvent_1" bpmnElement="_C378D722-8D36-42BC-8B62-C6981BEACACD">
-        <di:waypoint x="1471" y="491" />
-        <di:waypoint x="1545" y="491" />
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="1260" y="298" />
+        <di:waypoint x="1288" y="298" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="edge_shape__972750E1-BD24-4BAD-A10C-C67D34E7673B_to_shape__7105ED56-8732-4578-8A91-8B3E4A5FEB29" bpmnElement="_406FEFB2-F3BE-49EA-A47C-CF3B7E991510">
-        <di:waypoint x="351" y="238" />
-        <di:waypoint x="351" y="275" />
-        <di:waypoint x="353" y="275" />
-        <di:waypoint x="353" y="312" />
+      <bpmndi:BPMNEdge id="Flow_Success_di" bpmnElement="Flow_Success">
+        <di:waypoint x="1388" y="299" />
+        <di:waypoint x="1424" y="299" />
+        <di:waypoint x="1424" y="298" />
+        <di:waypoint x="1460" y="298" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="edge_shape__7105ED56-8732-4578-8A91-8B3E4A5FEB29_to_shape__DF403892-D488-4C25-B030-7817C07C7F8D" bpmnElement="_508DFBFB-6A0C-4688-BC94-DC0CBFA9B270">
-        <di:waypoint x="352.6666666666667" y="411.46486032409183" />
-        <di:waypoint x="352.6666666666667" y="491.1870825463141" />
-        <di:waypoint x="531.7222222222222" y="491.1870825463141" />
+      <bpmndi:BPMNEdge id="Flow_ToFailedEnd_di" bpmnElement="Flow_ToFailedEnd">
+        <di:waypoint x="930" y="520" />
+        <di:waypoint x="930" y="552" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="edge_shape_StartEvent_1_to_shape__972750E1-BD24-4BAD-A10C-C67D34E7673B" bpmnElement="_326CE3B4-522F-479C-A0A1-E797E1DF64AD">
-        <di:waypoint x="238" y="190" />
-        <di:waypoint x="261" y="190" />
-        <di:waypoint x="261" y="188" />
-        <di:waypoint x="284" y="188" />
+      <bpmndi:BPMNEdge id="Flow_Prepare_di" bpmnElement="Flow_Prepare">
+        <di:waypoint x="736" y="298" />
+        <di:waypoint x="780" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Merge_di" bpmnElement="Flow_Merge">
+        <di:waypoint x="880" y="300" />
+        <di:waypoint x="920" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Transform_di" bpmnElement="Flow_Transform">
+        <di:waypoint x="1020" y="300" />
+        <di:waypoint x="1060" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AssembleEnd_di" bpmnElement="Flow_AssembleEnd">
+        <di:waypoint x="1160" y="300" />
+        <di:waypoint x="1200" y="298" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ErrorExtract_di" bpmnElement="Flow_ErrorExtract">
+        <di:waypoint x="418" y="356" />
+        <di:waypoint x="418" y="480" />
+        <di:waypoint x="860" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ErrorGeneral_di" bpmnElement="Flow_ErrorGeneral">
+        <di:waypoint x="578" y="356" />
+        <di:waypoint x="578" y="480" />
+        <di:waypoint x="860" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ErrorAssemble_di" bpmnElement="Flow_ErrorAssemble">
+        <di:waypoint x="1234" y="416" />
+        <di:waypoint x="1234" y="480" />
+        <di:waypoint x="1000" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ErrorSend_di" bpmnElement="Flow_ErrorSend">
+        <di:waypoint x="1366" y="354" />
+        <di:waypoint x="1366" y="480" />
+        <di:waypoint x="1000" y="480" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-  <bpmn2:relationship type="BPSimData">
-    <bpmn2:extensionElements>
-      <bpsim:BPSimData>
-        <bpsim:Scenario id="default" name="Simulationscenario">
-          <bpsim:ScenarioParameters />
-          <bpsim:ElementParameters elementRef="_972750E1-BD24-4BAD-A10C-C67D34E7673B">
-            <bpsim:TimeParameters>
-              <bpsim:ProcessingTime>
-                <bpsim:NormalDistribution mean="0" standardDeviation="0" />
-              </bpsim:ProcessingTime>
-            </bpsim:TimeParameters>
-            <bpsim:ResourceParameters>
-              <bpsim:Availability>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:Availability>
-              <bpsim:Quantity>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:Quantity>
-            </bpsim:ResourceParameters>
-            <bpsim:CostParameters>
-              <bpsim:UnitCost>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:UnitCost>
-            </bpsim:CostParameters>
-          </bpsim:ElementParameters>
-          <bpsim:ElementParameters elementRef="StartEvent_1">
-            <bpsim:TimeParameters>
-              <bpsim:ProcessingTime>
-                <bpsim:NormalDistribution mean="0" standardDeviation="0" />
-              </bpsim:ProcessingTime>
-            </bpsim:TimeParameters>
-          </bpsim:ElementParameters>
-          <bpsim:ElementParameters elementRef="_7105ED56-8732-4578-8A91-8B3E4A5FEB29">
-            <bpsim:TimeParameters>
-              <bpsim:ProcessingTime>
-                <bpsim:NormalDistribution mean="0" standardDeviation="0" />
-              </bpsim:ProcessingTime>
-            </bpsim:TimeParameters>
-            <bpsim:ResourceParameters>
-              <bpsim:Availability>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:Availability>
-              <bpsim:Quantity>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:Quantity>
-            </bpsim:ResourceParameters>
-            <bpsim:CostParameters>
-              <bpsim:UnitCost>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:UnitCost>
-            </bpsim:CostParameters>
-          </bpsim:ElementParameters>
-          <bpsim:ElementParameters elementRef="_273BB475-4205-4449-A6E3-B1DBE9B77D49">
-            <bpsim:TimeParameters>
-              <bpsim:ProcessingTime>
-                <bpsim:NormalDistribution mean="0" standardDeviation="0" />
-              </bpsim:ProcessingTime>
-            </bpsim:TimeParameters>
-            <bpsim:ResourceParameters>
-              <bpsim:Availability>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:Availability>
-              <bpsim:Quantity>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:Quantity>
-            </bpsim:ResourceParameters>
-            <bpsim:CostParameters>
-              <bpsim:UnitCost>
-                <bpsim:FloatingParameter value="0" />
-              </bpsim:UnitCost>
-            </bpsim:CostParameters>
-          </bpsim:ElementParameters>
-        </bpsim:Scenario>
-      </bpsim:BPSimData>
-    </bpmn2:extensionElements>
-    <bpmn2:source>_QcC4sO74ED695p3eTmvxOQ</bpmn2:source>
-    <bpmn2:target>_QcC4sO74ED695p3eTmvxOQ</bpmn2:target>
-  </bpmn2:relationship>
-</bpmn2:definitions>
+</bpmn:definitions>

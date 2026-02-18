@@ -12,7 +12,6 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
-import org.jobrunr.jobs.annotations.Job;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -42,8 +41,7 @@ public class ArchiveMigrationService {
     private final SftpTargetConfig sftpCfg;
     private final XmlMapper xmlMapper;
 
-    @Job(name = "Migrate %0")
-    public void migrateDocument(String docId) throws NoSuchAlgorithmException, IOException {
+    public void migrateDocument(String docId) {
         var ctx = new MigrationContext(docId);
 
         Path zipPath = null;
@@ -52,8 +50,6 @@ public class ArchiveMigrationService {
             // 1. Extract
             var meta = restClient.get().uri("/documents/{id}/metadata", docId).retrieve().body(SourceMetadata.class);
             byte[] payload = restClient.get().uri("/documents/{id}/payload", docId).retrieve().body(byte[].class);
-
-            // 1a. Sign
             ctx.setPayloadHash(sha256(payload));
 
             // 2. Extract pages
@@ -86,7 +82,6 @@ public class ArchiveMigrationService {
 
         } catch (IOException | NoSuchAlgorithmException e) {
             log.error("Failed {}", docId, e);
-            throw e;
         } finally {
             // Cleanup temporary files – always try to delete, even on failure
             if (zipPath != null) {

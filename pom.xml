@@ -26,11 +26,11 @@
         <url/>
     </scm>
     <properties>
-        <java.version>21</java.version>           <!-- ← changed here -->
+        <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <lombok.version>1.18.34</lombok.version>
-        <camunda.version>8.8.0</camunda.version>  <!-- or latest patch 8.8.x / 8.9.x -->
+        <camunda.version>8.8.0</camunda.version>
         <jobrunr.version>8.4.2</jobrunr.version>
     </properties>
     <dependencies>
@@ -44,9 +44,9 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId> <!-- RestClient -->
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- Camunda 8 Spring Boot Starter (replaces old Spring Zeebe SDK) -->
+        <!-- Camunda 8 Spring Boot Starter -->
         <dependency>
             <groupId>io.camunda</groupId>
             <artifactId>camunda-spring-boot-starter</artifactId>
@@ -58,12 +58,6 @@
             <artifactId>spring-boot-starter-camunda-test</artifactId>
             <version>${camunda.version}</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jobrunr</groupId>
-            <artifactId>jobrunr-spring-boot-3-starter</artifactId>
-            <version>${jobrunr.version}</version> <!-- check latest -->
         </dependency>
         <dependency>
             <groupId>org.springframework.integration</groupId>
