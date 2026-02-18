@@ -2,7 +2,6 @@ package ch.gryphus.chainvault.service;
 
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.*;
-import ch.gryphus.chainvault.domain.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;

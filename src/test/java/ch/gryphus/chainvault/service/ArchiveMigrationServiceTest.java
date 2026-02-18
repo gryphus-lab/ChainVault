@@ -18,6 +18,8 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.web.client.RestClient;
 
@@ -170,11 +172,11 @@ class ArchiveMigrationServiceTest {
         assertThat(meta.getTitle()).isNotNull(); // fail fast if setup broken
 
         List<TiffPage> pages = List.of(
-                new TiffPage("scan001.tif", "page1".getBytes()),
-                new TiffPage("scan002.tif", "page2".getBytes())
+                new TiffPage("sample1.tiff", Files.readAllBytes(Path.of("src/test/resources/tiffs/sample1.tiff"))),
+                new TiffPage("sample2.tiff", Files.readAllBytes(Path.of("src/test/resources/tiffs/sample2.tiff")))
         );
-        ctx.addPageHash("scan001.tif", "hash-page1");
-        ctx.addPageHash("scan002.tif", "hash-page2");
+        ctx.addPageHash("sample1.tiff", "hash-page1");
+        ctx.addPageHash("sample2.tiff", "hash-page2");
 
         // Act
         Path zip = service.createChainZip("DOC-TEST-001", pages, meta, ctx);
@@ -190,20 +192,19 @@ class ArchiveMigrationServiceTest {
             while ((entry = zis.getNextEntry()) != null) {
                 if (entry.getName().startsWith("page-")) {
                     tiffCount++;
-                    assertThat(zis.readAllBytes()).hasSize(5); // "page1" or "page2"
+                    assertThat(zis.readAllBytes()).hasSizeGreaterThan(5);
                 } else if ("manifest.json".equals(entry.getName())) {
                     manifestContent = new String(zis.readAllBytes());
                 }
             }
 
             assertThat(tiffCount).isEqualTo(2);
-            /*assertThat(manifestContent)
-                    .contains("\"docId\":\"DOC-TEST-001\"")
-                    .contains("\"pageCount\":2")
-                    .contains("\"pageHashes\":{")
-                    .contains("\"scan001.tif\":\"hash-page1\"")
-                    .contains("\"title\":\"Test Invoice 2026\"")
-                    .contains("\"sourceMetadata\"");*/
+            assertThat(manifestContent).isNotNull();
+            String expectedManifestContent = """
+                    {"docId":"DOC-TEST-001","pageCount":2,"pageHashes":{"sample1.tiff"\
+                    :"hash-page1"},"payloadHash":"payload-sha256-abc123","sourceMetadata":\
+                    {"docId":"DOC-TEST-001","title":"Test Invoice 2026","clientId":"CHE-123.456.789"}}""";
+            JSONAssert.assertEquals(expectedManifestContent, manifestContent, JSONCompareMode.LENIENT);
         }
     }
 
@@ -255,8 +256,8 @@ class ArchiveMigrationServiceTest {
     @Test
     void mergeTiffToPdf_shouldCreatePdfWithCorrectPageCount() throws Exception {
         List<TiffPage> pages = List.of(
-                new TiffPage("sample1.tif", Files.readAllBytes(Path.of("src/test/resources/sample1.tiff"))),
-                new TiffPage("sample2.tif", Files.readAllBytes(Path.of("src/test/resources/sample2.tiff")))
+                new TiffPage("sample1.tif", Files.readAllBytes(Path.of("src/test/resources/tiffs/sample1.tiff"))),
+                new TiffPage("sample2.tif", Files.readAllBytes(Path.of("src/test/resources/tiffs/sample2.tiff")))
         );
 
         Path pdfPath = service.mergeTiffToPdf(pages, "DOC-TEST-PDF");
