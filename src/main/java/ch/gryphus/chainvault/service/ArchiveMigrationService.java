@@ -71,7 +71,7 @@ public class ArchiveMigrationService {
             String xml = xmlMapper.writeValueAsString(buildXml(Objects.requireNonNull(meta), ctx));
 
             // 6. SFTP upload
-            String folder = sftpCfg.getRemoteDirectory() + "/" + docId;
+            String folder = "%s/%s".formatted(sftpCfg.getRemoteDirectory(), docId);
             Path finalZipPath = zipPath;
             Path finalPdfPath = pdfPath;
             sftp.execute(s -> {
@@ -137,7 +137,7 @@ public class ArchiveMigrationService {
     public Path createChainZip(String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
             throws IOException, NoSuchAlgorithmException {
 
-        Path zipPath = Files.createTempFile(docId + "_chain", ".zip");
+        Path zipPath = Files.createTempFile("%s_chain".formatted(docId), ".zip");
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
 

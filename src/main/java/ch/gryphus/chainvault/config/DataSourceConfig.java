@@ -13,8 +13,12 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class DataSourceConfig {
 
+    private final Environment environment;
+
     @Autowired
-    Environment environment;
+    public DataSourceConfig(Environment environment) {
+        this.environment = environment;
+    }
 
     @Bean
     public DataSource dataSource(){
