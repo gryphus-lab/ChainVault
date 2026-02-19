@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy Maven build artifacts
 COPY target/chainvault-0.0.1-SNAPSHOT.jar app.jar
 
-# Expose Spring Boot default port + JobRunr dashboard
+# Expose Spring Boot default port
 EXPOSE 8080
 
 # Run the application

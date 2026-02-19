@@ -31,7 +31,6 @@
         <maven.compiler.target>21</maven.compiler.target>
         <lombok.version>1.18.34</lombok.version>
         <camunda.version>8.8.0</camunda.version>
-        <jobrunr.version>8.4.2</jobrunr.version>
     </properties>
     <dependencies>
         <dependency>

@@ -8,8 +8,7 @@ services:
       dockerfile: Dockerfile
     container_name: chainvault-app
     ports:
-      - "8080:8080"
-      - "8000:8000"
+      - "8085:8080"
     environment:
       SPRING_PROFILES_ACTIVE: local
       # SFTP (from sftp-test)
@@ -22,12 +21,10 @@ services:
       # Source API (from fake-api)
       source.api.base-url: http://fake-source-api:9090
       source.api.token: dummy
-      # JobRunr (optional PostgreSQL)
+      # PostgreSQL
       spring.datasource.url: jdbc:postgresql://postgres:5432/jobrunr
       spring.datasource.username: jobrunr
       spring.datasource.password: jobrunr
-      jobrunr.background-job-server.enabled: true
-      jobrunr.dashboard.enabled: true
     depends_on:
       - sftp-test
       - fake-source-api
