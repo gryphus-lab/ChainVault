@@ -1,4 +1,7 @@
+# application.yaml
 spring:
+  application:
+    name: chainvault-document-migration
   datasource:
     url: jdbc:postgresql://localhost:5433/jobrunr
     username: ${JOBRUNR_USERNAME}
@@ -11,6 +14,41 @@ spring:
       hibernate:
         format-sql: true
       show-sql: true
+  # Server settings
+  main:
+    banner-mode: off
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+camunda:
+  client:
+    mode: self-managed
+    auth:
+      method: none
+    grpc-address: http://0.0.0.0:26500
+    rest-address: http://localhost:8082
+
+#    # Optional: Job worker defaults (can override per @ZeebeWorker)
+#    worker:
+#      max-jobs-active: 32
+#      poll-interval: 100ms
+#      request-timeout: 10s
+#      # backoff-strategy: exponential  # or fixed, linear – default is exponential
+
+    # Optional: Auto-deployment of BPMN/DMN/Forms on startup
+    deployment:
+      enabled: true
+      resources:
+        - classpath:bpmn/default_workflow.bpmn
+        # - classpath:other-process.bpmn
 
 target:
   sftp:
