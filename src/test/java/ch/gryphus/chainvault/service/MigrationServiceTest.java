@@ -61,7 +61,7 @@ class MigrationServiceTest {
 
     @Spy
     @InjectMocks
-    private MigrationService service;
+    private MigrationService migrationService;
 
     @Mock
     private ObjectMapper jsonMapper;  // used inside createChainZip
@@ -103,7 +103,7 @@ class MigrationServiceTest {
         byte[] data = "hello world".getBytes();
         String expected = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9";
 
-        String hash = service.sha256(data);
+        String hash = migrationService.sha256(data);
         assertThat(hash).isEqualTo(expected);
     }
 
@@ -112,8 +112,8 @@ class MigrationServiceTest {
         Path file = tempDir.resolve("test.txt");
         Files.writeString(file, "hello world");
 
-        String hashFromBytes = service.sha256("hello world".getBytes());
-        String hashFromPath = service.sha256(file);
+        String hashFromBytes = migrationService.sha256("hello world".getBytes());
+        String hashFromPath = migrationService.sha256(file);
 
         assertThat(hashFromPath).isEqualTo(hashFromBytes);
     }
@@ -129,7 +129,7 @@ class MigrationServiceTest {
                 "page-003.tif", "TIFF content 3"
         ));
 
-        List<TiffPage> pages = service.unzipTiffPages(zip);
+        List<TiffPage> pages = migrationService.unzipTiffPages(zip);
 
         assertThat(pages).hasSize(3);
         assertThat(pages.get(0).name()).isEqualTo("page-001.tif");
@@ -145,7 +145,7 @@ class MigrationServiceTest {
                 "page-002.tif", "TIFF2"
         ));
 
-        List<TiffPage> pages = service.unzipTiffPages(zip);
+        List<TiffPage> pages = migrationService.unzipTiffPages(zip);
 
         assertThat(pages).hasSize(2);
         assertThat(pages.get(1).name()).isEqualTo("page-002.tif");
@@ -157,7 +157,7 @@ class MigrationServiceTest {
                 "readme.txt", "no tiffs here"
         ));
 
-        assertThatThrownBy(() -> service.unzipTiffPages(zip))
+        assertThatThrownBy(() -> migrationService.unzipTiffPages(zip))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No TIFF pages found in ZIP");
     }
@@ -179,7 +179,7 @@ class MigrationServiceTest {
         ctx.addPageHash("sample2.tiff", "hash-page2");
 
         // Act
-        Path zip = service.createChainZip("DOC-TEST-001", pages, meta, ctx);
+        Path zip = migrationService.createChainZip("DOC-TEST-001", pages, meta, ctx);
 
         assertThat(Files.exists(zip)).isTrue();
 
@@ -210,7 +210,7 @@ class MigrationServiceTest {
 
     @Test
     void createChainZip_shouldFailOnNullPages() {
-        assertThatThrownBy(() -> service.createChainZip("DOC-001", null, meta, ctx))
+        assertThatThrownBy(() -> migrationService.createChainZip("DOC-001", null, meta, ctx))
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -224,7 +224,7 @@ class MigrationServiceTest {
         ctx.addPageHash("p1.tif", "h1");
         ctx.addPageHash("p2.tif", "h2");
 
-        ArchivalMetadata xml = service.buildXml(meta, ctx);
+        ArchivalMetadata xml = migrationService.buildXml(meta, ctx);
 
         assertThat(xml.getDocumentId()).isEqualTo("DOC-TEST-001");
         assertThat(xml.getTitle()).isEqualTo("Test Invoice 2026");
@@ -242,7 +242,7 @@ class MigrationServiceTest {
     void buildXml_shouldHandleMissingMetadataGracefully() {
         SourceMetadata nullMeta = new SourceMetadata(); // all fields null
 
-        ArchivalMetadata xml = service.buildXml(nullMeta, ctx);
+        ArchivalMetadata xml = migrationService.buildXml(nullMeta, ctx);
 
         assertThat(xml.getTitle()).isEqualTo("Untitled Document");
         assertThat(xml.getPageCount()).isZero();
@@ -260,7 +260,7 @@ class MigrationServiceTest {
                 new TiffPage("sample2.tif", Files.readAllBytes(Path.of("src/test/resources/tiffs/sample2.tiff")))
         );
 
-        Path pdfPath = service.mergeTiffToPdf(pages, "DOC-TEST-PDF");
+        Path pdfPath = migrationService.mergeTiffToPdf(pages, "DOC-TEST-PDF");
 
         assertThat(Files.exists(pdfPath)).isTrue();
 
@@ -274,7 +274,7 @@ class MigrationServiceTest {
 
     @Test
     void mergeTiffToPdf_shouldHandleEmptyList() throws Exception {
-        Path pdf = service.mergeTiffToPdf(List.of(), "DOC-EMPTY");
+        Path pdf = migrationService.mergeTiffToPdf(List.of(), "DOC-EMPTY");
 
         try (PDDocument doc = Loader.loadPDF(pdf.toFile())) {
             assertThat(doc.getNumberOfPages()).isZero();
@@ -292,7 +292,7 @@ class MigrationServiceTest {
         Files.createFile(fakePdf);  // or write dummy content
 
         doReturn(fakePdf)
-                .when(service)
+                .when(migrationService)
                 .mergeTiffToPdf(anyList(), anyString());
 
         // Mock RestClient chain (critical!)
@@ -309,7 +309,7 @@ class MigrationServiceTest {
         when(responseSpec.body(byte[].class)).thenReturn(fakeZipPayload);
 
         // Act
-        service.migrateDocument("DOC-HAPPY");
+        migrationService.migrateDocument("DOC-HAPPY");
 
         // Assert calls
         verify(restClient, times(2)).get();  // metadata + payload

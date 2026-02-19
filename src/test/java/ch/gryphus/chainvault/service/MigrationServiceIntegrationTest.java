@@ -8,10 +8,10 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -26,10 +26,10 @@ class MigrationServiceIntegrationTest {
 
     // PostgreSQL container with reasonable defaults
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-            .withDatabaseName("jobrunr")
-            .withUsername("jobrunr")
-            .withPassword("jobrunr");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
+            .withDatabaseName("chainvault")
+            .withUsername("chainvault")
+            .withPassword("secret");
 
     // Fake REST API (json-server with db.json)
     @Container
