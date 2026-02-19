@@ -22,7 +22,7 @@ import static org.awaitility.Awaitility.await;
 
 @SpringBootTest
 @Testcontainers
-class ArchiveMigrationServiceIntegrationTest {
+class MigrationServiceIntegrationTest {
 
     // PostgreSQL container with reasonable defaults
     @Container
@@ -70,7 +70,7 @@ class ArchiveMigrationServiceIntegrationTest {
     }
 
     @Autowired
-    private ArchiveMigrationService service;
+    private MigrationService service;
 
     @Disabled("TODO: To be checked")
     @Test

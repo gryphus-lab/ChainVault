@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
-class ArchiveMigrationServiceTest {
+class MigrationServiceTest {
     @Mock
     private RestClient restClient;
 
@@ -61,7 +61,7 @@ class ArchiveMigrationServiceTest {
 
     @Spy
     @InjectMocks
-    private ArchiveMigrationService service;
+    private MigrationService service;
 
     @Mock
     private ObjectMapper jsonMapper;  // used inside createChainZip

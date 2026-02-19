@@ -34,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ArchiveMigrationService {
+public class MigrationService {
 
     private final RestClient restClient;
     private final SftpRemoteFileTemplate sftp;
