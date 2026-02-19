@@ -28,6 +28,6 @@ public class MigrationOrchestrator {
 
         log.info("Enqueuing {} documents", Objects.requireNonNull(docIds).size());
 
-        docIds.forEach(docId -> migrationService.migrateDocument(docId));
+        docIds.forEach(migrationService::migrateDocument);
     }
 }

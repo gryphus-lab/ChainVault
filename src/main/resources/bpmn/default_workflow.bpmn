@@ -11,7 +11,6 @@
         <bpmn:flowNodeRef>Task_Send</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_HandleError</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>SubProcess_Assemble</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Start_Assemble</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>End_Assemble</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>EndEvent_Success</bpmn:flowNodeRef>
@@ -20,12 +19,45 @@
         <bpmn:flowNodeRef>BoundaryError_Send</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>BoundaryError_Assemble</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>EndEvent_Failed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
         <bpmn:childLaneSet id="LaneSet_1njjeca" />
       </bpmn:lane>
     </bpmn:laneSet>
-    <bpmn:startEvent id="StartEvent_1" name="Start Migration">
-      <bpmn:outgoing>Flow_1</bpmn:outgoing>
-    </bpmn:startEvent>
+    <bpmn:subProcess id="SubProcess_Assemble" name="Assemble">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:endEvent id="End_Assemble" name="Assemble Done">
+        <bpmn:incoming>Flow_AssembleEnd</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:startEvent id="Start_Assemble" name="Assemble Start">
+        <bpmn:outgoing>Flow_Prepare</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="Task_Merge" name="Merge">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="merge-to-pdf" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_Merge</bpmn:incoming>
+        <bpmn:outgoing>Flow_Transform</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="Task_Prepare" name="Prepare">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="prepare-files" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_Prepare</bpmn:incoming>
+        <bpmn:outgoing>Flow_Merge</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="Task_Transform" name="Transform">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="transform-metadata" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_Transform</bpmn:incoming>
+        <bpmn:outgoing>Flow_AssembleEnd</bpmn:outgoing>
+      </bpmn:serviceTask>
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="BoundaryError_Assemble" name="Assembly Error" attachedToRef="SubProcess_Assemble">
+      <bpmn:outgoing>Flow_ErrorAssemble</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_AssemblyFailed" />
+    </bpmn:boundaryEvent>
     <bpmn:serviceTask id="Task_Extract" name="Extract &#38; Hash">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="extract-and-hash" />
@@ -37,63 +69,20 @@
       <bpmn:outgoing>Flow_ErrorExtract</bpmn:outgoing>
       <bpmn:errorEventDefinition errorRef="Error_ExtractionFailed" />
     </bpmn:boundaryEvent>
-    <bpmn:serviceTask id="Task_Sign" name="Sign">
-      <bpmn:extensionElements>
-        <zeebe:taskDefinition type="sign-document" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_2</bpmn:incoming>
-      <bpmn:outgoing>Flow_3</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:boundaryEvent id="BoundaryError_Sign" name="Sign Error" attachedToRef="Task_Sign">
-      <bpmn:outgoing>Flow_ErrorGeneral</bpmn:outgoing>
-      <bpmn:errorEventDefinition />
-    </bpmn:boundaryEvent>
-    <bpmn:subProcess id="SubProcess_Assemble" name="Assemble">
-      <bpmn:incoming>Flow_3</bpmn:incoming>
-      <bpmn:outgoing>Flow_4</bpmn:outgoing>
-      <bpmn:startEvent id="Start_Assemble" name="Assemble Start">
-        <bpmn:outgoing>Flow_Prepare</bpmn:outgoing>
-      </bpmn:startEvent>
-      <bpmn:serviceTask id="Task_Prepare" name="Prepare">
-        <bpmn:extensionElements>
-          <zeebe:taskDefinition type="prepare-files" />
-        </bpmn:extensionElements>
-        <bpmn:incoming>Flow_Prepare</bpmn:incoming>
-        <bpmn:outgoing>Flow_Merge</bpmn:outgoing>
-      </bpmn:serviceTask>
-      <bpmn:serviceTask id="Task_Merge" name="Merge">
-        <bpmn:extensionElements>
-          <zeebe:taskDefinition type="merge-to-pdf" />
-        </bpmn:extensionElements>
-        <bpmn:incoming>Flow_Merge</bpmn:incoming>
-        <bpmn:outgoing>Flow_Transform</bpmn:outgoing>
-      </bpmn:serviceTask>
-      <bpmn:serviceTask id="Task_Transform" name="Transform">
-        <bpmn:extensionElements>
-          <zeebe:taskDefinition type="transform-metadata" />
-        </bpmn:extensionElements>
-        <bpmn:incoming>Flow_Transform</bpmn:incoming>
-        <bpmn:outgoing>Flow_AssembleEnd</bpmn:outgoing>
-      </bpmn:serviceTask>
-      <bpmn:endEvent id="End_Assemble" name="Assemble Done">
-        <bpmn:incoming>Flow_AssembleEnd</bpmn:incoming>
-      </bpmn:endEvent>
-    </bpmn:subProcess>
-    <bpmn:boundaryEvent id="BoundaryError_Assemble" name="Assembly Error" attachedToRef="SubProcess_Assemble">
-      <bpmn:outgoing>Flow_ErrorAssemble</bpmn:outgoing>
-      <bpmn:errorEventDefinition errorRef="Error_AssemblyFailed" />
-    </bpmn:boundaryEvent>
-    <bpmn:serviceTask id="Task_Send" name="Send / Upload">
-      <bpmn:extensionElements>
-        <zeebe:taskDefinition type="upload-sftp" />
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_4</bpmn:incoming>
-      <bpmn:outgoing>Flow_Success</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:boundaryEvent id="BoundaryError_Send" name="Upload Error" attachedToRef="Task_Send">
-      <bpmn:outgoing>Flow_ErrorSend</bpmn:outgoing>
-      <bpmn:errorEventDefinition errorRef="Error_UploadFailed" />
-    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Extract" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Extract" targetRef="Task_Sign" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Sign" targetRef="SubProcess_Assemble" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="SubProcess_Assemble" targetRef="Task_Send" />
+    <bpmn:sequenceFlow id="Flow_AssembleEnd" sourceRef="Task_Transform" targetRef="End_Assemble" />
+    <bpmn:sequenceFlow id="Flow_ErrorAssemble" sourceRef="BoundaryError_Assemble" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_ErrorExtract" sourceRef="BoundaryError_Extract" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_ErrorGeneral" sourceRef="BoundaryError_Sign" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_ErrorSend" sourceRef="BoundaryError_Send" targetRef="Task_HandleError" />
+    <bpmn:sequenceFlow id="Flow_Merge" sourceRef="Task_Prepare" targetRef="Task_Merge" />
+    <bpmn:sequenceFlow id="Flow_Prepare" sourceRef="Start_Assemble" targetRef="Task_Prepare" />
+    <bpmn:sequenceFlow id="Flow_Success" sourceRef="Task_Send" targetRef="EndEvent_Success" />
+    <bpmn:sequenceFlow id="Flow_ToFailedEnd" sourceRef="Task_HandleError" targetRef="EndEvent_Failed" />
+    <bpmn:sequenceFlow id="Flow_Transform" sourceRef="Task_Merge" targetRef="Task_Transform" />
     <bpmn:serviceTask id="Task_HandleError" name="Handle Error (Log/Notify)">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="handle-error" />
@@ -110,31 +99,36 @@
     <bpmn:endEvent id="EndEvent_Failed" name="Migration Failed">
       <bpmn:incoming>Flow_ToFailedEnd</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Extract" />
-    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Extract" targetRef="Task_Sign" />
-    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Sign" targetRef="SubProcess_Assemble" />
-    <bpmn:sequenceFlow id="Flow_4" sourceRef="SubProcess_Assemble" targetRef="Task_Send" />
-    <bpmn:sequenceFlow id="Flow_Success" sourceRef="Task_Send" targetRef="EndEvent_Success" />
-    <bpmn:sequenceFlow id="Flow_ErrorExtract" sourceRef="BoundaryError_Extract" targetRef="Task_HandleError" />
-    <bpmn:sequenceFlow id="Flow_ErrorGeneral" sourceRef="BoundaryError_Sign" targetRef="Task_HandleError" />
-    <bpmn:sequenceFlow id="Flow_ErrorAssemble" sourceRef="BoundaryError_Assemble" targetRef="Task_HandleError" />
-    <bpmn:sequenceFlow id="Flow_ErrorSend" sourceRef="BoundaryError_Send" targetRef="Task_HandleError" />
-    <bpmn:sequenceFlow id="Flow_ToFailedEnd" sourceRef="Task_HandleError" targetRef="EndEvent_Failed" />
-    <bpmn:sequenceFlow id="Flow_Prepare" sourceRef="Start_Assemble" targetRef="Task_Prepare" />
-    <bpmn:sequenceFlow id="Flow_Merge" sourceRef="Task_Prepare" targetRef="Task_Merge" />
-    <bpmn:sequenceFlow id="Flow_Transform" sourceRef="Task_Merge" targetRef="Task_Transform" />
-    <bpmn:sequenceFlow id="Flow_AssembleEnd" sourceRef="Task_Transform" targetRef="End_Assemble" />
+    <bpmn:serviceTask id="Task_Send" name="Send / Upload">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="upload-sftp" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Success</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Sign" name="Sign">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="sign-document" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryError_Sign" name="Sign Error" attachedToRef="Task_Sign">
+      <bpmn:outgoing>Flow_ErrorGeneral</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:startEvent id="StartEvent_1" name="Start Migration">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:boundaryEvent id="BoundaryError_Send" name="Upload Error" attachedToRef="Task_Send">
+      <bpmn:outgoing>Flow_ErrorSend</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_UploadFailed" />
+    </bpmn:boundaryEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="chainvault">
       <bpmndi:BPMNShape id="Lane_Orchestration_di" bpmnElement="Lane_Orchestration" isHorizontal="true">
         <dc:Bounds x="160" y="80" width="1390" height="540" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="240" y="280" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="222" y="316" width="72" height="14" />
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_Extract_di" bpmnElement="Task_Extract">
         <dc:Bounds x="340" y="260" width="100" height="80" />
@@ -142,22 +136,10 @@
       <bpmndi:BPMNShape id="Task_Sign_di" bpmnElement="Task_Sign">
         <dc:Bounds x="500" y="260" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Send_di" bpmnElement="Task_Send">
-        <dc:Bounds x="1288" y="258" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_HandleError_di" bpmnElement="Task_HandleError">
-        <dc:Bounds x="860" y="440" width="140" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_Success_di" bpmnElement="EndEvent_Success">
-        <dc:Bounds x="1460" y="280" width="36" height="36" />
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="222" y="282" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1451" y="316" width="54" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_Failed_di" bpmnElement="EndEvent_Failed">
-        <dc:Bounds x="912" y="552" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="891" y="588" width="79" height="14" />
+          <dc:Bounds x="204" y="318" width="72" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="SubProcess_Assemble_di" bpmnElement="SubProcess_Assemble" isExpanded="true">
@@ -184,16 +166,22 @@
           <dc:Bounds x="1179" y="316" width="78" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BoundaryError_Sign_di" bpmnElement="BoundaryError_Sign">
-        <dc:Bounds x="560" y="320" width="36" height="36" />
+      <bpmndi:BPMNShape id="Task_Send_di" bpmnElement="Task_Send">
+        <dc:Bounds x="1288" y="258" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HandleError_di" bpmnElement="Task_HandleError">
+        <dc:Bounds x="860" y="440" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Success_di" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="1460" y="280" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="553" y="356" width="50" height="14" />
+          <dc:Bounds x="1451" y="316" width="54" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BoundaryError_Extract_di" bpmnElement="BoundaryError_Extract">
-        <dc:Bounds x="400" y="320" width="36" height="36" />
+      <bpmndi:BPMNShape id="EndEvent_Failed_di" bpmnElement="EndEvent_Failed">
+        <dc:Bounds x="912" y="552" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="380" y="356" width="77" height="14" />
+          <dc:Bounds x="891" y="588" width="79" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BoundaryError_Send_di" bpmnElement="BoundaryError_Send">
@@ -208,8 +196,20 @@
           <dc:Bounds x="1196" y="416" width="76" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryError_Sign_di" bpmnElement="BoundaryError_Sign">
+        <dc:Bounds x="560" y="320" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="553" y="356" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryError_Extract_di" bpmnElement="BoundaryError_Extract">
+        <dc:Bounds x="400" y="320" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="380" y="356" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
-        <di:waypoint x="276" y="298" />
+        <di:waypoint x="258" y="300" />
         <di:waypoint x="340" y="300" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
@@ -225,30 +225,8 @@
         <di:waypoint x="1288" y="298" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_Success_di" bpmnElement="Flow_Success">
-        <di:waypoint x="1388" y="299" />
-        <di:waypoint x="1424" y="299" />
-        <di:waypoint x="1424" y="298" />
+        <di:waypoint x="1388" y="298" />
         <di:waypoint x="1460" y="298" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ToFailedEnd_di" bpmnElement="Flow_ToFailedEnd">
-        <di:waypoint x="930" y="520" />
-        <di:waypoint x="930" y="552" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Prepare_di" bpmnElement="Flow_Prepare">
-        <di:waypoint x="736" y="298" />
-        <di:waypoint x="780" y="300" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Merge_di" bpmnElement="Flow_Merge">
-        <di:waypoint x="880" y="300" />
-        <di:waypoint x="920" y="300" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_Transform_di" bpmnElement="Flow_Transform">
-        <di:waypoint x="1020" y="300" />
-        <di:waypoint x="1060" y="300" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_AssembleEnd_di" bpmnElement="Flow_AssembleEnd">
-        <di:waypoint x="1160" y="300" />
-        <di:waypoint x="1200" y="298" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ErrorExtract_di" bpmnElement="Flow_ErrorExtract">
         <di:waypoint x="418" y="356" />
@@ -269,6 +247,26 @@
         <di:waypoint x="1366" y="354" />
         <di:waypoint x="1366" y="480" />
         <di:waypoint x="1000" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToFailedEnd_di" bpmnElement="Flow_ToFailedEnd">
+        <di:waypoint x="930" y="520" />
+        <di:waypoint x="930" y="552" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Prepare_di" bpmnElement="Flow_Prepare">
+        <di:waypoint x="736" y="298" />
+        <di:waypoint x="780" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Merge_di" bpmnElement="Flow_Merge">
+        <di:waypoint x="880" y="300" />
+        <di:waypoint x="920" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Transform_di" bpmnElement="Flow_Transform">
+        <di:waypoint x="1020" y="300" />
+        <di:waypoint x="1060" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AssembleEnd_di" bpmnElement="Flow_AssembleEnd">
+        <di:waypoint x="1160" y="300" />
+        <di:waypoint x="1200" y="298" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

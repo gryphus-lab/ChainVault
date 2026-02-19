@@ -2,26 +2,47 @@
 spring:
   application:
     name: chainvault-document-migration
+  # ───────────────────────────────────────────────
+  # Database Configuration (PostgreSQL example)
+  # ───────────────────────────────────────────────
   datasource:
-    url: jdbc:postgresql://localhost:5433/jobrunr
-    username: ${JOBRUNR_USERNAME}
-    password: ${JOBRUNR_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/chainvault
+    username: ${POSTGRES_USERNAME:chainvault}
+    password: ${POSTGRES_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+
+  # Flyway (recommended - simple & reliable)
+  flyway:
+    enabled: true
+    baseline-on-migrate: true               # Auto-baseline existing DB if needed
+    locations: classpath:db/migration       # Default: src/main/resources/db/migration
+    validate-on-migrate: true
+    out-of-order: false                     # Enforce strict version order
+    # For dev/testing: allow repair / clean (dangerous in prod!)
+    # repair: true  # uncomment only when needed
+
+  # JPA / Hibernate (optional - if you use entities/repositories)
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
+    show-sql: false
     properties:
       hibernate:
-        format-sql: true
-      show-sql: true
-  # Server settings
-  main:
-    banner-mode: off
-  mvc:
-    throw-exception-if-no-handler-found: true
-  web:
-    resources:
-      add-mappings: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# Logging – useful for seeing Flyway/Liquibase runs
+logging:
+  level:
+    org.flywaydb: DEBUG                     # or INFO in prod
+    # org.liquibase: DEBUG                  # if using Liquibase
+    org.springframework.jdbc: DEBUG
+    ch.gryphus.chainvault: DEBUG
 
 server:
   port: 8080
@@ -35,20 +56,12 @@ camunda:
       method: none
     grpc-address: http://0.0.0.0:26500
     rest-address: http://localhost:8082
-
 #    # Optional: Job worker defaults (can override per @ZeebeWorker)
 #    worker:
 #      max-jobs-active: 32
 #      poll-interval: 100ms
 #      request-timeout: 10s
 #      # backoff-strategy: exponential  # or fixed, linear – default is exponential
-
-    # Optional: Auto-deployment of BPMN/DMN/Forms on startup
-    deployment:
-      enabled: true
-      resources:
-        - classpath:bpmn/default_workflow.bpmn
-        # - classpath:other-process.bpmn
 
 target:
   sftp:
