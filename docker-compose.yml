@@ -22,27 +22,28 @@ services:
       source.api.base-url: http://fake-source-api:9090
       source.api.token: dummy
       # PostgreSQL
-      spring.datasource.url: jdbc:postgresql://postgres:5432/jobrunr
-      spring.datasource.username: jobrunr
-      spring.datasource.password: jobrunr
+      spring.datasource.url: jdbc:postgresql://postgres:5432/chainvault
+      spring.datasource.username: chainvault
+      spring.datasource.password: secret
     depends_on:
       - sftp-test
       - fake-source-api
       - postgres
     restart: unless-stopped
+
   postgres:
     image: postgres:16-alpine
-    container_name: postgres-jobrunr
+    container_name: postgres
     environment:
-      POSTGRES_DB: jobrunr
-      POSTGRES_USER: jobrunr
-      POSTGRES_PASSWORD: jobrunr
+      POSTGRES_DB: chainvault
+      POSTGRES_USER: chainvault
+      POSTGRES_PASSWORD: secret
     ports:
-      - "5433:5432"           # avoid conflict with local Postgres
+      - "5432:5432"
     volumes:
         - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jobrunr"]
+      test: ["CMD-SHELL", "pg_isready -U chainvault"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -52,7 +53,7 @@ services:
     image: atmoz/sftp:latest
     container_name: sftp-test
     ports:
-      - "2222:22"             # map to 2222 so it doesn't conflict with host SSH
+      - "2222:22"
     environment:
       - SFTP_USERS=testuser:testpass123:::upload
     volumes:
