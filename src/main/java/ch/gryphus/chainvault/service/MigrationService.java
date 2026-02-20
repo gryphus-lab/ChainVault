@@ -12,6 +12,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.tika.Tika;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -20,6 +21,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,11 +48,15 @@ public class MigrationService {
 
         Path zipPath = null;
         Path pdfPath = null;
+        byte[] payload = new byte[0];
+
         try {
             // 1. Extract
-            var meta = restClient.get().uri("/documents/{id}/metadata", docId).retrieve().body(SourceMetadata.class);
-            byte[] payload = restClient.get().uri("/documents/{id}/payload", docId).retrieve().body(byte[].class);
-            ctx.setPayloadHash(sha256(payload));
+            var meta = restClient.get().uri("/documents/{id}", docId).retrieve().body(SourceMetadata.class);
+            if (meta != null && meta.getPayloadUrl() != null) {
+                payload = restClient.get().uri(meta.getPayloadUrl()).retrieve().body(byte[].class);
+                ctx.setPayloadHash(sha256(payload));
+            }
 
             // 2. Extract pages
             List<TiffPage> pages = extractTiffPages(payload, ctx);
@@ -72,7 +78,7 @@ public class MigrationService {
             Path finalPdfPath = pdfPath;
             sftp.execute(s -> {
                 s.mkdir(folder);
-                s.write(Files.newInputStream(finalZipPath.toFile().toPath()), "%s/%s_chain.zipPath".formatted(folder, docId));
+                s.write(Files.newInputStream(finalZipPath.toFile().toPath()), "%s/%s_chain.zip".formatted(folder, docId));
                 s.write(Files.newInputStream(finalPdfPath.toFile().toPath()), "%s/%s.pdf".formatted(folder, docId));
                 s.write(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "%s/%s_meta.xml".formatted(folder, docId));
                 return null;
@@ -119,7 +125,8 @@ public class MigrationService {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 if (entry.getName().toLowerCase().endsWith(".tif") || entry.getName().toLowerCase().endsWith(".tiff")) {
-                    byte[] data = zis.readAllBytes(); // careful with very large pages → consider streaming
+                    byte[] data = zis.readAllBytes();
+
                     String pageHash = sha256(data);
                     ctx.addPageHash(entry.getName(), pageHash);
                     pages.add(new TiffPage(entry.getName(), data));
@@ -179,16 +186,21 @@ public class MigrationService {
         return zipPath;
     }
 
-    Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
+    public Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
         Path pdf = Path.of("/tmp/" + docId + ".pdf");
         try (var doc = new PDDocument()) {
             for (var page : pages) {
                 BufferedImage img = ImageIO.read(new ByteArrayInputStream(page.data()));
-                var pdImage = LosslessFactory.createFromImage(doc, img);
-                var pdPage = new PDPage(new PDRectangle(img.getWidth(), img.getHeight()));
-                doc.addPage(pdPage);
-                try (var cs = new PDPageContentStream(doc, pdPage)) {
-                    cs.drawImage(pdImage, 0, 0);
+                try {
+                    var pdImage = LosslessFactory.createFromImage(doc, img);
+                    var pdPage = new PDPage(new PDRectangle(img.getWidth(), img.getHeight()));
+                    doc.addPage(pdPage);
+
+                    try (var cs = new PDPageContentStream(doc, pdPage)) {
+                        cs.drawImage(pdImage, 0, 0);
+                    }
+                } catch (Exception ignored) {
+                    log.error("Failed to merge PDF image to pdf: {}", docId);
                 }
             }
             doc.save(pdf.toFile());
@@ -234,7 +246,7 @@ public class MigrationService {
                 if (entry.isDirectory()) continue;
 
                 String nameLower = entry.getName().toLowerCase();
-                if (nameLower.endsWith(".tif") || nameLower.endsWith(".tiff")) {
+                if (getDetectedMimeType(zis).equals("image/tiff") && (nameLower.endsWith(".tif") || nameLower.endsWith(".tiff"))) {
                     byte[] data = zis.readAllBytes();
                     pages.add(new TiffPage(entry.getName(), data));
                 }
@@ -246,6 +258,11 @@ public class MigrationService {
         }
 
         return pages;
+    }
+
+    public String getDetectedMimeType(InputStream in) throws IOException {
+        Tika tika = new Tika();
+        return tika.detect(in);
     }
 
     public void processExtractAndHashJob() {
