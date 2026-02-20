@@ -24,6 +24,7 @@ import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.web.client.RestClient;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -41,37 +42,27 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class MigrationServiceTest {
+    @TempDir
+    Path tempDir;
+    @Captor
+    ArgumentCaptor<String> xmlCaptor;
     @Mock
     private RestClient restClient;
-
     @Mock
     private RestClient.RequestHeadersUriSpec requestSpec;
-
     @Mock
     private RestClient.ResponseSpec responseSpec;
-
     @Mock
     private SftpRemoteFileTemplate sftp;
-
     @Mock
     private SftpTargetConfig sftpCfg;
-
     @Mock
     private XmlMapper xmlMapper;
-
     @Spy
     @InjectMocks
     private MigrationService migrationService;
-
     @Mock
     private ObjectMapper jsonMapper;  // used inside createChainZip
-
-    @TempDir
-    Path tempDir;
-
-    @Captor
-    ArgumentCaptor<String> xmlCaptor;
-
     private MigrationContext ctx;
     private SourceMetadata meta;
 
@@ -88,6 +79,7 @@ class MigrationServiceTest {
         meta.setDocumentType("INVOICE");
         meta.setHash("sha256-abc123");
         meta.setAccountNo("ACC-123");
+        meta.setPayloadUrl("/payload/12345.zip");
 
         // Make fluent chain return itself (common pattern)
         when(restClient.get()).thenReturn(requestSpec);
@@ -129,6 +121,7 @@ class MigrationServiceTest {
                 "page-003.tif", "TIFF content 3"
         ));
 
+        when(migrationService.getDetectedMimeType(any(InputStream.class))).thenReturn("image/tiff");
         List<TiffPage> pages = migrationService.unzipTiffPages(zip);
 
         assertThat(pages).hasSize(3);
@@ -145,6 +138,7 @@ class MigrationServiceTest {
                 "page-002.tif", "TIFF2"
         ));
 
+        when(migrationService.getDetectedMimeType(any(InputStream.class))).thenReturn("image/tiff");
         List<TiffPage> pages = migrationService.unzipTiffPages(zip);
 
         assertThat(pages).hasSize(2);
@@ -299,12 +293,12 @@ class MigrationServiceTest {
         when(restClient.get()).thenReturn(requestSpec);
 
         // Metadata call
-        when(requestSpec.uri("/documents/{id}/metadata", "DOC-HAPPY")).thenReturn(requestSpec);
+        when(requestSpec.uri("/documents/{id}", "DOC-HAPPY")).thenReturn(requestSpec);
         when(requestSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(SourceMetadata.class)).thenReturn(meta);
 
         // Payload call (second get)
-        when(requestSpec.uri("/documents/{id}/payload", "DOC-HAPPY")).thenReturn(requestSpec);
+        when(requestSpec.uri(anyString())).thenReturn(requestSpec);
         when(requestSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(byte[].class)).thenReturn(fakeZipPayload);
 
@@ -313,7 +307,7 @@ class MigrationServiceTest {
 
         // Assert calls
         verify(restClient, times(2)).get();  // metadata + payload
-        verify(requestSpec, times(2)).uri(anyString(), eq("DOC-HAPPY"));
+        verify(requestSpec, times(1)).uri(anyString(), eq("DOC-HAPPY"));
         verify(requestSpec, times(2)).retrieve();
     }
 

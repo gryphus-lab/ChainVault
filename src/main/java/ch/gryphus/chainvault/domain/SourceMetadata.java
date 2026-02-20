@@ -6,9 +6,10 @@ import lombok.Data;
 public class SourceMetadata {
     private String docId;
     private String title;
-    private String creationDate; // ISO string
+    private String creationDate;
     private String clientId;
     private String accountNo;
     private String documentType;
-    private String hash; // if provided by source
+    private String hash;
+    private String payloadUrl;
 }

@@ -1,6 +1,5 @@
 package ch.gryphus.chainvault.service;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,24 +32,27 @@ class MigrationServiceIntegrationTest {
 
     // Fake REST API (json-server with db.json)
     @Container
-    static GenericContainer<?> jsonServer = new GenericContainer<>(DockerImageName.parse("clue/json-server:latest"))
-            .withCommand("--watch /data/db.json --static /data/static --host 0.0.0.0")
+    static GenericContainer<?> jsonServer = new GenericContainer<>(DockerImageName.parse("node:25-alpine"))
+            .withPrivilegedMode(true)
+            .withCommand("sh", "-c", "npm install -g json-server && json-server --watch /data/db.json --static /data/static --port 9090 --host 0.0.0.0")
             .withClasspathResourceMapping("db.json", "/data/db.json", BindMode.READ_ONLY)
             .withClasspathResourceMapping("static", "/data/static", BindMode.READ_ONLY)
-            .withExposedPorts(80)
-            .waitingFor(Wait.forHttp("/documents").forStatusCode(200));
+            .withExposedPorts(9090)
+            .waitingFor(Wait.forHttp("/").forStatusCode(200));
 
     @Container
     static GenericContainer<?> sftpContainer = new GenericContainer<>(DockerImageName.parse("atmoz/sftp:latest"))
             .withCommand("testuser:testpass123:::upload")
             .withExposedPorts(22)
             .waitingFor(Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1));
+    @Autowired
+    private MigrationService service;
 
     // Override Spring datasource properties at runtime
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         // Fake source API
-        String apiUrl = "http://" + jsonServer.getHost() + ":" + jsonServer.getMappedPort(80);
+        String apiUrl = "http://" + jsonServer.getHost() + ":" + jsonServer.getMappedPort(9090);
         registry.add("source.api.base-url", () -> apiUrl);
         registry.add("source.api.token", () -> "dummy-token");
 
@@ -69,10 +71,6 @@ class MigrationServiceIntegrationTest {
         registry.add("target.sftp.allow-unknown-keys", () -> "true");
     }
 
-    @Autowired
-    private MigrationService service;
-
-    @Disabled("TODO: To be checked")
     @Test
     void migrateDocument_shouldUploadToRealSftp() throws Exception {
         String docId = "DOC-ARCH-20250115-001";  // exists in your verbose db.json
@@ -81,7 +79,7 @@ class MigrationServiceIntegrationTest {
         service.migrateDocument(docId);
 
         // Wait for upload to appear in SFTP (poll the container)
-        String expectedDir = "/upload/" + docId;
+        String expectedDir = "/home/testuser/upload/%s".formatted(docId);
 
         await()
                 .atMost(Duration.ofSeconds(10))
@@ -97,7 +95,7 @@ class MigrationServiceIntegrationTest {
                 });
 
         // Optional: check file count
-        String fileCount = sftpContainer.execInContainer("ls", expectedDir, "|", "wc", "-l").getStdout().trim();
+        String fileCount = sftpContainer.execInContainer("sh", "-c", "ls %s | wc -l".formatted(expectedDir)).getStdout().trim();
         assertThat(Integer.parseInt(fileCount.trim())).isEqualTo(3);
     }
 

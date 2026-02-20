@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.10</version>
+        <version>3.5.11</version>
     </parent>
 
     <groupId>ch.gryphus</groupId>
@@ -36,7 +36,8 @@
         <commons-compress.version>1.28.0</commons-compress.version>
         <jsonassert.version>1.5.3</jsonassert.version>
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
-        <pdfbox.version>3.0.3</pdfbox.version>
+        <pdfbox.version>3.0.6</pdfbox.version>
+        <tika-core.version>3.2.3</tika-core.version>
 
         <!-- test dependencies-->
         <testcontainers.version>2.0.3</testcontainers.version>
@@ -95,6 +96,11 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika-core.version}</version>
         </dependency>
 
         <!-- Flyway (recommended for simplicity) -->

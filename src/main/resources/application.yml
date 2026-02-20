@@ -36,32 +36,16 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
-# Logging – useful for seeing Flyway/Liquibase runs
-logging:
-  level:
-    org.flywaydb: DEBUG                     # or INFO in prod
-    # org.liquibase: DEBUG                  # if using Liquibase
-    org.springframework.jdbc: DEBUG
-    ch.gryphus.chainvault: DEBUG
-
-server:
-  port: 8080
-  servlet:
-    context-path: /
-
 camunda:
   client:
     mode: self-managed
-    auth:
-      method: none
-    grpc-address: http://0.0.0.0:26500
-    rest-address: http://localhost:8082
-#    # Optional: Job worker defaults (can override per @ZeebeWorker)
-#    worker:
-#      max-jobs-active: 32
-#      poll-interval: 100ms
-#      request-timeout: 10s
-#      # backoff-strategy: exponential  # or fixed, linear – default is exponential
+    grpc-address: http://localhost:26500
+    rest-address: http://localhost:8080
+
+server:
+  port: 8085
+  servlet:
+    context-path: /
 
 target:
   sftp:
