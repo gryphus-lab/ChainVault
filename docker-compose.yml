@@ -41,9 +41,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-        - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chainvault"]
+      test: [ "CMD-SHELL", "pg_isready -U chainvault" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -73,7 +73,7 @@ services:
       - ./src/test/resources/db.json:/data/db.json:ro
       - ./src/test/resources/static:/data/static:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9090" ]
       interval: 5s
       timeout: 3s
       retries: 5
