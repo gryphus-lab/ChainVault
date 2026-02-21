@@ -38,9 +38,12 @@ spring:
 
 camunda:
   client:
+    prefer-rest-over-grpc: false
+    execution-threads: 10
     mode: self-managed
-    grpc-address: http://localhost:26500
-    rest-address: http://localhost:8080
+    grpc-address: http://0.0.0.0:26500
+    rest-address: http://localhost:8088
+    request-timeout: PT30S
 
 server:
   port: 8085
@@ -64,3 +67,7 @@ source:
 migration:
   temp-dir: /tmp/migration-${random.uuid}
   chunk-size-for-inventory: 500   # when fetching lists
+
+  logging:
+    level:
+      io.camunda.client.job.poller: ERROR
