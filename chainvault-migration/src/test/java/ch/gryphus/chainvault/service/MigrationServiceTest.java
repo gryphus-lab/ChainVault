@@ -73,8 +73,6 @@ class MigrationServiceTest {
     @Mock private SftpRemoteFileTemplate mockSftpRemoteFileTemplate;
     @Mock private SftpTargetConfig mockSftpTargetConfig;
     @Mock private Session mockSession;
-    @Mock private SessionCallback mockSessionCallback;
-    @Mock private Tika mockTika;
 
     private MigrationService migrationServiceUnderTest;
 
@@ -93,7 +91,7 @@ class MigrationServiceTest {
                         mockSftpTargetConfig,
                         new XmlMapper(),
                         new ObjectMapper(),
-                        mockTika);
+                        new Tika());
 
         migrationServiceUnderTest.setWorkingDirectory("/tmp");
 
@@ -117,6 +115,11 @@ class MigrationServiceTest {
         when(mockRequestHeadersSpec.accept(any())).thenReturn(mockRequestHeadersSpec);
     }
 
+    /**
+     * Test extract and hash when documents exist.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testExtractAndHash_whenDocumentsExist() throws Exception {
         // Setup
@@ -149,6 +152,9 @@ class MigrationServiceTest {
         assertThat(migrationContext.getPayloadHash()).isNotNull(); // payload hash exists
     }
 
+    /**
+     * Test extract and hash when document does not exist.
+     */
     @Test
     void testExtractAndHash_whenDocumentDoesNotExist() {
         when(mockRequestHeadersSpec.exchange(
@@ -171,6 +177,9 @@ class MigrationServiceTest {
                 .withMessageContaining("Unable to find document with id: %s".formatted(docId));
     }
 
+    /**
+     * Test extract and hash when payload does not exist.
+     */
     @Test
     void testExtractAndHash_whenPayloadDoesNotExist() {
         String docId = "DOC-NO-PAYLOAD-002";
@@ -236,6 +245,8 @@ class MigrationServiceTest {
 
     /**
      * Test upload to sftp.
+     *
+     * @throws IOException the io exception
      */
     @Test
     void testUploadToSftp() throws IOException {
@@ -305,10 +316,9 @@ class MigrationServiceTest {
     /**
      * Test transform metadata to xml.
      *
-     * @throws Exception the exception
      */
     @Test
-    void testTransformMetadataToXml() throws Exception {
+    void testTransformMetadataToXml() {
         // Setup
         meta.setDocId("docId");
         meta.setTitle("title");
@@ -387,15 +397,12 @@ class MigrationServiceTest {
     }
 
     /**
-     * Unzip tiff pages should extract and preserve order.
+     * Sign tiff pages should extract and preserve order.
      *
      * @throws Exception the exception
      */
-    // ────────────────────────────────────────────────
-    // unzipTiffPages
-    // ────────────────────────────────────────────────
     @Test
-    void unzipTiffPages_shouldExtractAndPreserveOrder() throws Exception {
+    void signTiffPages_shouldExtractAndPreserveOrder() throws Exception {
         byte[] zip =
                 createZipWithTiffs(
                         List.of(
@@ -403,7 +410,7 @@ class MigrationServiceTest {
                                 "page-002.tif", "TIFF content 2",
                                 "page-003.tif", "TIFF content 3"));
 
-        List<TiffPage> pages = migrationServiceUnderTest.unzipTiffPages(zip);
+        List<TiffPage> pages = migrationServiceUnderTest.signTiffPages(zip, ctx);
 
         assertThat(pages).hasSize(3);
         assertThat(pages.get(0).name()).isEqualTo("page-001.tif");
@@ -413,12 +420,12 @@ class MigrationServiceTest {
     }
 
     /**
-     * Unzip tiff pages should ignore non tiff files.
+     * Sign tiff pages should ignore non tiff files.
      *
      * @throws Exception the exception
      */
     @Test
-    void unzipTiffPages_shouldIgnoreNonTiffFiles() throws Exception {
+    void signTiffPages_shouldIgnoreNonTiffFiles() throws Exception {
         byte[] zip =
                 createZipWithTiffs(
                         List.of(
@@ -426,22 +433,22 @@ class MigrationServiceTest {
                                 "readme.txt", "ignore me",
                                 "page-002.tif", "TIFF2"));
 
-        List<TiffPage> pages = migrationServiceUnderTest.unzipTiffPages(zip);
+        List<TiffPage> pages = migrationServiceUnderTest.signTiffPages(zip, ctx);
 
         assertThat(pages).hasSize(2);
         assertThat(pages.get(1).name()).isEqualTo("page-002.tif");
     }
 
     /**
-     * Unzip tiff pages should throw when no tiffs.
+     * Sign tiff pages should throw when no tiffs.
      *
      * @throws Exception the exception
      */
     @Test
-    void unzipTiffPages_shouldThrowWhenNoTiffs() throws Exception {
+    void signTiffPages_shouldThrowWhenNoTiffs() throws Exception {
         byte[] zip = createZipWithTiffs(List.of("readme.txt", "no tiffs here"));
 
-        assertThatThrownBy(() -> migrationServiceUnderTest.unzipTiffPages(zip))
+        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(zip, ctx))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No TIFF pages found in ZIP");
     }

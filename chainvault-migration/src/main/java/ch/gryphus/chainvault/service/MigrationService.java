@@ -148,6 +148,11 @@ public class MigrationService {
                 }
             }
         }
+
+        if (pages.isEmpty()) {
+            throw new IllegalStateException("No TIFF pages found in ZIP");
+        }
+
         return pages;
     }
 
@@ -303,36 +308,6 @@ public class MigrationService {
     }
 
     /**
-     * Unzip tiff pages list.
-     *
-     * @param zipBytes the zip bytes
-     * @return the list
-     * @throws IOException the io exception
-     */
-    public List<TiffPage> unzipTiffPages(byte[] zipBytes) throws IOException {
-        var pages = new ArrayList<TiffPage>();
-
-        try (var zis = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                if (entry.isDirectory()) continue;
-
-                String nameLower = entry.getName().toLowerCase();
-                if (nameLower.endsWith(".tif") || nameLower.endsWith(".tiff")) {
-                    byte[] data = zis.readAllBytes();
-                    pages.add(new TiffPage(entry.getName(), data));
-                }
-            }
-        }
-
-        if (pages.isEmpty()) {
-            throw new IllegalStateException("No TIFF pages found in ZIP");
-        }
-
-        return pages;
-    }
-
-    /**
      * Transform metadata to xml string.
      *
      * @param sourceMetadata   the sourceMetadata
@@ -358,7 +333,7 @@ public class MigrationService {
      * @throws IOException the io exception
      */
     public String getDetectedMimeType(InputStream in) throws IOException {
-        return new Tika().detect(in);
+        return tika.detect(in);
     }
 
     /**
@@ -368,6 +343,6 @@ public class MigrationService {
      * @return the detected mime type
      */
     public String getDetectedMimeType(byte[] bytes) {
-        return new Tika().detect(bytes);
+        return tika.detect(bytes);
     }
 }
