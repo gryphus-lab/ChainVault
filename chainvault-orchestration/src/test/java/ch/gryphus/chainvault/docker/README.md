@@ -5,7 +5,8 @@ This directory contains comprehensive integration tests for the Docker services 
 ## Test Files
 
 ### 1. `DockerServicesIntegrationIT.java`
-**Unit-level integration tests for individual Docker services**
+
+#### Unit-level integration tests for individual Docker services
 
 Tests the health, availability, and basic connectivity of each service in isolation:
 
@@ -31,7 +32,8 @@ Tests the health, availability, and basic connectivity of each service in isolat
   - `testServiceMemoryAndResourceUsage()`: Confirms all containers are properly instantiated
 
 ### 2. `DockerComposeIT.java`
-**Docker Compose orchestration tests**
+
+#### Docker Compose orchestration tests
 
 Tests the entire docker-compose stack to ensure services work together:
 
@@ -46,7 +48,8 @@ Tests the entire docker-compose stack to ensure services work together:
 **Note:** This test requires `docker-compose.yml` to be available at the project root.
 
 ### 3. `DockerServicesE2EIT.java`
-**End-to-end integration tests**
+
+#### End-to-end integration tests
 
 Tests realistic scenarios where all services work together in a unified system:
 
@@ -72,12 +75,14 @@ Tests realistic scenarios where all services work together in a unified system:
 
 ## Running the Tests
 
-### Run all Docker tests:
+### Run all Docker tests
+
 ```bash
 mvn test -Dtest=Docker*
 ```
 
-### Run specific test class:
+### Run specific test class
+
 ```bash
 # Individual service tests
 mvn test -Dtest=DockerServicesIntegrationIT
@@ -89,7 +94,8 @@ mvn test -Dtest=DockerComposeIT
 mvn test -Dtest=DockerServicesE2EIT
 ```
 
-### Run with coverage:
+### Run with coverage
+
 ```bash
 mvn test -Dtest=Docker* -Pcoverage
 ```
@@ -97,11 +103,13 @@ mvn test -Dtest=Docker* -Pcoverage
 ## Test Configuration
 
 ### Docker Requirements
+
 - Docker daemon must be running and accessible
 - Docker socket should be mounted/accessible to the test runner
 - Tests use TestContainers library for container management
 
 ### Dependencies
+
 - **testcontainers**: 2.0.3 (already in pom.xml)
 - **testcontainers-junit-jupiter**: 2.0.3
 - **testcontainers-postgresql**: 2.0.3
@@ -109,6 +117,7 @@ mvn test -Dtest=Docker* -Pcoverage
 - **httpClient**: Built-in Java 11+ HTTP client for API tests
 
 ### Port Allocation
+
 - **PostgreSQL**: Dynamically allocated (5432 internal)
 - **SFTP**: Dynamically allocated (22 internal) - now using dynamic local port per docker-compose update
 - **API**: Port 9091 (fixed)
@@ -116,21 +125,24 @@ mvn test -Dtest=Docker* -Pcoverage
 ## Service Descriptions
 
 ### PostgreSQL 16-Alpine
+
 - **Image**: `postgres:16-alpine`
 - **Purpose**: Primary data storage for the application
 - **Initialization**: Scripts from `src/main/resources/db/init-scripts` are automatically run
 - **Exposed Port**: 5432 (internal)
 
 ### SFTP Server
+
 - **Image**: `atmoz/sftp:latest`
 - **Purpose**: SFTP file transfer endpoint for document uploads
-- **Credentials**: 
+- **Credentials**:
   - Username: `testuser`
   - Password: `testpass123`
   - Upload directory: `/home/testuser/upload`
 - **Exposed Port**: 22 (internal, dynamic local port allocation)
 
 ### Fake Source API
+
 - **Image**: `node:25-alpine`
 - **Purpose**: Mock REST API for document source data (using json-server)
 - **Data**: `src/test/resources/db.json` and `src/test/resources/static`
@@ -139,24 +151,29 @@ mvn test -Dtest=Docker* -Pcoverage
 ## Troubleshooting
 
 ### Tests fail with "Docker daemon not responding"
+
 - Ensure Docker is running: `docker ps`
 - Check Docker socket permissions if running in a container
 
 ### Tests timeout waiting for services
+
 - Increase timeout values in `waitingFor()` calls
 - Check service logs: `docker logs <container-name>`
 
 ### Port conflicts
+
 - Ensure ports 5432, 9091 are available or not already in use
 - SFTP uses dynamic port allocation to avoid conflicts
 
 ### TestContainers not found
+
 - Ensure Maven dependencies are properly installed
 - Run `mvn clean install` to refresh dependencies
 
 ## CI/CD Integration
 
 These tests are designed to run in:
+
 - Local development environments
 - GitHub Actions workflows
 - Docker-based CI systems

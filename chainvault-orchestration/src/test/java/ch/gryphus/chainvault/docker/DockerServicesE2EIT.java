@@ -210,7 +210,7 @@ class DockerServicesE2EIT {
                                     if (!rs.next()) {
                                         allSuccess.set(false);
                                     }
-                                } catch (Exception e) {
+                                } catch (Exception _) {
                                     allSuccess.set(false);
                                 }
                             });

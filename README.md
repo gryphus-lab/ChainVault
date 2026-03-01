@@ -141,7 +141,7 @@ PRs and issues are welcome. Follow the existing code style and add tests for sig
 
 ## Maintainers
 
-- gryphus-lab / gryphus-lab@users.noreply.github.com
+- gryphus-lab / <gryphus-lab@users.noreply.github.com>
 
 ---
 _Generated README — edit with project-specific operational notes as needed._

@@ -51,7 +51,7 @@ public class XmlValidator {
                     new StreamSource(IOUtils.toInputStream(xmlString, StandardCharsets.UTF_8)));
 
             return true;
-        } catch (SAXException | IOException e) {
+        } catch (SAXException | IOException _) {
             return false;
         }
     }
