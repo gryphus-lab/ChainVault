@@ -1,9 +1,11 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.domain;
-
-import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Data;
 
 /**
  * The type Migration context.
@@ -11,6 +13,7 @@ import java.util.Map;
 @Data
 public class MigrationContext {
     private String docId;
+    private String metadataHash;
     private String payloadHash;
     private String zipHash;
     private String pdfHash;

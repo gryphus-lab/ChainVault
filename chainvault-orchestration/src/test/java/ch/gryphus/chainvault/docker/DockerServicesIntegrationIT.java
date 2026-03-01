@@ -1,13 +1,11 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.docker;
 
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,10 +15,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.awaitility.Awaitility.await;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 /**
  * The type Docker services integration it.
@@ -32,39 +34,45 @@ class DockerServicesIntegrationIT {
      * The constant postgresContainer.
      */
     @Container
-    static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(
-            DockerImageName.parse("postgres:16-alpine"))
-            .withDatabaseName("chainvault")
-            .withUsername("chainvault")
-            .withPassword("secret")
-            .withExposedPorts(5432)
-            .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2))
-            .withStartupTimeout(Duration.ofSeconds(120));
+    static PostgreSQLContainer postgresContainer =
+            new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
+                    .withDatabaseName("chainvault")
+                    .withUsername("chainvault")
+                    .withPassword("secret")
+                    .withExposedPorts(5432)
+                    .waitingFor(
+                            Wait.forLogMessage(
+                                    ".*database system is ready to accept connections.*\\s", 2))
+                    .withStartupTimeout(Duration.ofSeconds(120));
 
     /**
      * The constant sftpContainer.
      */
     @Container
-    static GenericContainer<?> sftpContainer = new GenericContainer<>(
-            DockerImageName.parse("atmoz/sftp:latest"))
-            .withCommand("testuser:testpass123:::upload")
-            .withExposedPorts(22)
-            .waitingFor(Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1))
-            .withStartupTimeout(Duration.ofSeconds(120));
+    static GenericContainer<?> sftpContainer =
+            new GenericContainer<>(DockerImageName.parse("atmoz/sftp:latest"))
+                    .withCommand("testuser:testpass123:::upload")
+                    .withExposedPorts(22)
+                    .waitingFor(Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1))
+                    .withStartupTimeout(Duration.ofSeconds(120));
 
     /**
      * The constant apiContainer.
      */
     @Container
-    static GenericContainer<?> apiContainer = new GenericContainer<>(
-            DockerImageName.parse("node:25-alpine"))
-            .withPrivilegedMode(true)
-            .withCommand("sh", "-c", "npm install -g json-server && json-server --watch /data/db.json --static /data/static --port 9090 --host 0.0.0.0")
-            .withClasspathResourceMapping("db.json", "/data/db.json",BindMode.READ_ONLY)
-            .withClasspathResourceMapping("static", "/data/static", BindMode.READ_ONLY)
-            .withExposedPorts(9090)
-            .waitingFor(Wait.forHttp("/").forStatusCode(200))
-            .withStartupTimeout(Duration.ofSeconds(120));
+    static GenericContainer<?> apiContainer =
+            new GenericContainer<>(DockerImageName.parse("node:25-alpine"))
+                    .withPrivilegedMode(true)
+                    .withCommand(
+                            "sh",
+                            "-c",
+                            "npm install -g json-server && json-server --watch /data/db.json"
+                                    + " --static /data/static --port 9090 --host 0.0.0.0")
+                    .withClasspathResourceMapping("db.json", "/data/db.json", BindMode.READ_ONLY)
+                    .withClasspathResourceMapping("static", "/data/static", BindMode.READ_ONLY)
+                    .withExposedPorts(9090)
+                    .waitingFor(Wait.forHttp("/").forStatusCode(200))
+                    .withStartupTimeout(Duration.ofSeconds(120));
 
     /**
      * Test postgres health check.
@@ -75,20 +83,23 @@ class DockerServicesIntegrationIT {
         assertThat(postgresContainer.isRunning()).isTrue();
 
         // Verify database connectivity
-        assertThatNoException().isThrownBy(() -> {
-            try (Connection conn = DriverManager.getConnection(
-                    postgresContainer.getJdbcUrl(),
-                    postgresContainer.getUsername(),
-                    postgresContainer.getPassword())) {
-                
-                assertThat(conn).isNotNull();
-                
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery("SELECT 1");
-                assertThat(rs.next()).isTrue();
-                assertThat(rs.getInt(1)).isEqualTo(1);
-            }
-        });
+        assertThatNoException()
+                .isThrownBy(
+                        () -> {
+                            try (Connection conn =
+                                    DriverManager.getConnection(
+                                            postgresContainer.getJdbcUrl(),
+                                            postgresContainer.getUsername(),
+                                            postgresContainer.getPassword())) {
+
+                                assertThat(conn).isNotNull();
+
+                                Statement stmt = conn.createStatement();
+                                ResultSet rs = stmt.executeQuery("SELECT 1");
+                                assertThat(rs.next()).isTrue();
+                                assertThat(rs.getInt(1)).isEqualTo(1);
+                            }
+                        });
     }
 
     /**
@@ -98,11 +109,12 @@ class DockerServicesIntegrationIT {
      */
     @Test
     void testPostgresVersionCompatibility() throws SQLException {
-        try (Connection conn = DriverManager.getConnection(
-                postgresContainer.getJdbcUrl(),
-                postgresContainer.getUsername(),
-                postgresContainer.getPassword())) {
-            
+        try (Connection conn =
+                DriverManager.getConnection(
+                        postgresContainer.getJdbcUrl(),
+                        postgresContainer.getUsername(),
+                        postgresContainer.getPassword())) {
+
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT version()");
             assertThat(rs.next()).isTrue();
@@ -123,10 +135,14 @@ class DockerServicesIntegrationIT {
         assertThat(mappedPort).isPositive();
 
         // Verify SFTP directory exists
-        assertThatNoException().isThrownBy(() -> {
-            var result = sftpContainer.execInContainer("ls", "-l", "/home/testuser/upload");
-            assertThat(result.getExitCode()).isZero();
-        });
+        assertThatNoException()
+                .isThrownBy(
+                        () -> {
+                            var result =
+                                    sftpContainer.execInContainer(
+                                            "ls", "-l", "/home/testuser/upload");
+                            assertThat(result.getExitCode()).isZero();
+                        });
     }
 
     /**
@@ -138,13 +154,14 @@ class DockerServicesIntegrationIT {
     @Test
     void testSftpUserAccess() throws IOException, InterruptedException {
         // Create a test file in the SFTP container
-        var createFileResult = sftpContainer.execInContainer(
-                "sh", "-c", "echo 'test data' > /home/testuser/upload/test.txt");
+        var createFileResult =
+                sftpContainer.execInContainer(
+                        "sh", "-c", "echo 'test data' > /home/testuser/upload/test.txt");
         assertThat(createFileResult.getExitCode()).isZero();
 
         // Verify file exists
-        var listResult = sftpContainer.execInContainer(
-                "ls", "-l", "/home/testuser/upload/test.txt");
+        var listResult =
+                sftpContainer.execInContainer("ls", "-l", "/home/testuser/upload/test.txt");
         assertThat(listResult.getExitCode()).isZero();
         assertThat(listResult.getStdout()).contains("test.txt");
 
@@ -168,23 +185,24 @@ class DockerServicesIntegrationIT {
      */
     @Test
     void testApiResponseFormat() {
-        String apiUrl = "http://%s:%d".formatted(apiContainer.getHost(), apiContainer.getMappedPort(9090));
-        
+        String apiUrl =
+                "http://%s:%d".formatted(apiContainer.getHost(), apiContainer.getMappedPort(9090));
+
         // Wait for API to be fully ready
-        await()
-                .atMost(Duration.ofSeconds(10))
+        await().atMost(Duration.ofSeconds(10))
                 .pollInterval(Duration.ofMillis(500))
-                .untilAsserted(() -> {
-                    try {
-                        var url = URI.create(apiUrl).toURL();
-                        var conn = url.openConnection();
-                        conn.setConnectTimeout(1000);
-                        conn.setReadTimeout(1000);
-                        conn.getInputStream();
-                    } catch (Exception e) {
-                        throw new AssertionError("API not ready yet", e);
-                    }
-                });
+                .untilAsserted(
+                        () -> {
+                            try {
+                                var url = URI.create(apiUrl).toURL();
+                                var conn = url.openConnection();
+                                conn.setConnectTimeout(1000);
+                                conn.setReadTimeout(1000);
+                                conn.getInputStream();
+                            } catch (Exception e) {
+                                throw new AssertionError("API not ready yet", e);
+                            }
+                        });
     }
 
     /**
@@ -214,7 +232,7 @@ class DockerServicesIntegrationIT {
         assertThat(postgresContainer.getContainerId()).isNotEmpty();
         assertThat(sftpContainer.getContainerId()).isNotEmpty();
         assertThat(apiContainer.getContainerId()).isNotEmpty();
-        
+
         // Verify they have different container IDs
         assertThat(postgresContainer.getContainerId())
                 .isNotEqualTo(sftpContainer.getContainerId())
@@ -230,11 +248,12 @@ class DockerServicesIntegrationIT {
     void testPostgresConnectionPooling() throws SQLException {
         // Test multiple concurrent connections
         for (int i = 0; i < 5; i++) {
-            try (Connection conn = DriverManager.getConnection(
-                    postgresContainer.getJdbcUrl(),
-                    postgresContainer.getUsername(),
-                    postgresContainer.getPassword())) {
-                
+            try (Connection conn =
+                    DriverManager.getConnection(
+                            postgresContainer.getJdbcUrl(),
+                            postgresContainer.getUsername(),
+                            postgresContainer.getPassword())) {
+
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery("SELECT 1");
                 assertThat(rs.next()).isTrue();
@@ -251,9 +270,12 @@ class DockerServicesIntegrationIT {
     @Test
     void testSftpUploadDirectory() throws IOException, InterruptedException {
         // Verify the upload directory exists and is writable
-        var result = sftpContainer.execInContainer(
-                "sh", "-c", "[ -d /home/testuser/upload ] && echo 'exists' || echo 'not found'");
-        
+        var result =
+                sftpContainer.execInContainer(
+                        "sh",
+                        "-c",
+                        "[ -d /home/testuser/upload ] && echo 'exists' || echo 'not found'");
+
         assertThat(result.getExitCode()).isZero();
         assertThat(result.getStdout().trim()).isEqualTo("exists");
     }
@@ -267,7 +289,7 @@ class DockerServicesIntegrationIT {
         assertThat(postgresContainer.isRunning()).isTrue();
         assertThat(sftpContainer.isRunning()).isTrue();
         assertThat(apiContainer.isRunning()).isTrue();
-        
+
         // All containers should have non-empty container IDs (indicating they're running)
         assertThat(postgresContainer.getContainerId()).isNotEmpty();
         assertThat(sftpContainer.getContainerId()).isNotEmpty();

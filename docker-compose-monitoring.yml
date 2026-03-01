@@ -1,4 +1,4 @@
-# docker-compose.yml
+# docker-compose-monitoring.yml for observability
 services:
   alloy:
     image: grafana/alloy:latest

@@ -1,0 +1,22 @@
+<ArchivalMetadata>
+  <documentId>string</documentId>
+  <title>string</title>
+  <creationDate>string</creationDate>
+  <clientId>string</clientId>
+  <documentType>string</documentType>
+  <pageCount>3</pageCount>
+  <payloadHash>string</payloadHash>
+  <zipHash>string</zipHash>
+  <pdfHash>string</pdfHash>
+  <provenance>
+    <migrationTimestamp>2004-05-11T12:27:49</migrationTimestamp>
+    <toolVersion>string</toolVersion>
+    <operator>string</operator>
+    <pageHashes>
+      <value>string</value>
+    </pageHashes>
+  </provenance>
+  <customFields>
+    <sourceSystem>string</sourceSystem>
+  </customFields>
+</ArchivalMetadata>

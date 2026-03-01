@@ -1,15 +1,16 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.utils;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * The type Hash utils test.
@@ -19,8 +20,7 @@ class HashUtilsTest {
     /**
      * The Temp dir.
      */
-    @TempDir
-    Path tempDir;
+    @TempDir Path tempDir;
 
     /**
      * Test sha 2561 with file paths.
@@ -29,10 +29,10 @@ class HashUtilsTest {
      */
     @Test
     void testSha2561withFilePaths() throws Exception {
-        assertThat(HashUtils.sha256(Paths.get("src/test/resources/tiffs/sample1.tiff")))
+        assertThat(HashUtils.sha256(Path.of("src/test/resources/tiffs/sample1.tiff")))
                 .isEqualTo("b6d36032c5a5d291a5d67ccdfdf09a5a90dedb29c50d0206660e453f77ffb8c5");
 
-        assertThatThrownBy(() -> HashUtils.sha256(Paths.get("this_file_does_not_exist.txt")))
+        assertThatThrownBy(() -> HashUtils.sha256(Path.of("this_file_does_not_exist.txt")))
                 .isInstanceOf(IOException.class);
     }
 

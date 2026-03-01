@@ -1,27 +1,11 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.service;
 
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.*;
 import ch.gryphus.chainvault.utils.HashUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
-import org.apache.tika.Tika;
-import org.springframework.http.MediaType;
-import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -36,6 +20,25 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import javax.imageio.ImageIO;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.tika.Tika;
+import org.springframework.http.MediaType;
+import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 /**
  * The type Migration service.
@@ -52,9 +55,7 @@ public class MigrationService {
     private final ObjectMapper objectMapper;
     private final Tika tika;
 
-    @Getter
-    @Setter
-    private String workingDirectory;
+    @Getter @Setter private String workingDirectory;
 
     /**
      * Extract and hash map.
@@ -71,34 +72,54 @@ public class MigrationService {
         ctx.setDocId(docId);
         map.put("ctx", ctx);
 
-        var meta = restClient.get()
+        var meta = getSourceMetadata(docId);
+        ctx.setMetadataHash(HashUtils.sha256(objectMapper.writeValueAsBytes(meta)));
+        map.put("meta", meta);
+
+        if (meta.getPayloadUrl() != null) {
+            payload = getPayload(docId, meta);
+            ctx.setPayloadHash(HashUtils.sha256(payload));
+            map.put("payload", payload);
+        }
+
+        return map;
+    }
+
+    private SourceMetadata getSourceMetadata(String docId) {
+        return restClient
+                .get()
                 .uri("/documents/{id}", docId)
                 .accept(MediaType.APPLICATION_JSON)
-                .exchange((request, response) -> {
-                    if (response.getStatusCode().is4xxClientError()) {
-                        throw new MigrationServiceException(docId, response.getStatusCode(), response.getHeaders());
-                    } else {
-                        return response.bodyTo(SourceMetadata.class);
-                    }
-                });
-        if (meta != null) {
-            map.put("meta", meta);
-            if (meta.getPayloadUrl() != null) {
-                payload = restClient.get()
-                        .uri(meta.getPayloadUrl())
-                        .accept(MediaType.APPLICATION_OCTET_STREAM)
-                        .exchange((request, response) -> {
+                .exchange(
+                        (request, response) -> {
                             if (response.getStatusCode().is4xxClientError()) {
-                                throw new MigrationServiceException(docId, response.getStatusCode(), response.getHeaders());
+                                throw new MigrationServiceException(
+                                        "Unable to find document with id: %s".formatted(docId),
+                                        response.getStatusCode(),
+                                        response.getHeaders());
+                            } else {
+                                return response.bodyTo(SourceMetadata.class);
+                            }
+                        });
+    }
+
+    private byte[] getPayload(String docId, SourceMetadata meta) {
+        return restClient
+                .get()
+                .uri(meta.getPayloadUrl())
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .exchange(
+                        (request, response) -> {
+                            if (response.getStatusCode().is4xxClientError()) {
+                                throw new MigrationServiceException(
+                                        "Unable to find payload for document with id: %s"
+                                                .formatted(docId),
+                                        response.getStatusCode(),
+                                        response.getHeaders());
                             } else {
                                 return response.bodyTo(byte[].class);
                             }
                         });
-                ctx.setPayloadHash(HashUtils.sha256(payload));
-                map.put("payload", payload);
-            }
-        }
-        return map;
     }
 
     /**
@@ -110,13 +131,15 @@ public class MigrationService {
      * @throws IOException              the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
-    public List<TiffPage> signTiffPages(byte[] payload, MigrationContext ctx) throws IOException, NoSuchAlgorithmException {
+    public List<TiffPage> signTiffPages(byte[] payload, MigrationContext ctx)
+            throws IOException, NoSuchAlgorithmException {
         List<TiffPage> pages = new ArrayList<>();
 
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                if (entry.getName().toLowerCase().endsWith(".tif") || entry.getName().toLowerCase().endsWith(".tiff")) {
+                if (entry.getName().toLowerCase().endsWith(".tif")
+                        || entry.getName().toLowerCase().endsWith(".tiff")) {
                     byte[] data = zis.readAllBytes();
 
                     String pageHash = HashUtils.sha256(data);
@@ -139,7 +162,8 @@ public class MigrationService {
      * @throws IOException              the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
-    public Path createChainZip(String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
+    public Path createChainZip(
+            String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
             throws IOException, NoSuchAlgorithmException {
 
         Path zipPath = new File("%s/%s_chain.zip".formatted(workingDirectory, docId)).toPath();
@@ -147,7 +171,7 @@ public class MigrationService {
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
             for (int i = 0; i < pages.size(); i++) {
                 TiffPage page = pages.get(i);
-                String entryName = String.format("page-%03d_%s", i + 1, page.name());
+                String entryName = "page-%03d_%s".formatted(i + 1, page.name());
 
                 zos.putNextEntry(new ZipEntry(entryName));
                 zos.write(page.data());
@@ -162,16 +186,17 @@ public class MigrationService {
             manifest.put("payloadHash", ctx.getPayloadHash());
 
             if (sourceMetadata != null) {
-                manifest.put("sourceMetadata", Map.of(
-                        "docId", sourceMetadata.getDocId(),
-                        "title", sourceMetadata.getTitle(),
-                        "creationDate", sourceMetadata.getCreationDate(),
-                        "clientId", sourceMetadata.getClientId()
-                ));
+                manifest.put(
+                        "sourceMetadata",
+                        Map.of(
+                                "docId", sourceMetadata.getDocId(),
+                                "title", sourceMetadata.getTitle(),
+                                "creationDate", sourceMetadata.getCreationDate(),
+                                "clientId", sourceMetadata.getClientId()));
             }
 
-            String manifestJson = objectMapper.writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(manifest);
+            String manifestJson =
+                    objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(manifest);
 
             zos.putNextEntry(new ZipEntry("manifest.json"));
             zos.write(manifestJson.getBytes(StandardCharsets.UTF_8));
@@ -193,17 +218,25 @@ public class MigrationService {
      * @param zipPath the zip path
      * @param pdfPath the pdf path
      */
-    public void uploadToSftp(MigrationContext ctx, String docId, String xml, Path zipPath, Path pdfPath) {
+    public void uploadToSftp(
+            MigrationContext ctx, String docId, String xml, Path zipPath, Path pdfPath) {
         String folder = "%s/%s".formatted(sftpTargetConfig.getRemoteDirectory(), docId);
-        sftpRemoteFileTemplate.execute(s -> {
-            if (!s.exists(folder)) {
-                s.mkdir(folder);
-            }
-            s.write(Files.newInputStream(zipPath.toFile().toPath()), "%s/%s_chain.zip".formatted(folder, docId));
-            s.write(Files.newInputStream(pdfPath.toFile().toPath()), "%s/%s.pdf".formatted(folder, docId));
-            s.write(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)), "%s/%s_meta.xml".formatted(folder, docId));
-            return null;
-        });
+        sftpRemoteFileTemplate.execute(
+                s -> {
+                    if (!s.exists(folder)) {
+                        s.mkdir(folder);
+                    }
+                    s.write(
+                            Files.newInputStream(zipPath.toFile().toPath()),
+                            "%s/%s_chain.zip".formatted(folder, docId));
+                    s.write(
+                            Files.newInputStream(pdfPath.toFile().toPath()),
+                            "%s/%s.pdf".formatted(folder, docId));
+                    s.write(
+                            new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)),
+                            "%s/%s_meta.xml".formatted(folder, docId));
+                    return null;
+                });
         log.info("Done {} | zipPath={} | pdf={}", docId, ctx.getZipHash(), ctx.getPdfHash());
     }
 
@@ -244,7 +277,10 @@ public class MigrationService {
         ArchivalMetadata metadata = new ArchivalMetadata();
 
         metadata.setDocumentId(ctx.getDocId());
-        metadata.setTitle(sourceMetadata.getTitle() != null ? sourceMetadata.getTitle() : "Untitled Document");
+        metadata.setTitle(
+                sourceMetadata.getTitle() != null
+                        ? sourceMetadata.getTitle()
+                        : "Untitled Document");
         metadata.setCreationDate(sourceMetadata.getCreationDate());
         metadata.setClientId(sourceMetadata.getClientId());
         metadata.setDocumentType(sourceMetadata.getDocumentType());
@@ -299,13 +335,19 @@ public class MigrationService {
     /**
      * Transform metadata to xml string.
      *
-     * @param meta the meta
-     * @param ctx  the ctx
+     * @param sourceMetadata   the sourceMetadata
+     * @param migrationContext the migrationContext
      * @return the string
-     * @throws JsonProcessingException the json processing exception
+     * @throws JacksonException the jackson exception
      */
-    public String transformMetadataToXml(SourceMetadata meta, MigrationContext ctx) throws JsonProcessingException {
-        return xmlMapper.writeValueAsString(buildXml(Objects.requireNonNull(meta), ctx));
+    public String transformMetadataToXml(
+            SourceMetadata sourceMetadata, MigrationContext migrationContext)
+            throws JacksonException {
+        return xmlMapper
+                .rebuild()
+                .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .build()
+                .writeValueAsString(buildXml(sourceMetadata, migrationContext));
     }
 
     /**
@@ -319,6 +361,12 @@ public class MigrationService {
         return new Tika().detect(in);
     }
 
+    /**
+     * Gets detected mime type.
+     *
+     * @param bytes the bytes
+     * @return the detected mime type
+     */
     public String getDetectedMimeType(byte[] bytes) {
         return new Tika().detect(bytes);
     }

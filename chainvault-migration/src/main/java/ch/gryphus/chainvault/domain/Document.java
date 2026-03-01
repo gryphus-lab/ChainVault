@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.domain;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 /**
  * The type Document.

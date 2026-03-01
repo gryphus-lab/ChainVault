@@ -63,6 +63,9 @@ flowable:
   check-process-definitions: true
   database-schema: flowable
   database-schema-update: true
+  async-executor-activate: true
+  async-executor-core-pool-size: 8
+  async-executor-max-pool-size: 32
   db-history-used: true
   deployment-name: SpringBootAutoDeployment
   history-level: audit
@@ -100,6 +103,8 @@ flowable:
   process-definition-location-prefix: 'classpath*:/processes/'
   process-definition-location-suffixes: '**.bpmn20.xml,**.bpmn'
   rest:
+    enabled: true
+    path: /flowable-restrest
     app:
       cors:
         allow-credentials: true
@@ -108,7 +113,12 @@ flowable:
         allowed-origins: '*'
         enabled: true
         exposed-headers: '*'
-
+  external-task:
+    client:
+      base-url: http://localhost:${server.port}/flowable-rest/service
+      worker-id: migration-worker-1
+      max-tasks: 20
+      lock-duration: 300000
 management:
   endpoints:
     web:

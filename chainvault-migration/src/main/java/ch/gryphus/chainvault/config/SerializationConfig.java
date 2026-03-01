@@ -1,12 +1,15 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.tika.Tika;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 /**
  * The type Serialization config.
@@ -17,7 +20,7 @@ public class SerializationConfig {
     /**
      * Object mapper object mapper.
      *
-     * @return the object mapper
+     * @return  the object mapper
      */
     @Bean
     @Primary
@@ -26,20 +29,29 @@ public class SerializationConfig {
     }
 
     /**
-     * Xml mapper xml mapper.
+     * Json mapper json mapper.
      *
-     * @param builder the builder
-     * @return the xml mapper
+     * @return  the json mapper
      */
     @Bean
-    public XmlMapper xmlMapper(Jackson2ObjectMapperBuilder builder) {
-        return builder.createXmlMapper(true).build();
+    public JsonMapper jsonMapper() {
+        return new JsonMapper();
+    }
+
+    /**
+     * Xml mapper xml mapper.
+     *
+     * @return  the xml mapper
+     */
+    @Bean
+    public XmlMapper xmlMapper() {
+        return new XmlMapper();
     }
 
     /**
      * Tika tika.
      *
-     * @return the tika
+     * @return  the tika
      */
     @Bean
     public Tika tika() {

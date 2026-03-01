@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="ArchivalMetadata">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="documentId" type="xs:string" />
+                <xs:element name="title" type="xs:string" />
+                <xs:element name="creationDate" type="xs:string" />
+                <xs:element name="clientId" type="xs:string" />
+                <xs:element name="documentType" type="xs:string" />
+                <xs:element name="pageCount" type="xs:int" />
+                <xs:element name="payloadHash" type="xs:string" />
+                <xs:element name="zipHash" type="xs:string" />
+                <xs:element name="pdfHash" type="xs:string" />
+                <xs:element name="provenance">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="migrationTimestamp" type="xs:dateTime" />
+                            <xs:element name="toolVersion" type="xs:string" />
+                            <xs:element name="operator" type="xs:string" />
+                            <xs:element name="pageHashes">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="value" type="xs:string" />
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="customFields">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="sourceSystem" type="xs:string" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
