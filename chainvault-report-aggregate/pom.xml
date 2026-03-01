@@ -7,7 +7,7 @@
     <groupId>ch.gryphus</groupId>
     <artifactId>chainvault-report-aggregate</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>chainvault-report-aggregate</name>
+    <name>${project.groupId}::${project.artifactId}</name>
     <description>Aggregate Coverage Report</description>
     <dependencies>
         <dependency>

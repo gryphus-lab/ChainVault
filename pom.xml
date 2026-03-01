@@ -12,7 +12,7 @@
     <artifactId>chainvault</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>ChainVault</name>
+    <name>${project.groupId}::${project.artifactId}</name>
     <url/>
     <licenses>
         <license/>
@@ -34,9 +34,9 @@
     </modules>
 
     <properties>
-        <java.version>21</java.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>25</java.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
 
         <spring-boot.version>4.0.3</spring-boot.version>
         <flowable.version>8.0.0</flowable.version>
@@ -48,19 +48,20 @@
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
         <lombok.version>1.18.42</lombok.version>
         <pdfbox.version>3.0.6</pdfbox.version>
-        <springdoc-openapi.version>3.0.1</springdoc-openapi.version>
+        <springdoc-openapi.version>3.0.2</springdoc-openapi.version>
         <testcontainers.version>2.0.3</testcontainers.version>
         <tika-core.version>3.2.3</tika-core.version>
         <xmlunit.version>2.11.0</xmlunit.version>
 
         <!-- plugins -->
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-        <liquibase-maven-plugin.version>4.23.2</liquibase-maven-plugin.version>
+        <liquibase-maven-plugin.version>5.0.1</liquibase-maven-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
         <spotless.version>3.2.1</spotless.version>
 
         <!-- sonar -->
+        <sonar.projectKey>gryphus-lab_chainvault</sonar.projectKey>
         <sonar.organization>gryphus-lab</sonar.organization>
 
         <!-- exclude spring boot configuration classes -->

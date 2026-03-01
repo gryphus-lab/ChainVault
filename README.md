@@ -2,6 +2,11 @@
 
 Lightweight orchestration service for document migration and processing used by Gryphus Lab.
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gryphus-lab_chainvault&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gryphus-lab_chainvault)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=gryphus-lab_chainvault&metric=bugs)](https://sonarcloud.io/summary/new_code?id=gryphus-lab_chainvault)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=gryphus-lab_chainvault&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=gryphus-lab_chainvault)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=gryphus-lab_chainvault&metric=coverage)](https://sonarcloud.io/summary/new_code?id=gryphus-lab_chainvault)
+
 ## Overview
 
 `chainvault` is a Spring Boot-based migration/orchestration application that coordinates document extraction,

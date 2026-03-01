@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>chainvault-migration</artifactId>
-    <name>ChainVault Migration</name>
+    <name>${project.groupId}::${project.artifactId}</name>
     <description>Migration service layer: document extraction, transformation, signing, merging and SFTP upload.</description>
     <properties>
     </properties>
