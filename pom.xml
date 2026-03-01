@@ -55,7 +55,7 @@
 
         <!-- plugins -->
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-        <liquibase-maven-plugin.version>4.23.2</liquibase-maven-plugin.version>
+        <liquibase-maven-plugin.version>5.0.1</liquibase-maven-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
         <spotless.version>3.2.1</spotless.version>
