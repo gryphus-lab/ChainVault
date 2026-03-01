@@ -10,7 +10,7 @@
 
     <groupId>ch.gryphus</groupId>
     <artifactId>chainvault</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>ChainVault</name>
     <url/>
@@ -37,30 +37,35 @@
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <lombok.version>1.18.42</lombok.version>
 
         <spring-boot.version>4.0.3</spring-boot.version>
-        <springdoc-openapi.version>3.0.1</springdoc-openapi.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
-        <camunda.version>8.8.13</camunda.version>
+        <flowable.version>8.0.0</flowable.version>
+
+        <!-- dependencies -->
         <commons-compress.version>1.28.0</commons-compress.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
         <jsonassert.version>1.5.3</jsonassert.version>
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
+        <lombok.version>1.18.42</lombok.version>
         <pdfbox.version>3.0.6</pdfbox.version>
-        <tika-core.version>3.2.3</tika-core.version>
-        <flowable.version>8.0.0</flowable.version>
+        <springdoc-openapi.version>3.0.1</springdoc-openapi.version>
         <testcontainers.version>2.0.3</testcontainers.version>
-        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-        <liquibase-maven-plugin.version>4.23.2</liquibase-maven-plugin.version>
+        <tika-core.version>3.2.3</tika-core.version>
         <xmlunit.version>2.11.0</xmlunit.version>
 
+        <!-- plugins -->
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <liquibase-maven-plugin.version>4.23.2</liquibase-maven-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
         <spotless.version>3.2.1</spotless.version>
 
+        <!-- sonar -->
         <sonar.organization>gryphus-lab</sonar.organization>
 
         <!-- exclude spring boot configuration classes -->
         <sonar.exclusions>**/config/**.*</sonar.exclusions>
+
     </properties>
     <profiles>
         <profile>
@@ -192,7 +197,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <build>
         <plugins>
             <plugin>
@@ -223,6 +227,24 @@
                         </fileset>
                     </filesets>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+                <configuration>
+                    <rules>
+                        <banDuplicatePomDependencyVersions/>
+                    </rules>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
