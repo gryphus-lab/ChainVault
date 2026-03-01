@@ -61,6 +61,7 @@
         <spotless.version>3.2.1</spotless.version>
 
         <!-- sonar -->
+        <sonar.projectKey>chainvault</sonar.projectKey>
         <sonar.organization>gryphus-lab</sonar.organization>
 
         <!-- exclude spring boot configuration classes -->
