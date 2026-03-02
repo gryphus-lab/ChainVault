@@ -70,7 +70,7 @@ docker-compose up --build
 To build and run the app stack together with the monitoring stack (Prometheus, Loki, Alloy, Grafana):
 
 ```bash
-./run_chainvault_docker.sh
+./start_chainvault_docker.sh
 ```
 
 This runs `docker-compose -f docker-compose-monitoring.yml -f docker-compose.yml up -d` after a clean build.

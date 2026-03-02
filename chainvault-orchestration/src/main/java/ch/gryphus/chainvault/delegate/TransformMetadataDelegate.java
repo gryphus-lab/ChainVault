@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
 
 /**
  * The type Transform metadata delegate.
@@ -38,12 +37,8 @@ public class TransformMetadataDelegate implements JavaDelegate {
 
         MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
         SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");
-        String xml;
-        try {
-            xml = migrationService.transformMetadataToXml(meta, ctx);
-        } catch (JacksonException e) {
-            throw new IllegalStateException("failed to transform metadata to xml", e);
-        }
+        String xml = migrationService.transformMetadataToXml(meta, ctx);
+
         execution.setTransientVariable("xml", xml);
 
         log.info("TransformDocumentDelegate completed for docId: {}", docId);

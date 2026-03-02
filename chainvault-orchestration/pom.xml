@@ -13,6 +13,8 @@
     <artifactId>chainvault-orchestration</artifactId>
     <name>${project.groupId}::${project.artifactId}</name>
     <description>Flowable BPMN orchestration layer: process definition, delegates and REST API.</description>
+    <properties>
+    </properties>
 
     <dependencies>
         <dependency>

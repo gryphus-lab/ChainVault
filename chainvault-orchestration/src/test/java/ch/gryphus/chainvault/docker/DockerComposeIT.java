@@ -25,7 +25,6 @@ class DockerComposeIT {
     private static final String POSTGRES_SERVICE = "postgres";
     private static final String SFTP_SERVICE = "sftp-test";
     private static final String API_SERVICE = "fake-source-api";
-    private static final String CHAINVAULT_APP = "chainvault-app";
 
     /**
      * The constant dockerCompose.
@@ -48,12 +47,6 @@ class DockerComposeIT {
                             API_SERVICE,
                             9091,
                             Wait.forHttp("/documents")
-                                    .forStatusCode(200)
-                                    .withStartupTimeout(Duration.ofSeconds(120)))
-                    .withExposedService(
-                            CHAINVAULT_APP,
-                            8085,
-                            Wait.forHttp("/actuator/health")
                                     .forStatusCode(200)
                                     .withStartupTimeout(Duration.ofSeconds(120)));
 

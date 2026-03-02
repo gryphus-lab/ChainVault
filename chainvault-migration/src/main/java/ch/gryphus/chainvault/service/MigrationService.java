@@ -316,8 +316,7 @@ public class MigrationService {
      * @throws JacksonException the jackson exception
      */
     public String transformMetadataToXml(
-            SourceMetadata sourceMetadata, MigrationContext migrationContext)
-            throws JacksonException {
+            SourceMetadata sourceMetadata, MigrationContext migrationContext) {
         return xmlMapper
                 .rebuild()
                 .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
