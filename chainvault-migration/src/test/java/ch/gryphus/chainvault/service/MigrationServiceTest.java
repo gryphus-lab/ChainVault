@@ -449,7 +449,7 @@ class MigrationServiceTest {
         byte[] zip = createZipWithTiffs(List.of("readme.txt", "no tiffs here"));
 
         assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(zip, ctx))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(MigrationServiceException.class)
                 .hasMessage("No TIFF pages found in ZIP");
     }
 

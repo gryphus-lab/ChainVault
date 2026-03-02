@@ -21,4 +21,8 @@ public class MigrationServiceException extends RuntimeException {
             String message, HttpStatusCode statusCode, HttpHeaders headers) {
         super(message + " See exception details: " + statusCode + " " + headers);
     }
+
+    public MigrationServiceException(String message) {
+        super(message);
+    }
 }

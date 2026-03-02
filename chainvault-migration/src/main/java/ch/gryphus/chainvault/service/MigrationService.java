@@ -4,13 +4,21 @@
 package ch.gryphus.chainvault.service;
 
 import ch.gryphus.chainvault.config.SftpTargetConfig;
-import ch.gryphus.chainvault.domain.*;
+import ch.gryphus.chainvault.domain.ArchivalMetadata;
+import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.domain.MigrationProvenance;
+import ch.gryphus.chainvault.domain.SourceMetadata;
+import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.*;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
@@ -25,6 +34,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -77,7 +87,7 @@ public class MigrationService {
         map.put("meta", meta);
 
         if (meta.getPayloadUrl() != null) {
-            payload = getPayload(docId, meta);
+            payload = getPayloadBytes(docId, meta);
             ctx.setPayloadHash(HashUtils.sha256(payload));
             map.put("payload", payload);
         }
@@ -103,7 +113,7 @@ public class MigrationService {
                         });
     }
 
-    private byte[] getPayload(String docId, SourceMetadata meta) {
+    private byte[] getPayloadBytes(String docId, SourceMetadata meta) {
         return restClient
                 .get()
                 .uri(meta.getPayloadUrl())
@@ -135,6 +145,65 @@ public class MigrationService {
             throws IOException, NoSuchAlgorithmException {
         List<TiffPage> pages = new ArrayList<>();
 
+        // security hotspot fix against zip bombs
+        File file = new File("%s/temp_%s.zip".formatted(workingDirectory, ctx.getDocId()));
+        FileUtils.writeByteArrayToFile(file, payload);
+
+        try (ZipFile zipFile = new ZipFile(file)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+            int totalSizeArchive = 0;
+            int totalEntryArchive = 0;
+
+            int thresholdSize = 1000000000; // 1GB
+            double thresholdRatio = 10;
+            int thresholdEntries = 10000;
+
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                InputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+                try (OutputStream os =
+                        new BufferedOutputStream(
+                                new FileOutputStream(
+                                        workingDirectory + "/output_onlyfortesting.txt"))) {
+
+                    totalEntryArchive++;
+
+                    int nBytes;
+                    byte[] buffer = new byte[2048];
+                    int totalSizeEntry = 0;
+
+                    while ((nBytes = is.read(buffer)) > 0) {
+                        os.write(buffer, 0, nBytes);
+                        totalSizeEntry += nBytes;
+                        totalSizeArchive += nBytes;
+
+                        double compressionRatio =
+                                (double) totalSizeEntry / entry.getCompressedSize();
+                        if (compressionRatio > thresholdRatio) {
+                            // ratio between compressed and uncompressed data is highly suspicious,
+                            throw new MigrationServiceException(
+                                    "Ratio between compressed and uncompressed data is greater than %s"
+                                            .formatted(thresholdRatio));
+                        }
+                    }
+                }
+
+                if (totalSizeArchive > thresholdSize) {
+                    throw new MigrationServiceException(
+                            "Total size of the archive is greater than the threshold %d bytes"
+                                    .formatted(thresholdSize));
+                }
+
+                if (totalEntryArchive > thresholdEntries) {
+                    // too much entries in this archive, can lead to inodes exhaustion of the system
+                    throw new MigrationServiceException(
+                            "Number of entries in the archive is greater than %d"
+                                    .formatted(thresholdEntries));
+                }
+            }
+        }
+
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
@@ -150,7 +219,7 @@ public class MigrationService {
         }
 
         if (pages.isEmpty()) {
-            throw new IllegalStateException("No TIFF pages found in ZIP");
+            throw new MigrationServiceException("No TIFF pages found in ZIP");
         }
 
         return pages;
