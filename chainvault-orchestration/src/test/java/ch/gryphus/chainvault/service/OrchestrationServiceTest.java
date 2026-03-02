@@ -1,5 +1,6 @@
 package ch.gryphus.chainvault.service;
 
+import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,8 @@ class OrchestrationServiceTest {
     @Mock
     private RuntimeService mockRuntimeService;
 
+    @Mock private MigrationAuditRepository migrationAuditRepository;
+
     private OrchestrationService orchestrationServiceUnderTest;
 
     @Mock
@@ -34,7 +37,7 @@ class OrchestrationServiceTest {
      */
     @BeforeEach
     void setUp() {
-        orchestrationServiceUnderTest = new OrchestrationService(mockRuntimeService);
+        orchestrationServiceUnderTest = new OrchestrationService(mockRuntimeService, migrationAuditRepository);
         when(mockProcessInstance.getProcessInstanceId()).thenReturn("test");
     }
 

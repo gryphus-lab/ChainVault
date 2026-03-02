@@ -68,6 +68,8 @@
         <!-- exclude spring boot configuration classes -->
         <sonar.exclusions>**/config/**.*</sonar.exclusions>
 
+        <!-- monitoring -->
+        <otel.version>2.9.0</otel.version>
     </properties>
     <profiles>
         <profile>

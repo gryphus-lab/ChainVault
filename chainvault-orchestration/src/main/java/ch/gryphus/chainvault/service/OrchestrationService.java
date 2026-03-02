@@ -3,6 +3,9 @@
  */
 package ch.gryphus.chainvault.service;
 
+import ch.gryphus.chainvault.entity.MigrationAudit;
+import ch.gryphus.chainvault.repository.MigrationAuditRepository;
+import java.time.Instant;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RuntimeService;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class OrchestrationService {
     private final RuntimeService runtimeService;
+    private final MigrationAuditRepository auditRepo;
 
     /**
      * Instantiates a new Orchestration service.
@@ -25,8 +29,9 @@ public class OrchestrationService {
      * @param runtimeService the runtime service
      */
     @Autowired
-    public OrchestrationService(RuntimeService runtimeService) {
+    public OrchestrationService(RuntimeService runtimeService, MigrationAuditRepository auditRepo) {
         this.runtimeService = runtimeService;
+        this.auditRepo = auditRepo;
     }
 
     /**
@@ -39,6 +44,17 @@ public class OrchestrationService {
     public String startProcess(Map<String, Object> variables) {
         ProcessInstance processInstance =
                 runtimeService.startProcessInstanceByKey("chainvault", variables);
+
+        // Create audit record
+        MigrationAudit audit = new MigrationAudit();
+        audit.setProcessInstanceKey(Long.valueOf(processInstance.getProcessInstanceId()));
+        audit.setProcessDefinitionKey(Long.valueOf(processInstance.getProcessDefinitionKey()));
+        audit.setBpmnProcessId("chainvault");
+        audit.setDocumentId((String) variables.get("docId"));
+        audit.setStatus(MigrationAudit.MigrationStatus.RUNNING);
+        audit.setStartedAt(Instant.now());
+        auditRepo.save(audit);
+
         return processInstance.getProcessInstanceId();
     }
 }

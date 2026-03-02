@@ -71,3 +71,53 @@ databaseChangeLog:
             relativeToChangelogFile: false
             splitStatements: false
             stripComments: false
+  - changeSet:
+      id: 20260302-add-trace-id-to-migration-audit
+      author: migration
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            columnExists:
+              tableName: migration_audit
+              columnName: trace_id
+      changes:
+        - addColumn:
+            tableName: migration_audit
+            columns:
+              - column:
+                  name: trace_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: true
+                  remarks: OpenTelemetry trace ID for distributed tracing correlation (64-char hex string)
+        - createIndex:
+            tableName: migration_audit
+            indexName: idx_migration_audit_trace_id
+            columns:
+              - column:
+                  name: trace_id
+  - changeSet:
+      id: 20260302-add-trace-id-to-migration-event
+      author: migration
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            columnExists:
+              tableName: migration_event
+              columnName: trace_id
+      changes:
+        - addColumn:
+            tableName: migration_event
+            columns:
+              - column:
+                  name: trace_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: true
+                  remarks: OpenTelemetry trace ID for correlation with migration audit
+        - createIndex:
+            tableName: migration_event
+            indexName: idx_migration_event_trace_id
+            columns:
+              - column:
+                  name: trace_id
