@@ -57,6 +57,9 @@ class DockerComposeIT {
     @DisplayName("Docker compose container should start successfully")
     void testDockerComposeStarts() {
         assertThat(dockerCompose).isNotNull();
+        assertThat(dockerCompose.getContainerByServiceName(POSTGRES_SERVICE)).isNotNull();
+        assertThat(dockerCompose.getContainerByServiceName(SFTP_SERVICE)).isNotNull();
+        assertThat(dockerCompose.getContainerByServiceName(API_SERVICE)).isNotNull();
     }
 
     /**
@@ -138,7 +141,7 @@ class DockerComposeIT {
     void testPortMapping() {
         // Postgres: 5432 -> random local port
         Integer postgresPort = dockerCompose.getServicePort(POSTGRES_SERVICE, 5432);
-        assertThat(postgresPort).isGreaterThanOrEqualTo(5432);
+        assertThat(postgresPort).isGreaterThan(5432);
 
         // SFTP: 22 -> random local port (dynamic)
         Integer sftpPort = dockerCompose.getServicePort(SFTP_SERVICE, 22);

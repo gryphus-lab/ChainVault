@@ -28,7 +28,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 @SpringBootTest
 @Testcontainers
-class OrchestrationServiceIT extends BaseIT {
+class OrchestrationServiceIT extends BaseServiceIT {
 
     /**
      * The constant jsonServer.

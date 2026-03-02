@@ -24,7 +24,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -32,31 +31,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 @Testcontainers
 @DisplayName("Docker Services End-to-End Integration Tests")
-class DockerServicesE2EIT {
-
-    private static final String DB_NAME = "chainvault";
-    private static final String DB_USER = "chainvault";
-
-    // Test credentials - hardcoded for testing purposes only
-    @SuppressWarnings("squid:S2068")
-    private static final String DB_PASSWORD = "secret";
-
-    /**
-     * The constant postgres.
-     */
-    @Container
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
-                    .withDatabaseName(DB_NAME)
-                    .withUsername(DB_USER)
-                    .withPassword(DB_PASSWORD)
-                    .withExposedPorts(5432)
-                    .withClasspathResourceMapping(
-                            "db/init-scripts", "/docker-entrypoint-initdb.d", BindMode.READ_ONLY)
-                    .waitingFor(
-                            Wait.forLogMessage(
-                                    ".*database system is ready to accept connections.*\\s", 2))
-                    .withStartupTimeout(Duration.ofSeconds(120));
+class DockerServicesE2EIT extends BaseDockerIT {
 
     /**
      * The constant sftp.

@@ -39,5 +39,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           TESTCONTAINERS_RYUK_DISABLED: "true"
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=gryphus-lab_chainvault -Pcoverage
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar -Pcoverage
