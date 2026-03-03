@@ -11,7 +11,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-§/**
+/**
  * The type Base docker it.
  */
 public abstract class BaseDockerIT {

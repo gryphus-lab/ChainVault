@@ -43,12 +43,14 @@ class OrchestrationRestControllerTest {
         String json = objectMapper.writeValueAsString(variables);
 
         // Run the test and verify the results
-        assertThat(mockMvcTester
+        assertThat(
+                        mockMvcTester
                                 .post()
                                 .uri("/chainvault/process")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json))
                 .hasStatus(HttpStatus.CREATED)
-                .bodyJson().isNotNull();
+                .bodyJson()
+                .isNotNull();
     }
 }

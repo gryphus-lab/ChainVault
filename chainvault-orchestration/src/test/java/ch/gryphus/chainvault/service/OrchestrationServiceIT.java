@@ -10,7 +10,6 @@ import static org.awaitility.Awaitility.await;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
-
 import org.flowable.engine.delegate.BpmnError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
