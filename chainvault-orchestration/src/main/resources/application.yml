@@ -140,3 +140,21 @@ springdoc:
   swagger-ui:
     disable-swagger-default-url: true
     path: /swagger-ui.html
+
+otel:
+  service:
+    name: chainvault-migration   # appears in traces
+  exporter:
+    otlp:
+      endpoint: http://localhost:4318/v1/traces   # OTLP/HTTP (Tempo, Jaeger, Grafana Cloud)
+      # endpoint: https://your-tempo-or-jaeger:4318
+      # protocol: http/protobuf   # or grpc
+      # headers:
+      #   authorization: "Basic ..."
+
+  # Optional: disable noisy instrumentation
+  instrumentation:
+    spring-webclient:
+      enabled: true
+    jdbc:
+      enabled: true
