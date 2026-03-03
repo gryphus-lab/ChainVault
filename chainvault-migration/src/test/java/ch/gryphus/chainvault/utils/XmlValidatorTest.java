@@ -12,12 +12,21 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * The type Xml validator test.
+ */
 class XmlValidatorTest {
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         XmlValidator.setXsdPath("src/test/resources/xmls/ArchivalMetadata.xsd");
     }
 
+    /**
+     * Test valid xml.
+     */
     @SneakyThrows
     @Test
     void testValidXML() {
@@ -28,6 +37,9 @@ class XmlValidatorTest {
                 .isTrue();
     }
 
+    /**
+     * Test invalid xml.
+     */
     @SneakyThrows
     @Test
     void testInvalidXML() {
@@ -38,6 +50,9 @@ class XmlValidatorTest {
                 .isFalse();
     }
 
+    /**
+     * Test set xsd path.
+     */
     @Test
     void testSetXsdPath() {
         // Verify the results

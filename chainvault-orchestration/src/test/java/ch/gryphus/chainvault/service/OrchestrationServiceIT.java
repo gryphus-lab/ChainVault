@@ -10,6 +10,7 @@ import static org.awaitility.Awaitility.await;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
+import org.flowable.engine.delegate.BpmnError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * The type Migration service it.
+ * The type Orchestration service it.
  */
 @SpringBootTest
 @Testcontainers
@@ -62,6 +63,9 @@ class OrchestrationServiceIT extends BaseServiceIT {
 
     @Autowired private OrchestrationService orchestrationService;
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         migrationService.setWorkingDirectory("/tmp");
@@ -147,7 +151,6 @@ class OrchestrationServiceIT extends BaseServiceIT {
 
         assertThatException()
                 .isThrownBy(() -> orchestrationService.startProcess(variables))
-                .isInstanceOf(MigrationServiceException.class)
-                .withMessageContaining("Unable to find document with id: " + invalidId);
+                .isInstanceOf(BpmnError.class);
     }
 }

@@ -11,9 +11,16 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * The type Base docker it.
+ */
 public abstract class BaseDockerIT {
 
+    /**
+     * The constant DB_NAME.
+     */
     protected static final String DB_NAME = "chainvault";
+
     private static final String DB_USER = "chainvault";
 
     // Test credentials - hardcoded for testing purposes only

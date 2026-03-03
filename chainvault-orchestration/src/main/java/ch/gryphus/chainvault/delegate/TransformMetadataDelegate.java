@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.delegate;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.SourceMetadata;
 import ch.gryphus.chainvault.service.MigrationService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
@@ -16,18 +17,10 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("transformMetadata")
+@RequiredArgsConstructor
 public class TransformMetadataDelegate implements JavaDelegate {
 
     private final MigrationService migrationService;
-
-    /**
-     * Instantiates a new Transform metadata delegate.
-     *
-     * @param migrationService the migration service
-     */
-    public TransformMetadataDelegate(MigrationService migrationService) {
-        this.migrationService = migrationService;
-    }
 
     @Override
     public void execute(DelegateExecution execution) {

@@ -20,7 +20,8 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
-    # default schema, contexts etc can be set here if needed
+    default-schema: chainvault
+    liquibase-schema: chainvault
 
   # JPA / Hibernate (optional - if you use entities/repositories)
   jpa:
@@ -51,7 +52,7 @@ target:
 # Source Archive Config
 source:
   api:
-    base-url: http://localhost:9090
+    base-url: http://localhost:9091
     token: dummy-for-test
 
 migration:
@@ -140,3 +141,21 @@ springdoc:
   swagger-ui:
     disable-swagger-default-url: true
     path: /swagger-ui.html
+
+otel:
+  service:
+    name: chainvault-migration   # appears in traces
+  exporter:
+    otlp:
+      endpoint: http://localhost:4318/v1/traces
+      # endpoint: https://your-tempo-or-jaeger:4318
+      # protocol: http/protobuf   # or grpc
+      # headers:
+      #   authorization: "Basic ..."
+
+  # Optional: disable noisy instrumentation
+  instrumentation:
+    spring-webclient:
+      enabled: true
+    jdbc:
+      enabled: true

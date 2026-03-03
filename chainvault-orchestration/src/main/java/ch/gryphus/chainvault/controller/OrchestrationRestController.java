@@ -41,12 +41,11 @@ public class OrchestrationRestController {
     @PostMapping(
             value = "/process",
             consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> startProcessInstance(@RequestBody Map<String, Object> payload) {
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> startProcessInstance(
+            @RequestBody Map<String, Object> payload) {
         String processId = orchestrationService.startProcess(payload);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(
-                        "Process instance started for payload:%s with id:%s"
-                                .formatted(payload, processId));
+                .body(Map.of("processId", processId, "payload", payload));
     }
 }

@@ -3,8 +3,8 @@ CREATE TABLE migration_audit (
     id                      BIGSERIAL           PRIMARY KEY,
 
     -- Camunda correlation
-    process_instance_key    BIGINT              NOT NULL,
-    process_definition_key  BIGINT              NOT NULL,
+    process_instance_key    VARCHAR(100)        NOT NULL,
+    process_definition_key  VARCHAR(100)        NOT NULL,
     bpmn_process_id         VARCHAR(100)        NOT NULL,
 
     -- Business identifiers

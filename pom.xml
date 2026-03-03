@@ -59,7 +59,7 @@
         <liquibase-maven-plugin.version>5.0.1</liquibase-maven-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
-        <spotless.version>3.2.1</spotless.version>
+        <spotless.version>3.3.0</spotless.version>
 
         <!-- sonar -->
         <sonar.projectKey>gryphus-lab_chainvault</sonar.projectKey>
@@ -68,6 +68,8 @@
         <!-- exclude spring boot configuration classes -->
         <sonar.exclusions>**/config/**.*</sonar.exclusions>
 
+        <!-- monitoring -->
+        <otel.version>2.9.0</otel.version>
     </properties>
     <profiles>
         <profile>
@@ -282,7 +284,6 @@
                     <ratchetFrom>origin/main</ratchetFrom>
                     <formats>
                         <format>
-                            <!-- define the files to apply to -->
                             <includes>
                                 <include>.gitattributes</include>
                                 <include>.gitignore</include>
@@ -308,6 +309,12 @@
                             <file>${maven.multiModuleProjectDirectory}/license-header</file>
                         </licenseHeader>
                     </java>
+                    <yaml>
+                        <includes>
+                            <include>src/**/*.yaml</include>
+                            <include>src/**/*.yml</include>
+                        </includes>
+                    </yaml>
                 </configuration>
             </plugin>
         </plugins>

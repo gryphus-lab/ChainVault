@@ -22,6 +22,11 @@ public class MigrationServiceException extends RuntimeException {
         super(message + " See exception details: " + statusCode + " " + headers);
     }
 
+    /**
+     * Instantiates a new Migration service exception.
+     *
+     * @param message the message
+     */
     public MigrationServiceException(String message) {
         super(message);
     }

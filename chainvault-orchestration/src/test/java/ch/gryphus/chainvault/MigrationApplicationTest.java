@@ -11,8 +11,14 @@ import org.mockito.MockedStatic;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+/**
+ * The type Migration application test.
+ */
 class MigrationApplicationTest {
 
+    /**
+     * Test main with mock.
+     */
     @Test
     void testMainWithMock() {
         try (MockedStatic<SpringApplication> springApplicationMock =
