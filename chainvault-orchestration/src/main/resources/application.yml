@@ -121,6 +121,10 @@ flowable:
       max-tasks: 20
       lock-duration: 300000
 management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
   endpoints:
     web:
       exposure:
@@ -148,10 +152,7 @@ otel:
   exporter:
     otlp:
       endpoint: http://localhost:4318/v1/traces
-      # endpoint: https://your-tempo-or-jaeger:4318
-      # protocol: http/protobuf   # or grpc
-      # headers:
-      #   authorization: "Basic ..."
+      protocol: http/protobuf
 
   # Optional: disable noisy instrumentation
   instrumentation:
