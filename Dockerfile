@@ -13,8 +13,8 @@ ARG USER_GID=$USER_UID
 ARG CHAINVAULT_VERSION=1.0.0-SNAPSHOT
 
 # Create the user
-RUN addgroup -S $USERNAME \
-    && adduser -S $USERNAME -G $USERNAME
+RUN addgroup -S "$USERNAME" \
+    && adduser -S "$USERNAME" -G "$USERNAME"
 
 USER $USERNAME
 WORKDIR /app
