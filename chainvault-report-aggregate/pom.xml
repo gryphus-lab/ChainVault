@@ -27,7 +27,7 @@
             ${maven.multiModuleProjectDirectory}/report-aggregate/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-        <spotless.version>3.2.1</spotless.version>
+        <spotless.version>3.3.0</spotless.version>
         <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
     </properties>
     <build>
