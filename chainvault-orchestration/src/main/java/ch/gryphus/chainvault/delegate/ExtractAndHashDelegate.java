@@ -37,7 +37,7 @@ public class ExtractAndHashDelegate implements JavaDelegate {
         Span span = Span.current();
 
         String docId = (String) execution.getVariable("docId");
-        String piKey = execution.getRootProcessInstanceId();
+        String piKey = execution.getProcessInstanceId();
 
         // Add attributes to the current span
         span.setAttribute("document.id", docId);
@@ -56,6 +56,9 @@ public class ExtractAndHashDelegate implements JavaDelegate {
             execution.setTransientVariable("ctx", map.get("ctx"));
             execution.setTransientVariable("meta", map.get("meta"));
             execution.setTransientVariable("payload", map.get("payload"));
+
+            // Update audit
+            updateAudit(piKey, MigrationAudit.MigrationStatus.RUNNING, null);
 
         } catch (Exception e) {
             // Record failure event + exception
@@ -80,17 +83,19 @@ public class ExtractAndHashDelegate implements JavaDelegate {
 
     private void updateAudit(String piKey, MigrationAudit.MigrationStatus status, String errorMsg) {
 
-        MigrationAudit audit = new MigrationAudit();
-        if (auditRepo.findByProcessInstanceKey(piKey).isPresent()) {
-            audit.setStatus(status);
-            if (status == MigrationAudit.MigrationStatus.FAILED) {
-                audit.setFailureReason(errorMsg);
-                audit.setErrorCode("EXTRACTION_FAILED");
-            }
-            audit.setCompletedAt(Instant.now());
-            audit.setTraceId(Span.current().getSpanContext().getTraceId());
+        MigrationAudit audit =
+                auditRepo
+                        .findByProcessInstanceKey(piKey)
+                        .orElseThrow(() -> new IllegalStateException("No audit for " + piKey));
 
-            auditRepo.save(audit);
+        audit.setStatus(status);
+        if (status == MigrationAudit.MigrationStatus.FAILED) {
+            audit.setFailureReason(errorMsg);
+            audit.setErrorCode("EXTRACTION_FAILED");
         }
+        audit.setCompletedAt(Instant.now());
+        audit.setTraceId(Span.current().getSpanContext().getTraceId());
+
+        auditRepo.save(audit);
     }
 }

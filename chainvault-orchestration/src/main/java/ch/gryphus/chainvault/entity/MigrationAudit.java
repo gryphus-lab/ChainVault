@@ -13,8 +13,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Main audit record for each document migration attempt.
- * Tracks lifecycle, status, correlation to Flowable process, and key outputs/errors.
+ * The type Migration audit.
  */
 @Entity
 @Table(
@@ -142,28 +141,26 @@ public class MigrationAudit {
     // ───────────────────────────────────────────────
     public enum MigrationStatus {
         /**
-         * Pending migration status.
+         *Pending migration status.
          */
         PENDING,
         /**
-         * Running migration status.
+         *Running migration status.
          */
         RUNNING,
         /**
-         * Success migration status.
+         *Success migration status.
          */
         SUCCESS,
         /**
-         * Failed migration status.
+         *Failed migration status.
          */
         FAILED,
         /**
-         * Cancelled migration status.
+         *Cancelled migration status.
          */
         CANCELLED,
-        /**
-         * Retrying migration status.
-         */
+        /** Retrying migration status. */
         RETRYING
     }
 

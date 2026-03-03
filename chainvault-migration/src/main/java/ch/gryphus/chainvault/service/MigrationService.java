@@ -45,7 +45,6 @@ import org.springframework.http.MediaType;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.xml.XmlMapper;
@@ -71,31 +70,35 @@ public class MigrationService {
      * Extract and hash map.
      *
      * @param docId the doc id
-     * @return the map
-     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @return  the map
      */
-    public Map<String, Object> extractAndHash(String docId) throws NoSuchAlgorithmException {
+    public Map<String, Object> extractAndHash(String docId) {
         Map<String, Object> map = new HashMap<>();
         byte[] payload;
 
-        var ctx = new MigrationContext();
-        ctx.setDocId(docId);
-        map.put("ctx", ctx);
+        try {
+            var ctx = new MigrationContext();
+            ctx.setDocId(docId);
+            map.put("ctx", ctx);
 
-        var meta = getSourceMetadata(docId);
-        ctx.setMetadataHash(HashUtils.sha256(objectMapper.writeValueAsBytes(meta)));
-        map.put("meta", meta);
+            var meta = getSourceMetadata(docId);
+            ctx.setMetadataHash(HashUtils.sha256(objectMapper.writeValueAsBytes(meta)));
+            map.put("meta", meta);
 
-        if (meta.getPayloadUrl() != null) {
-            payload = getPayloadBytes(docId, meta);
-            ctx.setPayloadHash(HashUtils.sha256(payload));
-            map.put("payload", payload);
+            if (meta.getPayloadUrl() != null) {
+                payload = getPayloadBytes(docId, meta);
+                ctx.setPayloadHash(HashUtils.sha256(payload));
+                map.put("payload", payload);
+            }
+
+            return map;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new MigrationServiceException(e.getMessage());
         }
-
-        return map;
     }
 
-    private SourceMetadata getSourceMetadata(String docId) {
+    private SourceMetadata getSourceMetadata(String docId) throws MigrationServiceException {
         return restClient
                 .get()
                 .uri("/documents/{id}", docId)
@@ -113,7 +116,8 @@ public class MigrationService {
                         });
     }
 
-    private byte[] getPayloadBytes(String docId, SourceMetadata meta) {
+    private byte[] getPayloadBytes(String docId, SourceMetadata meta)
+            throws MigrationServiceException {
         return restClient
                 .get()
                 .uri(meta.getPayloadUrl())
@@ -136,9 +140,9 @@ public class MigrationService {
      * Sign tiff pages list.
      *
      * @param payload the payload
-     * @param ctx     the ctx
-     * @return the list
-     * @throws IOException              the io exception
+     * @param ctx the ctx
+     * @return  the list
+     * @throws IOException the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public List<TiffPage> signTiffPages(byte[] payload, MigrationContext ctx)
@@ -228,12 +232,12 @@ public class MigrationService {
     /**
      * Create chain zip path.
      *
-     * @param docId          the doc id
-     * @param pages          the pages
+     * @param docId the doc id
+     * @param pages the pages
      * @param sourceMetadata the source metadata
-     * @param ctx            the ctx
-     * @return the path
-     * @throws IOException              the io exception
+     * @param ctx the ctx
+     * @return  the path
+     * @throws IOException the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public Path createChainZip(
@@ -286,9 +290,9 @@ public class MigrationService {
     /**
      * Upload to sftp.
      *
-     * @param ctx     the ctx
-     * @param docId   the doc id
-     * @param xml     the xml
+     * @param ctx the ctx
+     * @param docId the doc id
+     * @param xml the xml
      * @param zipPath the zip path
      * @param pdfPath the pdf path
      */
@@ -319,7 +323,7 @@ public class MigrationService {
      *
      * @param pages the pages
      * @param docId the doc id
-     * @return the path
+     * @return  the path
      * @throws IOException the io exception
      */
     public Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
@@ -344,8 +348,8 @@ public class MigrationService {
      * Build xml archival metadata.
      *
      * @param sourceMetadata the source metadata
-     * @param ctx            the ctx
-     * @return the archival metadata
+     * @param ctx the ctx
+     * @return  the archival metadata
      */
     public ArchivalMetadata buildXml(SourceMetadata sourceMetadata, MigrationContext ctx) {
         ArchivalMetadata metadata = new ArchivalMetadata();
@@ -379,10 +383,9 @@ public class MigrationService {
     /**
      * Transform metadata to xml string.
      *
-     * @param sourceMetadata   the sourceMetadata
-     * @param migrationContext the migrationContext
-     * @return the string
-     * @throws JacksonException the jackson exception
+     * @param sourceMetadata the source metadata
+     * @param migrationContext the migration context
+     * @return  the string
      */
     public String transformMetadataToXml(
             SourceMetadata sourceMetadata, MigrationContext migrationContext) {
@@ -397,7 +400,7 @@ public class MigrationService {
      * Gets detected mime type.
      *
      * @param in the in
-     * @return the detected mime type
+     * @return  the detected mime type
      * @throws IOException the io exception
      */
     public String getDetectedMimeType(InputStream in) throws IOException {
@@ -408,7 +411,7 @@ public class MigrationService {
      * Gets detected mime type.
      *
      * @param bytes the bytes
-     * @return the detected mime type
+     * @return  the detected mime type
      */
     public String getDetectedMimeType(byte[] bytes) {
         return tika.detect(bytes);
