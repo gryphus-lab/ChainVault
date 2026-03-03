@@ -41,7 +41,7 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"inputPayloadHash", "eventData"})
+@ToString(exclude = {"inputPayloadHash"})
 public class MigrationAudit {
 
     @Id

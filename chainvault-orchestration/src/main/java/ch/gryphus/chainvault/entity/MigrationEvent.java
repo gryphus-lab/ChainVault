@@ -74,10 +74,6 @@ public class MigrationEvent {
     @Column(name = "trace_id", length = 64)
     private String traceId;
 
-    // Optional: who/what triggered the event (system, user, worker-id)
-    @Column(name = "triggered_by", length = 100)
-    private String triggeredBy;
-
     /**
      * The enum Migration event type.
      */

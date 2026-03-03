@@ -4,14 +4,12 @@
 package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.entity.MigrationAudit;
-import ch.gryphus.chainvault.repository.MigrationAuditRepository;
-import ch.gryphus.chainvault.repository.MigrationEventRepository;
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
-import java.time.Instant;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,20 +27,20 @@ import org.springframework.stereotype.Component;
 public class ExtractAndHashDelegate implements JavaDelegate {
 
     private final MigrationService migrationService;
-    private final MigrationEventRepository migrationEventRepository;
-    private final MigrationAuditRepository auditRepo;
+    private final AuditEventService auditEventService;
 
     @Override
     public void execute(DelegateExecution execution) {
         Span span = Span.current();
-
         String docId = (String) execution.getVariable("docId");
-        String piKey = execution.getProcessInstanceId();
-
-        // Add attributes to the current span
         span.setAttribute("document.id", docId);
-
         log.info("ExtractAndHashDelegate started for docId: {}", docId);
+
+        String piKey = execution.getProcessInstanceId();
+        String eventTaskType = "extract-hash";
+        String errorCode = "EXTRACTION_FAILED";
+
+        auditEventService.updateAuditEventStart(piKey, docId, eventTaskType);
 
         Map<String, Object> map;
         try {
@@ -57,8 +55,13 @@ public class ExtractAndHashDelegate implements JavaDelegate {
             execution.setTransientVariable("meta", map.get("meta"));
             execution.setTransientVariable("payload", map.get("payload"));
 
-            // Update audit
-            updateAudit(piKey, MigrationAudit.MigrationStatus.RUNNING, null);
+            auditEventService.updateAuditEventEnd(
+                    piKey,
+                    MigrationAudit.MigrationStatus.RUNNING,
+                    null,
+                    null,
+                    eventTaskType,
+                    "Extraction completed successfully");
 
         } catch (Exception e) {
             // Record failure event + exception
@@ -72,30 +75,18 @@ public class ExtractAndHashDelegate implements JavaDelegate {
             span.setStatus(StatusCode.ERROR, e.getMessage());
 
             // Update audit
-            updateAudit(piKey, MigrationAudit.MigrationStatus.FAILED, e.getMessage());
+            auditEventService.updateAuditEventEnd(
+                    piKey,
+                    MigrationAudit.MigrationStatus.FAILED,
+                    errorCode,
+                    e.getMessage(),
+                    eventTaskType,
+                    e.getMessage());
 
             // Throw BPMN error to trigger boundary event
-            throw new BpmnError("EXTRACTION_FAILED", e.getMessage());
+            throw new BpmnError(errorCode, e.getMessage());
         }
 
         log.info("ExtractAndHashDelegate completed for docId: {}", docId);
-    }
-
-    private void updateAudit(String piKey, MigrationAudit.MigrationStatus status, String errorMsg) {
-
-        MigrationAudit audit =
-                auditRepo
-                        .findByProcessInstanceKey(piKey)
-                        .orElseThrow(() -> new IllegalStateException("No audit for " + piKey));
-
-        audit.setStatus(status);
-        if (status == MigrationAudit.MigrationStatus.FAILED) {
-            audit.setFailureReason(errorMsg);
-            audit.setErrorCode("EXTRACTION_FAILED");
-        }
-        audit.setCompletedAt(Instant.now());
-        audit.setTraceId(Span.current().getSpanContext().getTraceId());
-
-        auditRepo.save(audit);
     }
 }

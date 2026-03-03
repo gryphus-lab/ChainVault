@@ -6,13 +6,12 @@ package ch.gryphus.chainvault.delegate;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.entity.MigrationAudit;
-import ch.gryphus.chainvault.repository.MigrationAuditRepository;
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
-import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +29,19 @@ import org.springframework.stereotype.Component;
 public class SignDocumentDelegate implements JavaDelegate {
 
     private final MigrationService migrationService;
-    private final MigrationAuditRepository auditRepo;
+    private final AuditEventService auditEventService;
 
     @Override
     public void execute(DelegateExecution execution) {
         Span span = Span.current();
         String docId = (String) execution.getVariable("docId");
-
-        log.info("SignDocumentDelegate started for docId: {}", docId);
-        String piKey = execution.getProcessInstanceId();
-
-        // Add attributes to the current span
         span.setAttribute("document.id", docId);
+        log.info("SignDocumentDelegate started for docId: {}", docId);
+
+        String piKey = execution.getProcessInstanceId();
+        String eventTaskType = "sign-document";
+        String errorCode = "SIGN_FAILED";
+        auditEventService.updateAuditEventStart(piKey, docId, eventTaskType);
 
         byte[] payload = (byte[]) execution.getTransientVariable("payload");
         MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
@@ -58,7 +58,8 @@ public class SignDocumentDelegate implements JavaDelegate {
             execution.setTransientVariable("pages", pages);
 
             // Update audit
-            updateAudit(piKey, MigrationAudit.MigrationStatus.RUNNING, null);
+            auditEventService.updateAuditEventEnd(
+                    piKey, MigrationAudit.MigrationStatus.RUNNING, null, null, null, null);
         } catch (Exception e) {
             // Record failure event + exception
             span.addEvent(
@@ -71,30 +72,18 @@ public class SignDocumentDelegate implements JavaDelegate {
             span.setStatus(StatusCode.ERROR, e.getMessage());
 
             // Update audit
-            updateAudit(piKey, MigrationAudit.MigrationStatus.FAILED, e.getMessage());
+            auditEventService.updateAuditEventEnd(
+                    piKey,
+                    MigrationAudit.MigrationStatus.FAILED,
+                    errorCode,
+                    e.getMessage(),
+                    eventTaskType,
+                    e.getMessage());
 
             // Throw BPMN error to trigger boundary event
-            throw new BpmnError("SIGN_FAILED", e.getMessage());
+            throw new BpmnError(errorCode, e.getMessage());
         }
 
         log.info("SignDocumentDelegate completed for docId: {}", docId);
-    }
-
-    private void updateAudit(String piKey, MigrationAudit.MigrationStatus status, String errorMsg) {
-
-        MigrationAudit audit =
-                auditRepo
-                        .findByProcessInstanceKey(piKey)
-                        .orElseThrow(() -> new IllegalStateException("No audit for " + piKey));
-
-        audit.setStatus(status);
-        if (status == MigrationAudit.MigrationStatus.FAILED) {
-            audit.setFailureReason(errorMsg);
-            audit.setErrorCode("EXTRACTION_FAILED");
-        }
-        audit.setCompletedAt(Instant.now());
-        audit.setTraceId(Span.current().getSpanContext().getTraceId());
-
-        auditRepo.save(audit);
     }
 }
