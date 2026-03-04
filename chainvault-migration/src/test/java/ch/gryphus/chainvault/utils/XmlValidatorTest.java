@@ -58,8 +58,8 @@ class XmlValidatorTest {
         // Verify the results
         assertThatNoException()
                 .isThrownBy(
-                        () -> {
-                            XmlValidator.setXsdPath("src/test/resources/xmls/ArchivalMetadata.xsd");
-                        });
+                        () ->
+                                XmlValidator.setXsdPath(
+                                        "src/test/resources/xmls/ArchivalMetadata.xsd"));
     }
 }

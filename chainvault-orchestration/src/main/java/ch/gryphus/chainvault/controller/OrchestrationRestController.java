@@ -44,6 +44,7 @@ public class OrchestrationRestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> startProcessInstance(
             @RequestBody Map<String, Object> payload) {
+
         String processId = orchestrationService.startProcess(payload);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("processId", processId, "payload", payload));

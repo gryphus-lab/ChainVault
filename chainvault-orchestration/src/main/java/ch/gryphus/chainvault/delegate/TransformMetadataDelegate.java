@@ -12,28 +12,28 @@ import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
-/**
- * The type Transform metadata delegate.
- */
+/** The type Transform metadata delegate. */
 @Slf4j
 @Component("transformMetadata")
 @RequiredArgsConstructor
 public class TransformMetadataDelegate implements JavaDelegate {
 
     private final MigrationService migrationService;
+    private final MigrationExecutor executor;
 
     @Override
     public void execute(DelegateExecution execution) {
-        String docId = (String) execution.getVariable("docId");
+        executor.executeStep(
+                execution,
+                "transform-metadata",
+                "ASSEMBLY_FAILED",
+                (_, _) -> {
+                    // ONLY the unique logic remains here
+                    MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+                    SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");
 
-        log.info("TransformDocumentDelegate started for docId: {}", docId);
-
-        MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
-        SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");
-        String xml = migrationService.transformMetadataToXml(meta, ctx);
-
-        execution.setTransientVariable("xml", xml);
-
-        log.info("TransformDocumentDelegate completed for docId: {}", docId);
+                    String xml = migrationService.transformMetadataToXml(meta, ctx);
+                    execution.setTransientVariable("xml", xml);
+                });
     }
 }
