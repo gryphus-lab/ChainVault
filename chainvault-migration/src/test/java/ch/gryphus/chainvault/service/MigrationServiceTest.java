@@ -53,7 +53,7 @@ import tools.jackson.dataformat.xml.XmlMapper;
 /**
  * The type Migration service test.
  */
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"rawtypes"})
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class MigrationServiceTest {
