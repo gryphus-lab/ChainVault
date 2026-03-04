@@ -26,7 +26,7 @@ class OrchestrationServiceTest {
 
     @Mock private RuntimeService mockRuntimeService;
 
-    @Mock private MigrationAuditRepository migrationAuditRepository;
+    @Mock private MigrationAuditRepository auditRepository;
 
     private OrchestrationService orchestrationServiceUnderTest;
 
@@ -38,7 +38,7 @@ class OrchestrationServiceTest {
     @BeforeEach
     void setUp() {
         orchestrationServiceUnderTest =
-                new OrchestrationService(mockRuntimeService, migrationAuditRepository);
+                new OrchestrationService(mockRuntimeService, auditRepository);
         when(mockProcessInstance.getProcessInstanceId()).thenReturn("test");
     }
 

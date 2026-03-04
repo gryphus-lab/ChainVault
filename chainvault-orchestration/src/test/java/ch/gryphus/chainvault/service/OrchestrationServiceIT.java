@@ -3,14 +3,12 @@
  */
 package ch.gryphus.chainvault.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatException;
+import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
-import org.flowable.engine.delegate.BpmnError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,8 +147,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
         String invalidId = "DOC-NOT-EXISTS-999";
         Map<String, Object> variables = Map.of("docId", invalidId);
 
-        assertThatException()
-                .isThrownBy(() -> orchestrationService.startProcess(variables))
-                .isInstanceOf(BpmnError.class);
+        // exception is handled as an on the BPM layer
+        assertThatNoException().isThrownBy(() -> orchestrationService.startProcess(variables));
     }
 }

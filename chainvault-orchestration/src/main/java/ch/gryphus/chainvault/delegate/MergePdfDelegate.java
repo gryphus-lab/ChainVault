@@ -7,9 +7,7 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.utils.HashUtils;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,26 +23,24 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MergePdfDelegate implements JavaDelegate {
     private final MigrationService migrationService;
+    private final MigrationExecutor executor;
 
     @Override
     public void execute(DelegateExecution execution) {
-        String docId = (String) execution.getVariable("docId");
-        log.info("MergePdfDelegate started for docId:{}", docId);
+        executor.executeStep(
+                execution,
+                "merge-pdfs",
+                "ASSEMBLY_FAILED",
+                (span, docId) -> {
+                    List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
+                    MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
 
-        List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
-        MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+                    Path pdfPath;
+                    pdfPath = migrationService.mergeTiffToPdf(pages, docId);
+                    ctx.setPdfHash(HashUtils.sha256(pdfPath));
 
-        Path pdfPath;
-        try {
-            pdfPath = migrationService.mergeTiffToPdf(pages, docId);
-            ctx.setPdfHash(HashUtils.sha256(pdfPath));
-        } catch (IOException | NoSuchAlgorithmException e) {
-            throw new IllegalStateException("error preparing PDF or computing hash", e);
-        }
-
-        execution.setTransientVariable("ctx", ctx);
-        execution.setTransientVariable("pdfPath", pdfPath);
-
-        log.info("MergePdfDelegate completed for docId:{}", docId);
+                    execution.setTransientVariable("ctx", ctx);
+                    execution.setTransientVariable("pdfPath", pdfPath);
+                });
     }
 }

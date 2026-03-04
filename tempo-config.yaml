@@ -1,0 +1,35 @@
+server:
+  http_listen_port: 3200
+  log_level: info
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc: {}
+        http: {}
+
+ingester:
+  trace_idle_period: 10s
+  max_block_duration: 5m
+  max_block_bytes: 524288000  # 500 MiB - safety limit
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /tmp/tempo/wal
+    local:
+      path: /tmp/tempo/blocks
+    pool:
+      queue_depth: 2000
+      max_workers: 200
+
+overrides:
+  ingestion_rate_limit_bytes: 15000000
+  ingestion_burst_size_bytes: 20000000
+
+query_frontend:
+  search:
+    concurrent_jobs: 1000
+    max_duration: 0s
