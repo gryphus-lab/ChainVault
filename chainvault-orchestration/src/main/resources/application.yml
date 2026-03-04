@@ -155,15 +155,10 @@ springdoc:
 
 otel:
   service:
-    name: chainvault-migration   # appears in traces
+    name: chainvault-document-migration   # appears in traces
   exporter:
     otlp:
-      endpoint: http://localhost:4318/v1/traces
-      protocol: http/protobuf
-
-  # Optional: disable noisy instrumentation
-  instrumentation:
-    spring-webclient:
-      enabled: true
-    jdbc:
-      enabled: true
+      endpoint: http://alloy:4317
+      protocol: grpc
+      tls:
+        insecure: true

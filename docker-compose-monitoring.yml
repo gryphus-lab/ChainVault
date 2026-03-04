@@ -1,14 +1,5 @@
 # docker-compose-monitoring.yml for observability
 services:
-  alloy:
-    image: grafana/alloy:latest
-    volumes:
-      - ./config.alloy:/etc/alloy/config.alloy
-      - ./logs:/var/log/chainvault:ro           # mount your JSON log directory
-    command: run --server.http.listen-addr=0.0.0.0:12345 /etc/alloy/config.alloy
-    ports:
-      - "12345:12345"
-
   loki:
     image: grafana/loki:latest
     ports:
@@ -20,49 +11,122 @@ services:
       timeout: 5s
       retries: 5
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
+  # tempo, backend and kafka
+  tempo:
+    image: grafana/tempo:latest
+    depends_on:
+      - redpanda
+    command: "-target=all -config.file=/etc/tempo.yaml"
+    restart: always
     volumes:
-      - ./env/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./tempo.yaml:/etc/tempo.yaml
+      - ./tempo-data:/var/tempo
+    ports:
+      - "3200:3200" # tempo
+      - "4317:4317" # Tempo OTLP GRPC
+      - "4318:4318" # Tempo OTLP HTTP
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
+
+  minio:
+    image: minio/minio:latest
+    environment:
+      - MINIO_ACCESS_KEY=tempo
+      - MINIO_SECRET_KEY=supersecret
+    ports:
+      - "9001:9001"
+    entrypoint:
+      - sh
+      - -euc
+      - mkdir -p /data/tempo && minio server /data --console-address ':9001'
+
+  redpanda:
+    image: redpandadata/redpanda:latest
+    ports:
+      - "9092:9092" # Kafka API for clients
+    command: >
+      redpanda start --overprovisioned
+      --mode=dev-container
+      --kafka-addr=PLAINTEXT://0.0.0.0:9092
+      --advertise-kafka-addr=PLAINTEXT://redpanda:9092
+
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:v3.5.0
+    environment:
+      - CONFIG_FILEPATH=/etc/redpanda/redpanda-console-config.yaml
+    volumes:
+      - ./redpanda-console.yaml:/etc/redpanda/redpanda-console-config.yaml
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redpanda
+
+  # ingest pipeline
+  k6-tracing:
+    image: ghcr.io/grafana/xk6-client-tracing:v0.0.9
+    environment:
+      - ENDPOINT=alloy:4317
+    restart: always
+    depends_on:
+      - tempo
+      - alloy
+
+  alloy:
+    image: grafana/alloy:latest
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+      - ./logs:/var/log/chainvault:ro           # mount your JSON log directory
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+    environment:
+      - ALLOY_OTLP_UPSTREAM=tempo:4317
+    ports:
+      - "12345:12345"
+      - "4319:4317"
+    depends_on:
+      - tempo
+
+  # supporting services - metrics, visualization and testing
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+      - --enable-feature=native-histograms
+    volumes:
+      - ./env/prometheus.yml:/etc/prometheus.yaml
     ports:
       - "9090:9090"
 
   grafana:
-    image: grafana/grafana-enterprise:latest
-    container_name: grafana
-    restart: unless-stopped
+    image: grafana/grafana:latest
+#    volumes:
+#      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     environment:
-      # increases the log level from info to debug
-      - GF_LOG_LEVEL=debug
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor metricsSummary
     ports:
-      - '3000:3000'
+      - "3000:3000"
     volumes:
       - 'grafana_storage:/var/lib/grafana'
 
-  tempo:
-    image: grafana/tempo:latest
-    container_name: tempo
-    command: -config.file=/etc/tempo.yaml
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
-    volumes:
-      - ./tempo-config.yaml:/etc/tempo.yaml:ro
-      - tempo-blocks:/tmp/tempo/blocks
-      - tempo-wal:/tmp/tempo/wal
-      - tempo-generator:/tmp/tempo/generator
-    ports:
-      - "3200:3200"
-      - "4317:4317"
-      - "4318:4318"
-      - "7946:7946"
-    user: "0:0"  # ← run as root (quick fix for local dev)
-    # Alternative (better security): keep default user but chown the volumes
-    # user: "10001:10001"  # Tempo default user
-    restart: unless-stopped
+  vulture:
+    image: grafana/tempo-vulture:latest
+    restart: always
+    command:
+      [
+        "-prometheus-listen-address=:8080",
+        "-tempo-query-url=http://tempo:3200",
+        "-tempo-push-url=http://tempo:4317",
+      ]
+    depends_on:
+      - tempo
 
 volumes:
   grafana_storage: { }
-  tempo-blocks:
-  tempo-wal:
-  tempo-generator:

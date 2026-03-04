@@ -74,31 +74,23 @@ otelcol.receiver.otlp "default" {
 	}
 
 	output {
-		traces  = [otelcol.processor.batch.default.input]
-		metrics = [otelcol.processor.batch.default.input] // if you enable metrics later
+		traces  = [otelcol.exporter.otlp.grafanacloud.input]
+		metrics = [otelcol.exporter.otlp.grafanacloud.input]
 	}
 }
 
-// Batch processor (required for efficiency)
-otelcol.processor.batch "default" {
-	output {
-		traces  = [otelcol.exporter.otlp.tempo.input]
-		metrics = [otelcol.exporter.otlp.tempo.input]
-	}
-}
-
-// OTLP exporter to Tempo
-otelcol.exporter.otlp "tempo" {
+otelcol.exporter.otlp "grafanacloud" {
 	client {
-		endpoint = "http://tempo:4318" // HTTP alternative
+		endpoint = env("ALLOY_OTLP_UPSTREAM")
+
 		tls {
-			insecure = true // dev only
+			insecure = true
 		}
 	}
 }
 
 // ───────────────────────────────────────────────
-// METRICS PIPELINE: Scrape Prometheus metrics from Spring Boot app
+// Scrape Prometheus metrics from Spring Boot app
 // ───────────────────────────────────────────────
 
 prometheus.scrape "spring_boot_metrics" {
