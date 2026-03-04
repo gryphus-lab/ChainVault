@@ -120,7 +120,14 @@ flowable:
       worker-id: migration-worker-1
       max-tasks: 20
       lock-duration: 300000
+
+# Management endpoints
 management:
+  metrics:
+    export:
+      otlp:
+        enabled: true
+        endpoint: http://localhost:4318/v1/metricsmanagement
   otlp:
     metrics:
       export:

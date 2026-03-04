@@ -29,7 +29,7 @@ services:
       - "9090:9090"
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana-enterprise:latest
     container_name: grafana
     restart: unless-stopped
     environment:
@@ -44,14 +44,18 @@ services:
     image: grafana/tempo:latest
     container_name: tempo
     command: -config.file=/etc/tempo.yaml
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4318
     volumes:
       - ./tempo-config.yaml:/etc/tempo.yaml:ro
       - tempo-blocks:/tmp/tempo/blocks
       - tempo-wal:/tmp/tempo/wal
+      - tempo-generator:/tmp/tempo/generator
     ports:
       - "3200:3200"
       - "4317:4317"
       - "4318:4318"
+      - "7946:7946"
     user: "0:0"  # ← run as root (quick fix for local dev)
     # Alternative (better security): keep default user but chown the volumes
     # user: "10001:10001"  # Tempo default user
@@ -61,3 +65,4 @@ volumes:
   grafana_storage: { }
   tempo-blocks:
   tempo-wal:
+  tempo-generator:

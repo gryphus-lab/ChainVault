@@ -60,3 +60,77 @@ loki.write "default" {
 		cluster     = "ch-zurich-01",
 	}
 }
+
+// ───────────────────────────────────────────────
+// OTLP receiver for traces from Spring Boot
+// ───────────────────────────────────────────────
+otelcol.receiver.otlp "default" {
+	grpc {
+		endpoint = "0.0.0.0:4317"
+	}
+
+	http {
+		endpoint = "0.0.0.0:4318"
+	}
+
+	output {
+		traces  = [otelcol.processor.batch.default.input]
+		metrics = [otelcol.processor.batch.default.input] // if you enable metrics later
+	}
+}
+
+// Batch processor (required for efficiency)
+otelcol.processor.batch "default" {
+	output {
+		traces  = [otelcol.exporter.otlp.tempo.input]
+		metrics = [otelcol.exporter.otlp.tempo.input]
+	}
+}
+
+// OTLP exporter to Tempo
+otelcol.exporter.otlp "tempo" {
+	client {
+		endpoint = "http://tempo:4318" // HTTP alternative
+		tls {
+			insecure = true // dev only
+		}
+	}
+}
+
+// ───────────────────────────────────────────────
+// METRICS PIPELINE: Scrape Prometheus metrics from Spring Boot app
+// ───────────────────────────────────────────────
+
+prometheus.scrape "spring_boot_metrics" {
+	targets = [{
+		__address__ = "chainvault-app:8085",
+		job         = "chainvault-document-migration",
+		instance    = env("HOSTNAME"),
+	}]
+	forward_to = [prometheus.remote_write.default.receiver]
+
+	scrape_interval = "15s" // how often to scrape
+	scrape_timeout  = "10s"
+}
+
+prometheus.relabel "add_labels" {
+	forward_to = [prometheus.remote_write.default.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		target_label  = "app"
+		replacement   = "finma-migration"
+	}
+
+	rule {
+		source_labels = ["job"]
+		target_label  = "service_name"
+	}
+}
+
+// 3. Send scraped metrics to a remote write endpoint
+prometheus.remote_write "default" {
+	endpoint {
+		url = "http://prometheus:9090/api/v1/write"
+	}
+}

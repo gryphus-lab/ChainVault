@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    
     <groupId>ch.gryphus</groupId>
     <artifactId>chainvault-report-aggregate</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>${project.groupId}::${project.artifactId}</name>
     <description>Aggregate Coverage Report</description>
+    <properties>
+        <maven.compiler.release>25</maven.compiler.release>
+        
+        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/report-aggregate/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+        <spotless.version>3.3.0</spotless.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>ch.gryphus</groupId>
@@ -21,31 +28,8 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-    <properties>
-        <maven.compiler.release>21</maven.compiler.release>
-        <sonar.coverage.jacoco.xmlReportPaths>
-            ${maven.multiModuleProjectDirectory}/report-aggregate/target/site/jacoco-aggregate/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
-        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
-        <spotless.version>3.2.1</spotless.version>
-        <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
-    </properties>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>report-aggregate</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report-aggregate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
@@ -66,6 +50,20 @@
                         <goals>
                             <goal>enforce</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>report-aggregate</id>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                        <phase>verify</phase>
                     </execution>
                 </executions>
             </plugin>
