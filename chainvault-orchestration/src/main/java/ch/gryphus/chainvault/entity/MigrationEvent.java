@@ -79,59 +79,59 @@ public class MigrationEvent {
      */
     public enum MigrationEventType {
         /**
-         * Process started migration event type.
+         *Process started migration event type.
          */
         PROCESS_STARTED,
         /**
-         * Process ended migration event type.
+         *Process ended migration event type.
          */
         PROCESS_ENDED,
         /**
-         * Task started migration event type.
+         *Task started migration event type.
          */
         TASK_STARTED,
         /**
-         * Task completed migration event type.
+         *Task completed migration event type.
          */
         TASK_COMPLETED,
         /**
-         * Task failed migration event type.
+         *Task failed migration event type.
          */
         TASK_FAILED,
         /**
-         * Error boundary triggered migration event type.
+         *Error boundary triggered migration event type.
          */
         ERROR_BOUNDARY_TRIGGERED,
         /**
-         * Retry attempted migration event type.
+         *Retry attempted migration event type.
          */
         RETRY_ATTEMPTED,
         /**
-         * Compensation executed migration event type.
+         *Compensation executed migration event type.
          */
         COMPENSATION_EXECUTED,
         /**
-         * Compensation failed migration event type.
+         *Compensation failed migration event type.
          */
         COMPENSATION_FAILED,
         /**
-         * Status updated migration event type.
+         *Status updated migration event type.
          */
         STATUS_UPDATED,
         /**
-         * Uploaded migration event type.
+         *Uploaded migration event type.
          */
         UPLOADED,
         /**
-         * Zip created migration event type.
+         *Zip created migration event type.
          */
         ZIP_CREATED,
         /**
-         * Pdf merged migration event type.
+         *Pdf merged migration event type.
          */
         PDF_MERGED,
         /**
-         * Metadata generated migration event type.
+         *Metadata generated migration event type.
          */
         METADATA_GENERATED
     }

@@ -160,7 +160,9 @@ public class MigrationAudit {
          *Cancelled migration status.
          */
         CANCELLED,
-        /** Retrying migration status. */
+        /**
+         *Retrying migration status.
+         */
         RETRYING
     }
 

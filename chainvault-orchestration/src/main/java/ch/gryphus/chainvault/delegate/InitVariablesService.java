@@ -9,9 +9,7 @@ import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
-/**
- * The type Init variables service.
- */
+/** The type Init variables service. */
 @Slf4j
 @Component
 @RequiredArgsConstructor

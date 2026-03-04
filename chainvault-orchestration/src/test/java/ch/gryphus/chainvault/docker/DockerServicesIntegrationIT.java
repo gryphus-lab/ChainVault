@@ -96,7 +96,7 @@ class DockerServicesIntegrationIT extends BaseDockerIT {
     /**
      * Test sftp user access.
      *
-     * @throws IOException          the io exception
+     * @throws IOException the io exception
      * @throws InterruptedException the interrupted exception
      */
     @Test
@@ -212,7 +212,7 @@ class DockerServicesIntegrationIT extends BaseDockerIT {
     /**
      * Test sftp upload directory.
      *
-     * @throws IOException          the io exception
+     * @throws IOException the io exception
      * @throws InterruptedException the interrupted exception
      */
     @Test

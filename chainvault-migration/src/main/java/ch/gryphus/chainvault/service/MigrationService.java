@@ -4,25 +4,13 @@
 package ch.gryphus.chainvault.service;
 
 import ch.gryphus.chainvault.config.SftpTargetConfig;
-import ch.gryphus.chainvault.domain.ArchivalMetadata;
-import ch.gryphus.chainvault.domain.MigrationContext;
-import ch.gryphus.chainvault.domain.MigrationProvenance;
-import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
+import ch.gryphus.chainvault.domain.*;
 import ch.gryphus.chainvault.utils.HashUtils;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -72,7 +60,7 @@ public class MigrationService {
      * @param docId the doc id
      * @return  the map
      */
-    public Map<String, Object> extractAndHash(String docId) throws NoSuchAlgorithmException {
+    public Map<String, Object> extractAndHash(String docId) {
         Map<String, Object> map = new HashMap<>();
         byte[] payload;
 
@@ -99,7 +87,7 @@ public class MigrationService {
                 .uri("/documents/{id}", docId)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange(
-                        (request, response) -> {
+                        (_, response) -> {
                             if (response.getStatusCode().is4xxClientError()) {
                                 throw new MigrationServiceException(
                                         "Unable to find document with id: %s".formatted(docId),
@@ -117,7 +105,7 @@ public class MigrationService {
                 .uri(meta.getPayloadUrl())
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
                 .exchange(
-                        (request, response) -> {
+                        (_, response) -> {
                             if (response.getStatusCode().is4xxClientError()) {
                                 throw new MigrationServiceException(
                                         "Unable to find payload for document with id: %s"
@@ -137,10 +125,8 @@ public class MigrationService {
      * @param ctx the ctx
      * @return  the list
      * @throws IOException the io exception
-     * @throws NoSuchAlgorithmException the no such algorithm exception
      */
-    public List<TiffPage> signTiffPages(byte[] payload, MigrationContext ctx)
-            throws IOException, NoSuchAlgorithmException {
+    public List<TiffPage> signTiffPages(byte[] payload, MigrationContext ctx) throws IOException {
         List<TiffPage> pages = new ArrayList<>();
 
         // security hotspot fix against zip bombs
@@ -179,7 +165,6 @@ public class MigrationService {
                         double compressionRatio =
                                 (double) totalSizeEntry / entry.getCompressedSize();
                         if (compressionRatio > thresholdRatio) {
-                            // ratio between compressed and uncompressed data is highly suspicious,
                             throw new MigrationServiceException(
                                     "Ratio between compressed and uncompressed data is greater than %s"
                                             .formatted(thresholdRatio));
@@ -194,7 +179,6 @@ public class MigrationService {
                 }
 
                 if (totalEntryArchive > thresholdEntries) {
-                    // too much entries in this archive, can lead to inodes exhaustion of the system
                     throw new MigrationServiceException(
                             "Number of entries in the archive is greater than %d"
                                     .formatted(thresholdEntries));
@@ -232,11 +216,10 @@ public class MigrationService {
      * @param ctx the ctx
      * @return  the path
      * @throws IOException the io exception
-     * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public Path createChainZip(
             String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
-            throws IOException, NoSuchAlgorithmException {
+            throws IOException {
 
         Path zipPath = new File("%s/%s_chain.zip".formatted(workingDirectory, docId)).toPath();
 
@@ -405,7 +388,7 @@ public class MigrationService {
      * Gets detected mime type.
      *
      * @param bytes the bytes
-     * @return  the detected mime type
+     * @return the detected mime type
      */
     public String getDetectedMimeType(byte[] bytes) {
         return tika.detect(bytes);

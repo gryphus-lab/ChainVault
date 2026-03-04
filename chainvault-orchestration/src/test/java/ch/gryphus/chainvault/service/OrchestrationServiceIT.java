@@ -100,7 +100,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
     /**
      * Migrate document should upload to real sftp.
      *
-     * @throws IOException          the io exception
+     * @throws IOException the io exception
      * @throws InterruptedException the interrupted exception
      */
     @Test

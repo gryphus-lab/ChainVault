@@ -32,7 +32,6 @@ class OrchestrationRestControllerTest {
 
     /**
      * Test start process instance.
-     *
      */
     @Test
     void testStartProcessInstance() {

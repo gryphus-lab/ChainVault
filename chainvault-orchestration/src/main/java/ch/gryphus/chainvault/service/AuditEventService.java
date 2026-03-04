@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.flowable.engine.delegate.BpmnError;
 import org.springframework.stereotype.Service;
 
+/**
+ * The type Audit event service.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuditEventService {
@@ -23,6 +26,13 @@ public class AuditEventService {
     private final MigrationAuditRepository auditRepo;
     private final MigrationEventRepository eventRepo;
 
+    /**
+     * Update audit event start.
+     *
+     * @param processInstanceId the process instance id
+     * @param docId the doc id
+     * @param eventTaskType the event task type
+     */
     public void updateAuditEventStart(
             String processInstanceId, String docId, String eventTaskType) {
 
@@ -53,6 +63,16 @@ public class AuditEventService {
         eventRepo.save(event);
     }
 
+    /**
+     * Update audit event end.
+     *
+     * @param processInstanceId the process instance id
+     * @param status the status
+     * @param errorCode the error code
+     * @param errorMsg the error msg
+     * @param eventTaskType the event task type
+     * @param eventMsg the event msg
+     */
     public void updateAuditEventEnd(
             String processInstanceId,
             MigrationAudit.MigrationStatus status,
@@ -94,6 +114,15 @@ public class AuditEventService {
         eventRepo.save(event);
     }
 
+    /**
+     * Handle exception.
+     *
+     * @param e the e
+     * @param span the span
+     * @param piKey the pi key
+     * @param errorCode the error code
+     * @param eventTaskType the event task type
+     */
     public void handleException(
             Exception e, Span span, String piKey, String errorCode, String eventTaskType) {
         // Record failure event + exception

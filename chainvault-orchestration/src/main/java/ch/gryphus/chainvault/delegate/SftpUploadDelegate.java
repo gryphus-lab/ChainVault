@@ -12,9 +12,7 @@ import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
-/**
- * The type Sftp upload delegate.
- */
+/** The type Sftp upload delegate. */
 @Slf4j
 @Component("uploadSftp")
 @RequiredArgsConstructor

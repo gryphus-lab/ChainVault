@@ -1,15 +1,15 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.domain;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import java.util.Map;
 import lombok.Data;
 
-import java.util.Map;
-
-/**
- * The type Archival metadata.
- */
+/** The type Archival metadata. */
 @XmlRootElement(name = "ArchivalMetadata")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data

@@ -13,9 +13,9 @@ public class MigrationServiceException extends RuntimeException {
     /**
      * Instantiates a new Migration service exception.
      *
-     * @param message    the doc id
+     * @param message the message
      * @param statusCode the status code
-     * @param headers    the headers
+     * @param headers the headers
      */
     public MigrationServiceException(
             String message, HttpStatusCode statusCode, HttpHeaders headers) {

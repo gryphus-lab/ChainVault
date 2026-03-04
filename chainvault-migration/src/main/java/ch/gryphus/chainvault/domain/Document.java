@@ -7,9 +7,7 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
-/**
- * The type Document.
- */
+/** The type Document. */
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Document {
     @JacksonXmlProperty(localName = "Identifier")

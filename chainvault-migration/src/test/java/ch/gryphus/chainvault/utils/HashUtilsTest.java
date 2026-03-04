@@ -3,8 +3,7 @@
  */
 package ch.gryphus.chainvault.utils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,9 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class HashUtilsTest {
 
-    /**
-     * The Temp dir.
-     */
+    /** The Temp dir. */
     @TempDir Path tempDir;
 
     /**
@@ -39,10 +36,9 @@ class HashUtilsTest {
     /**
      * Test sha 2562 with byte array.
      *
-     * @throws Exception the exception
      */
     @Test
-    void testSha2562withByteArray() throws Exception {
+    void testSha2562withByteArray() {
         assertThat(HashUtils.sha256("content".getBytes()))
                 .isEqualTo("ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73");
     }

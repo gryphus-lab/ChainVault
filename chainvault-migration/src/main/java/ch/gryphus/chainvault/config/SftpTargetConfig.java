@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 package ch.gryphus.chainvault.config;
 
 import org.apache.sshd.sftp.client.SftpClient;
@@ -28,7 +31,7 @@ public class SftpTargetConfig {
     /**
      * Sftp session factory caching session factory.
      *
-     * @return the caching session factory
+     * @return  the caching session factory
      */
     @Bean
     public CachingSessionFactory<SftpClient.DirEntry> sftpSessionFactory() {
@@ -57,17 +60,18 @@ public class SftpTargetConfig {
      * Sftp remote file template sftp remote file template.
      *
      * @param sessionFactory the session factory
-     * @return the sftp remote file template
+     * @return  the sftp remote file template
      */
     @Bean
-    public SftpRemoteFileTemplate sftpRemoteFileTemplate(SessionFactory<SftpClient.DirEntry> sessionFactory) {
+    public SftpRemoteFileTemplate sftpRemoteFileTemplate(
+            SessionFactory<SftpClient.DirEntry> sessionFactory) {
         return new SftpRemoteFileTemplate(sessionFactory);
     }
 
     /**
      * Gets remote directory.
      *
-     * @return the remote directory
+     * @return  the remote directory
      */
     public String getRemoteDirectory() {
         return props.getRemoteDirectory();
