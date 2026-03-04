@@ -8,14 +8,13 @@ import ch.gryphus.chainvault.domain.SourceMetadata;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.utils.HashUtils;
+import java.nio.file.Path;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
-
-import java.nio.file.Path;
-import java.util.List;
 
 /**
  * The type Prepare files delegate.

@@ -4,13 +4,12 @@
 package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.service.MigrationService;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * The type Extract and hash delegate.

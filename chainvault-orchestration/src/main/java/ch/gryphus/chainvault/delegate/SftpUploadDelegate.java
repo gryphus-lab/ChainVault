@@ -5,13 +5,12 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.service.MigrationService;
+import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
-
-import java.nio.file.Path;
 
 /**
  * The type Sftp upload delegate.
