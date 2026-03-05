@@ -30,9 +30,9 @@ public class MigrationExecutor {
      * Execute step.
      *
      * @param execution the execution
-     * @param taskType the task type
+     * @param taskType  the task type
      * @param errorCode the error code
-     * @param task the task
+     * @param task      the task
      */
     public void executeStep(
             DelegateExecution execution, String taskType, String errorCode, MigrationTask task) {
@@ -59,8 +59,7 @@ public class MigrationExecutor {
                     null,
                     null,
                     taskType,
-                    taskType + " completed successfully",
-                    span);
+                    taskType + " completed successfully");
 
         } catch (Exception e) {
             auditEventService.handleException(e, span, piKey, errorCode, taskType);
@@ -77,10 +76,11 @@ public class MigrationExecutor {
         /**
          * Run.
          *
-         * @param span the span
+         * @param span  the span
          * @param docId the doc id
-         * @throws IOException the io exception
+         * @throws IOException               the io exception
          * @throws MigrationServiceException the migration service exception
+         * @throws NoSuchAlgorithmException  the no such algorithm exception
          */
         void run(Span span, String docId)
                 throws IOException, MigrationServiceException, NoSuchAlgorithmException;

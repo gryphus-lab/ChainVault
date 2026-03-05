@@ -8,7 +8,9 @@ import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
-/** The type Handle error delegate. */
+/**
+ * The type Handle error delegate.
+ */
 @Slf4j
 @Component("handleError")
 public class HandleErrorDelegate implements JavaDelegate {

@@ -19,7 +19,7 @@ public interface MigrationAuditRepository extends JpaRepository<MigrationAudit, 
      * Find by process instance key optional.
      *
      * @param processInstanceKey the process instance key
-     * @return  the optional
+     * @return the optional
      */
     Optional<MigrationAudit> findByProcessInstanceKey(String processInstanceKey);
 
@@ -27,7 +27,7 @@ public interface MigrationAuditRepository extends JpaRepository<MigrationAudit, 
      * Find by document id list.
      *
      * @param documentId the document id
-     * @return  the list
+     * @return the list
      */
     List<MigrationAudit> findByDocumentId(String documentId);
 
@@ -35,7 +35,7 @@ public interface MigrationAuditRepository extends JpaRepository<MigrationAudit, 
      * Find by status list.
      *
      * @param status the status
-     * @return  the list
+     * @return the list
      */
     List<MigrationAudit> findByStatus(MigrationAudit.MigrationStatus status);
 }

@@ -14,11 +14,19 @@ import java.io.IOException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * The type Trace id filter.
+ */
 @Component
 public class TraceIdFilter extends OncePerRequestFilter {
 
     private final Tracer tracer;
 
+    /**
+     * Instantiates a new Trace id filter.
+     *
+     * @param tracer the tracer
+     */
     TraceIdFilter(Tracer tracer) {
         this.tracer = tracer;
     }

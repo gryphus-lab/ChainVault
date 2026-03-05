@@ -28,7 +28,7 @@ public class OrchestrationService {
      * Instantiates a new Orchestration service.
      *
      * @param runtimeService the runtime service
-     * @param auditRepo the audit repo
+     * @param auditRepo      the audit repo
      */
     @Autowired
     public OrchestrationService(RuntimeService runtimeService, MigrationAuditRepository auditRepo) {
@@ -40,7 +40,7 @@ public class OrchestrationService {
      * Start process string.
      *
      * @param variables the variables
-     * @return  the string
+     * @return the string
      */
     @Transactional
     public String startProcess(Map<String, Object> variables) {

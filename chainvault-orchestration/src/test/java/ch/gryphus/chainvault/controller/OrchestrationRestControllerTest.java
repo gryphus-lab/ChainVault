@@ -39,6 +39,12 @@ class OrchestrationRestControllerTest {
 
     @MockitoBean private TraceIdFilter traceIdFilter;
 
+    /**
+     * Sets .
+     *
+     * @throws ServletException the servlet exception
+     * @throws IOException      the io exception
+     */
     @BeforeEach
     void setup() throws ServletException, IOException {
         doAnswer(

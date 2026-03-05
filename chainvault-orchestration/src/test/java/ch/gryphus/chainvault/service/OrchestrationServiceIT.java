@@ -100,7 +100,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
     /**
      * Migrate document should upload to real sftp.
      *
-     * @throws IOException the io exception
+     * @throws IOException          the io exception
      * @throws InterruptedException the interrupted exception
      */
     @Test
@@ -140,7 +140,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
     }
 
     /**
-     * Migrate document with non-existing doc should fail gracefully.
+     * Migrate document with non existing doc should fail gracefully.
      */
     @Test
     void migrateDocument_withNonExistingDoc_shouldFailGracefully() {
