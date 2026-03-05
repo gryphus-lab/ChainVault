@@ -30,11 +30,12 @@ public class AuditEventService {
      * Update audit event start.
      *
      * @param processInstanceId the process instance id
-     * @param docId the doc id
-     * @param eventTaskType the event task type
+     * @param docId             the doc id
+     * @param eventTaskType     the event task type
+     * @param span
      */
     public void updateAuditEventStart(
-            String processInstanceId, String docId, String eventTaskType) {
+            String processInstanceId, String docId, String eventTaskType, Span span) {
 
         MigrationAudit audit =
                 auditRepo
@@ -44,7 +45,7 @@ public class AuditEventService {
                                         new IllegalStateException(
                                                 "No audit for " + processInstanceId));
 
-        String traceId = Span.current().getSpanContext().getTraceId();
+        String traceId = span.getSpanContext().getTraceId();
 
         audit.setProcessInstanceKey(processInstanceId);
         audit.setDocumentId(docId);
@@ -67,11 +68,12 @@ public class AuditEventService {
      * Update audit event end.
      *
      * @param processInstanceId the process instance id
-     * @param status the status
-     * @param errorCode the error code
-     * @param errorMsg the error msg
-     * @param eventTaskType the event task type
-     * @param eventMsg the event msg
+     * @param status            the status
+     * @param errorCode         the error code
+     * @param errorMsg          the error msg
+     * @param eventTaskType     the event task type
+     * @param eventMsg          the event msg
+     * @param span
      */
     public void updateAuditEventEnd(
             String processInstanceId,
@@ -79,7 +81,7 @@ public class AuditEventService {
             String errorCode,
             String errorMsg,
             String eventTaskType,
-            String eventMsg) {
+            String eventMsg, Span span) {
         MigrationAudit audit =
                 auditRepo
                         .findByProcessInstanceKey(processInstanceId)
@@ -142,7 +144,7 @@ public class AuditEventService {
                 errorCode,
                 e.getMessage(),
                 eventTaskType,
-                e.getMessage());
+                e.getMessage(), span);
 
         // Throw BPMN error to trigger boundary event
         throw new BpmnError(errorCode, e.getMessage());

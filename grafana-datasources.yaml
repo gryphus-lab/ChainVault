@@ -10,7 +10,7 @@ datasources:
   basicAuth: false
   isDefault: true
   version: 1
-  editable: false
+  editable: true
   jsonData:
     httpMethod: GET
 - name: Prometheus
@@ -22,10 +22,10 @@ datasources:
   basicAuth: false
   isDefault: false
   version: 1
-  editable: false
+  editable: true
   jsonData:
     httpMethod: GET
-- name: Tempo (yes streaming)
+- name: Tempo
   type: tempo
   access: proxy
   orgId: 1
@@ -33,27 +33,9 @@ datasources:
   basicAuth: false
   isDefault: false
   version: 1
-  editable: false
+  editable: true
   apiVersion: 1
-  uid: tempo-streaming-enabled
-  jsonData:
-    httpMethod: GET
-    serviceMap:
-      datasourceUid: prometheus
-    streamingEnabled:
-      search: true
-      metrics: true
-- name: Tempo (no streaming)
-  type: tempo
-  access: proxy
-  orgId: 1
-  url: http://tempo:3200
-  basicAuth: false
-  isDefault: false
-  version: 1
-  editable: false
-  apiVersion: 1
-  uid: tempo-streaming-disabled
+  uid: tempo
   jsonData:
     httpMethod: GET
     serviceMap:

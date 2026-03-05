@@ -11,11 +11,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # tempo, backend and kafka
+  # tempo, backend
   tempo:
     image: grafana/tempo:latest
-    depends_on:
-      - redpanda
     command: "-target=all -config.file=/etc/tempo.yaml"
     restart: always
     volumes:
@@ -40,27 +38,6 @@ services:
       - -euc
       - mkdir -p /data/tempo && minio server /data --console-address ':9001'
 
-  redpanda:
-    image: redpandadata/redpanda:latest
-    ports:
-      - "9092:9092" # Kafka API for clients
-    command: >
-      redpanda start --overprovisioned
-      --mode=dev-container
-      --kafka-addr=PLAINTEXT://0.0.0.0:9092
-      --advertise-kafka-addr=PLAINTEXT://redpanda:9092
-
-  redpanda-console:
-    image: docker.redpanda.com/redpandadata/console:v3.5.0
-    environment:
-      - CONFIG_FILEPATH=/etc/redpanda/redpanda-console-config.yaml
-    volumes:
-      - ./redpanda-console.yaml:/etc/redpanda/redpanda-console-config.yaml
-    ports:
-      - "8080:8080"
-    depends_on:
-      - redpanda
-
   # ingest pipeline
   k6-tracing:
     image: ghcr.io/grafana/xk6-client-tracing:v0.0.9
@@ -75,7 +52,7 @@ services:
     image: grafana/alloy:latest
     volumes:
       - ./config.alloy:/etc/alloy/config.alloy
-      - ./logs:/var/log/chainvault:ro           # mount your JSON log directory
+      - ./logs:/var/log/chainvault:ro
     command:
       - run
       - /etc/alloy/config.alloy

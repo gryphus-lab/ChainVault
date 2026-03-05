@@ -7,6 +7,8 @@ import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import java.time.Instant;
 import java.util.Map;
+
+import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -56,6 +58,10 @@ public class OrchestrationService {
         audit.setDocumentId((String) variables.get("docId"));
         audit.setStatus(MigrationAudit.MigrationStatus.RUNNING);
         audit.setStartedAt(Instant.now());
+
+        String traceId = Span.current().getSpanContext().getTraceId();
+        audit.setTraceId(traceId);
+
         auditRepo.save(audit);
 
         return processInstanceId;

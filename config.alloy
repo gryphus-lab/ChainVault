@@ -62,31 +62,37 @@ loki.write "default" {
 }
 
 // ───────────────────────────────────────────────
-// OTLP receiver for traces from Spring Boot
+// NEW: OTLP receiver for traces from your Spring Boot app
 // ───────────────────────────────────────────────
 otelcol.receiver.otlp "default" {
-	grpc {
-		endpoint = "0.0.0.0:4317"
-	}
-
-	http {
-		endpoint = "0.0.0.0:4318"
-	}
-
-	output {
-		traces  = [otelcol.exporter.otlp.grafanacloud.input]
-		metrics = [otelcol.exporter.otlp.grafanacloud.input]
-	}
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    traces  = [otelcol.processor.batch.default.input]
+    metrics = [otelcol.processor.batch.default.input]
+  }
 }
 
-otelcol.exporter.otlp "grafanacloud" {
-	client {
-		endpoint = env("ALLOY_OTLP_UPSTREAM")
+// Batch processor (required for efficiency)
+otelcol.processor.batch "default" {
+  output {
+    traces  = [otelcol.exporter.otlp.tempo.input]
+    metrics = [otelcol.exporter.otlp.tempo.input]
+  }
+}
 
-		tls {
-			insecure = true
-		}
-	}
+// OTLP exporter to Tempo
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "http://tempo:4317"
+    tls {
+      insecure = true  // dev only
+    }
+  }
 }
 
 // ───────────────────────────────────────────────

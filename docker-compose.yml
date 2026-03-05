@@ -26,6 +26,8 @@ services:
       spring.datasource.url: jdbc:postgresql://postgres:5432/chainvault
       spring.datasource.username: chainvault
       spring.datasource.password: secret
+      # OpenTelemetry
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
     depends_on:
       - sftp-test
       - fake-source-api
