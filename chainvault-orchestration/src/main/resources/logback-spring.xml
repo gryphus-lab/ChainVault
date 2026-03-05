@@ -27,10 +27,9 @@
 
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <!-- Add useful fields for traceability / FINMA audit -->
-            <includeMdcKeyName>traceId</includeMdcKeyName>
-            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>trace_id</includeMdcKeyName>
+            <includeMdcKeyName>span_id</includeMdcKeyName>
             <includeMdcKeyName>docId</includeMdcKeyName>     <!-- if you put docId in MDC -->
-            <includeMdcKeyName>migrationBatch</includeMdcKeyName>
 
             <customFields>{"app":"chainvault","env":"prod","host":"${HOSTNAME:-unknown}"}</customFields>
 
