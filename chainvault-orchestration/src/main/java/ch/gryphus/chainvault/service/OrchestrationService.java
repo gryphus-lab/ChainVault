@@ -5,10 +5,9 @@ package ch.gryphus.chainvault.service;
 
 import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
+import io.opentelemetry.api.trace.Span;
 import java.time.Instant;
 import java.util.Map;
-
-import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
