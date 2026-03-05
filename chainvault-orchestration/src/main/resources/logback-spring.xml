@@ -10,6 +10,9 @@
         </encoder>
     </appender>
 
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+    </appender>
+
     <!-- ============================================= -->
     <!-- JSON FILE - structured for production/audit  -->
     <!-- ============================================= -->
@@ -45,11 +48,11 @@
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="JSON_FILE"/>
+        <appender-ref ref="OTEL"/>
     </root>
 
     <!-- Quieter packages -->
     <logger name="org.springframework" level="WARN"/>
-    <logger name="org.jobrunr" level="INFO"/>
-    <logger name="ch.abhay.migration" level="DEBUG"/> <!-- your package – set to TRACE for deep debugging -->
-
+    <logger name="io.opentelemetry" level="DEBUG"/>
+    <logger name="ch.gryphus.chainvault" level="INFO"/> <!-- your package – set to TRACE for deep debugging -->
 </configuration>

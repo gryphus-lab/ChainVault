@@ -5,6 +5,7 @@ package ch.gryphus.chainvault.service;
 
 import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
+import io.opentelemetry.api.trace.Span;
 import java.time.Instant;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,10 @@ public class OrchestrationService {
         audit.setDocumentId((String) variables.get("docId"));
         audit.setStatus(MigrationAudit.MigrationStatus.RUNNING);
         audit.setStartedAt(Instant.now());
+
+        String traceId = Span.current().getSpanContext().getTraceId();
+        audit.setTraceId(traceId);
+
         auditRepo.save(audit);
 
         return processInstanceId;

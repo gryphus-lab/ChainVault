@@ -140,7 +140,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
     }
 
     /**
-     * Migrate document with non existing doc should fail gracefully.
+     * Migrate document with non-existing doc should fail gracefully.
      */
     @Test
     void migrateDocument_withNonExistingDoc_shouldFailGracefully() {

@@ -21,11 +21,11 @@ loki.process "parse_json" {
 	// Parse each line as JSON
 	stage.json {
 		expressions = {
-			"timestamp" = "timestamp", // adjust field name if different
+			"timestamp" = "timestamp",
 			"level"     = "level",
 			"logger"    = "logger",
 			"message"   = "message",
-			"traceId"   = "trace_id", // optional tracing correlation
+			"traceId"   = "trace_id",
 			"spanId"    = "span_id",
 			"error"     = "error",
 		}
@@ -41,10 +41,11 @@ loki.process "parse_json" {
 	// Map severity (Loki recognizes these labels)
 	stage.labels {
 		values = {
-			level  = "",
-			logger = "",
-			app    = "chainvault",    // static label
-			host   = env("HOSTNAME"), // dynamic
+			level        = "",
+			logger       = "",
+			app          = "chainvault",    // static label
+			host         = env("HOSTNAME"), // dynamic
+			service_name = "chainvault-service",
 		}
 	}
 }
@@ -52,7 +53,7 @@ loki.process "parse_json" {
 // 4. Send to Loki
 loki.write "default" {
 	endpoint {
-		url = "http://loki:3100/loki/api/v1/push"
+		url = "http://otel-lgtm:3100/loki/api/v1/push"
 	}
 
 	external_labels = {
@@ -62,7 +63,7 @@ loki.write "default" {
 }
 
 // ───────────────────────────────────────────────
-// OTLP receiver for traces from Spring Boot
+// NEW: OTLP receiver for traces from your Spring Boot app
 // ───────────────────────────────────────────────
 otelcol.receiver.otlp "default" {
 	grpc {
@@ -75,7 +76,7 @@ otelcol.receiver.otlp "default" {
 
 	output {
 		traces  = [otelcol.processor.batch.default.input]
-		metrics = [otelcol.processor.batch.default.input] // if you enable metrics later
+		metrics = [otelcol.processor.batch.default.input]
 	}
 }
 
@@ -90,7 +91,8 @@ otelcol.processor.batch "default" {
 // OTLP exporter to Tempo
 otelcol.exporter.otlp "tempo" {
 	client {
-		endpoint = "http://tempo:4318" // HTTP alternative
+		endpoint = "http://otel-lgtm:4317"
+
 		tls {
 			insecure = true // dev only
 		}
@@ -98,7 +100,7 @@ otelcol.exporter.otlp "tempo" {
 }
 
 // ───────────────────────────────────────────────
-// METRICS PIPELINE: Scrape Prometheus metrics from Spring Boot app
+// Scrape Prometheus metrics from Spring Boot app
 // ───────────────────────────────────────────────
 
 prometheus.scrape "spring_boot_metrics" {
@@ -131,6 +133,6 @@ prometheus.relabel "add_labels" {
 // 3. Send scraped metrics to a remote write endpoint
 prometheus.remote_write "default" {
 	endpoint {
-		url = "http://prometheus:9090/api/v1/write"
+		url = "http://otel-lgtm:9090/api/v1/write"
 	}
 }

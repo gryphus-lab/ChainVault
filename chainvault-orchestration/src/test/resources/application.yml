@@ -123,6 +123,10 @@ flowable:
 
 # Management endpoints
 management:
+  defaults:
+    metrics:
+      export:
+        enabled: false
   tracing:
     sampling:
       probability: 1.0  # 100% sampling for development
@@ -142,7 +146,7 @@ management:
   metrics:
     export:
       otlp:
-        enabled: true
+        enabled: false
         endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318)/v1/metricsmanagement
   endpoints:
     web:
@@ -154,7 +158,7 @@ management:
     flowable:
       cache:
         time-to-live: 0ms
-      enabled: true
+      enabled: false
 
 # springdoc (OpenAPI) configuration: limit scanning to app controllers to avoid
 # including Flowable or other third-party endpoints which can produce invalid

@@ -27,7 +27,7 @@ services:
       spring.datasource.username: chainvault
       spring.datasource.password: secret
       # OpenTelemetry
-      otel.exporter.otlp.endpoint: http://tempo:4318/v1/traces
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
     depends_on:
       - sftp-test
       - fake-source-api

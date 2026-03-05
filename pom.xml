@@ -61,6 +61,7 @@
         <!-- monitoring -->
         <otel.version>2.9.0</otel.version>
         <opentelemetry-exporter-prometheus.version>1.59.0-alpha</opentelemetry-exporter-prometheus.version>
+        <opentelemetry-logback-appender-1.0.version>2.25.0-alpha</opentelemetry-logback-appender-1.0.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -73,6 +74,11 @@
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-exporter-prometheus</artifactId>
                 <version>${opentelemetry-exporter-prometheus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+                <version>${opentelemetry-logback-appender-1.0.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.logstash.logback</groupId>
@@ -205,12 +211,6 @@
                             <sortExecutions>true</sortExecutions>
                         </sortPom>
                     </pom>
-                    <yaml>
-                        <includes>
-                            <include>**/*.yaml</include>
-                            <include>**/*.yml</include>
-                        </includes>
-                    </yaml>
                     <markdown>
                         <includes>
                             <include>**/*.md</include>

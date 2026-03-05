@@ -42,7 +42,7 @@ public class MigrationExecutor {
 
         span.setAttribute("document.id", docId);
         log.info("{} started for docId: {}", taskType, docId);
-        auditEventService.updateAuditEventStart(piKey, docId, taskType);
+        auditEventService.updateAuditEventStart(piKey, docId, taskType, span);
 
         try {
             // Run the unique logic
@@ -59,7 +59,8 @@ public class MigrationExecutor {
                     null,
                     null,
                     taskType,
-                    taskType + " completed successfully");
+                    taskType + " completed successfully",
+                    span);
 
         } catch (Exception e) {
             auditEventService.handleException(e, span, piKey, errorCode, taskType);
