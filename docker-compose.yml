@@ -78,8 +78,8 @@ services:
     ports:
       - "9091:9091"
     volumes:
-      - ./src/test/resources/scripts/setup.sh:/app/setup.sh
-      - ./src/test/resources/scripts/create_source_data.py:/data/create_source_data.py
+      - ./src/main/resources/json-server/scripts/setup.sh:/app/setup.sh
+      - ./src/main/resources/json-server/scripts/create_source_data.py:/data/create_source_data.py
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9091" ]
       interval: 5s
