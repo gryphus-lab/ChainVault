@@ -408,8 +408,8 @@ class MigrationServiceTest {
 
         List<TiffPage> pages = migrationServiceUnderTest.signTiffPages(zip, ctx);
 
-        assertThat(pages).hasSize(5);
         assertThat(pages)
+                .hasSize(5)
                 .allSatisfy(
                         page -> {
                             int i = pages.indexOf(page) + 1;
