@@ -74,12 +74,12 @@ services:
   fake-source-api:
     image: node:25-alpine
     working_dir: /app
-    entrypoint: sh -c "chmod +x /app/setup.sh && /app/setup.sh"
     ports:
       - "9091:9091"
     volumes:
       - ./src/main/resources/json-server/scripts/setup.sh:/app/setup.sh
       - ./src/main/resources/json-server/scripts/create_source_data.py:/data/create_source_data.py
+    entrypoint: sh -c "chmod +x /app/setup.sh && /app/setup.sh"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9091" ]
       interval: 5s

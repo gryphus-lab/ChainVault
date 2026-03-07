@@ -1,23 +1,23 @@
 {
   "documents": [
     {
-      "id": "DOC-ARCH-20250115-001",
-      "docId": "DOC-ARCH-20250115-001",
-      "title": "Invoice #INV-2025-001 - Acme Corp",
-      "creationDate": "2025-01-15T14:30:45Z",
-      "clientId": "CHE-112.233.445",
-      "accountNo": "CH9300762011623852957",
+      "id": "DOC-ARCH-2025-001",
+      "docId": "DOC-ARCH-2025-001",
+      "title": "Invoice #7836 - Stark Industries",
+      "creationDate": "2025-01-31T20:53:05Z",
+      "clientId": "CHE-738.760.530",
+      "accountNo": "CH6900762067743211524",
       "documentType": "INVOICE",
       "department": "Accounts Payable",
       "status": "ARCHIVED",
       "originalSizeBytes": 5242880,
-      "pageCount": 8,
+      "pageCount": 5,
       "tags": [
         "finance",
         "2025",
-        "urgent"
+        "batch"
       ],
-      "payloadUrl": "/payloads/invoice-001.zip"
+      "payloadUrl": "/payloads/invoice_001.zip"
     }
   ]
 }

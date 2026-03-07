@@ -6,6 +6,8 @@ import random
 from datetime import datetime, timedelta
 import numpy as np
 import tifffile as tf
+import zipfile
+import glob
 from PIL import Image, ImageDraw, ImageFont
 from concurrent.futures import ProcessPoolExecutor
 
@@ -29,9 +31,9 @@ def create_random_tiff(args):
     img = Image.fromarray(data)
     draw = ImageDraw.Draw(img)
     
-    font_size = 80
+    font_size = 48
     try:
-        font = ImageFont.truetype("arialbd.ttf", font_size) 
+        font = ImageFont.truetype("/usr/share/fonts/ttf-dejavu/DejaVuSans-Bold.ttf", font_size)
     except IOError:
         font = ImageFont.load_default()
 
@@ -80,32 +82,23 @@ def create_bundle(bundle_index):
     # New zip name format: invoice_001
     bundle_name = f"invoice_{suffix}"
     zip_filename = f"{bundle_name}.zip"
-    
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tasks = []
-        for i in range(1, 6): 
-            filename = f"{doc_id}_{i}.tif"
-            file_path = os.path.join(tmp_dir, filename)
-            seed = bundle_index * 10 + i
-            tasks.append((file_path, seed))
 
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tasks = [(os.path.join(tmp_dir, f"{doc_id}_{i:03d}.tiff"), bundle_index * 10 + i) for i in range(1, 6)]
         with ProcessPoolExecutor(max_workers=4) as executor:
             list(executor.map(create_random_tiff, tasks))
-        
-        local_zip_path = shutil.make_archive(bundle_name, 'zip', tmp_dir)
-        shutil.move(local_zip_path, os.path.join(DEST_DIR, zip_filename))
-    
+
+        zip_path = os.path.join(DEST_DIR, zip_filename)
+        files_to_zip = sorted(glob.glob(os.path.join(tmp_dir, "*.tiff")))
+
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file in files_to_zip:
+                zipf.write(file, os.path.basename(file))
+
     return generate_random_metadata(doc_id, zip_filename)
 
 def main():
-    # 1. Generate requirements.txt on the fly
-    requirements = ["numpy", "tifffile", "imagecodecs"]
-    with open("requirements.txt", "w") as f:
-        f.write("\n".join(requirements))
-    
-    # 2. Ensure destination exists
     os.makedirs(DEST_DIR, exist_ok=True)
-    
     all_metadata = []
     print(f"Generating {TOTAL_BUNDLES} bundles into {DEST_DIR}...")
     
@@ -118,7 +111,7 @@ def main():
     with open("db.json", "w") as f:
         json.dump({"documents": all_metadata}, f, indent=2)
     
-    print("\nSuccess. 'db.json' and 'requirements.txt' created.")
+    print("\nSuccess. 'db.json' created.")
 
 
 if __name__ == "__main__":

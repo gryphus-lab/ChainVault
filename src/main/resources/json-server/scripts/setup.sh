@@ -1,8 +1,9 @@
-#/bin/bash
+#!/bin/sh
 apk add python3 
 ln -sf python3 /usr/bin/python
-apk add --no-cache py3-pip 
-apk add --no-cache build-base 
+apk add --no-cache py3-pip
+apk add --no-cache build-base
+apk add --no-cache ttf-dejavu
 python3 -m venv .venv && . .venv/bin/activate
 
 pip install --upgrade pip
@@ -11,7 +12,7 @@ pipreqs --force /data
 pip install -r /data/requirements.txt
 
 echo "Creating source data..."
-cd /data
+cd /data || exit 1
 python3 create_source_data.py
 
 echo "Starting json-server..."

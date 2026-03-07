@@ -227,10 +227,7 @@ class DockerServicesE2EIT extends BaseDockerIT {
                                                                         .ofString());
                                                 assertThat(response.statusCode()).isEqualTo(200);
                                                 assertThat(response.body())
-                                                        .contains("DOC-ARCH-20250115-001"); // User
-                                                // from
-                                                // our
-                                                // data
+                                                        .contains("DOC-ARCH-2025-001");
                                             });
                         });
     }

@@ -107,7 +107,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
      */
     @Test
     void migrateDocument_shouldUploadToRealSftp() throws IOException, InterruptedException {
-        String docId = "DOC-ARCH-20250115-001"; // exists in your verbose db.json
+        String docId = "DOC-ARCH-2025-001";
         Map<String, Object> variables = Map.of("docId", docId);
 
         // Check if process workflow is started

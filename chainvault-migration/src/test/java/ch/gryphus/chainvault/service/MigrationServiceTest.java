@@ -231,16 +231,16 @@ class MigrationServiceTest {
     @Test
     void testSignTiffPage_withValidPayloadZip() throws Exception {
         // Setup
-        byte[] payload = Files.readAllBytes(Path.of("src/test/resources/zips/invoice-001.zip"));
+        byte[] payload = Files.readAllBytes(Path.of("src/test/resources/zips/invoice_001.zip"));
 
         // Run the test
         final List<TiffPage> result = migrationServiceUnderTest.signTiffPages(payload, ctx);
 
         // Verify the results
-        assertThat(result).hasSize(2);
-        assertThat(result.getFirst().name()).isEqualTo(("sample1.tiff"));
+        assertThat(result).hasSize(5);
+        assertThat(result.getFirst().name()).isEqualTo(("DOC-ARCH-2025-001_001.tiff"));
         assertThat(HashUtils.sha256(result.getFirst().data()))
-                .isEqualTo("b6d36032c5a5d291a5d67ccdfdf09a5a90dedb29c50d0206660e453f77ffb8c5");
+                .isEqualTo("9b1a52954976dd00ece92a5404aba3a8752182b52ddf7609bb5c8c3c2af78e7b");
     }
 
     /**
@@ -403,20 +403,18 @@ class MigrationServiceTest {
      */
     @Test
     void signTiffPages_shouldExtractAndPreserveOrder() throws Exception {
-        byte[] zip =
-                createZipWithTiffs(
-                        List.of(
-                                "page-001.tif", "TIFF content 1",
-                                "page-002.tif", "TIFF content 2",
-                                "page-003.tif", "TIFF content 3"));
+        byte[] zip = Files.readAllBytes(Path.of("src/test/resources/zips/invoice_001.zip"));
+        String docId = "DOC-ARCH-2025-001";
 
         List<TiffPage> pages = migrationServiceUnderTest.signTiffPages(zip, ctx);
 
-        assertThat(pages).hasSize(3);
-        assertThat(pages.get(0).name()).isEqualTo("page-001.tif");
-        assertThat(pages.get(1).name()).isEqualTo("page-002.tif");
-        assertThat(new String(pages.get(0).data())).isEqualTo("TIFF content 1");
-        assertThat(pages.get(2).name()).isEqualTo("page-003.tif");
+        assertThat(pages).hasSize(5);
+        assertThat(pages)
+                .allSatisfy(
+                        page -> {
+                            int i = pages.indexOf(page) + 1;
+                            assertThat(page.name()).isEqualTo((docId + "_%03d.tiff").formatted(i));
+                        });
     }
 
     /**
