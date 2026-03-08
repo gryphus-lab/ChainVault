@@ -12,10 +12,7 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.SourceMetadata;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -116,6 +113,8 @@ class MigrationServiceTest {
 
     /**
      * Test extract and hash when documents exist.
+     *
+     * @throws Exception the exception
      */
     @SuppressWarnings("unchecked")
     @Test
@@ -185,42 +184,31 @@ class MigrationServiceTest {
         String docId = "DOC-NO-PAYLOAD-002";
 
         // setup
-        when(mockRequestHeadersUriSpec.uri(anyString(), any(Object[].class)))
-                .thenReturn(mockRequestHeadersSpec);
-        when(mockRequestHeadersSpec.accept(any())).thenReturn(mockRequestHeadersSpec);
         when(mockRequestHeadersSpec.exchange(
                         any(RestClient.RequestHeadersSpec.ExchangeFunction.class)))
-                .thenAnswer(
+                .thenAnswer( // returns valid metadata
                         invocation -> {
                             RestClient.RequestHeadersSpec.ExchangeFunction function =
                                     invocation.getArgument(0);
 
                             when(mockResponse.getStatusCode())
-                                    .thenReturn(HttpStatus.OK); // return 2000 OK
+                                    .thenReturn(HttpStatus.OK); // return 200 OK
                             when(mockResponse.bodyTo(SourceMetadata.class))
                                     .thenReturn(meta); // return valid metadata
-
                             return function.exchange(null, mockResponse);
-                        });
-
-        when(mockRequestHeadersUriSpec.uri(anyString())).thenReturn(mockRequestHeadersSpec);
-        when(mockRequestHeadersSpec.accept(any())).thenReturn(mockRequestHeadersSpec);
-        when(mockRequestHeadersSpec.exchange(
-                        any(RestClient.RequestHeadersSpec.ExchangeFunction.class)))
-                .thenAnswer(
-                        invocation2 -> {
+                        })
+                .thenAnswer( // returns payload not found
+                        invocation -> {
                             RestClient.RequestHeadersSpec.ExchangeFunction function =
-                                    invocation2.getArgument(0);
-
+                                    invocation.getArgument(0);
                             when(mockResponse.getStatusCode())
-                                    .thenReturn(HttpStatus.NOT_FOUND); // return 404
-
+                                    .thenReturn(HttpStatus.NOT_FOUND); // return 404 NOT FOUND
                             return function.exchange(null, mockResponse);
                         });
 
         assertThatExceptionOfType(MigrationServiceException.class)
                 .isThrownBy(() -> migrationServiceUnderTest.extractAndHash(docId))
-                .withMessageContaining("Unable to find document with id: " + docId);
+                .withMessageContaining("Unable to find payload for document with id: " + docId);
     }
 
     /**
@@ -449,6 +437,52 @@ class MigrationServiceTest {
         assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(zip, ctx))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage("No TIFF pages found in ZIP");
+    }
+
+    /**
+     * Sign tiff pages should throw exception when compression ratio exceeded.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    void signTiffPages_shouldThrowException_whenCompressionRatioExceeded() throws Exception {
+        // Create a buffer of 2MB of zeros (uncompressed)
+        byte[] uncompressedData = new byte[2_000_000];
+
+        // Compress it into a small byte array
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            ZipEntry entry = new ZipEntry("zipBomb.txt");
+            zos.putNextEntry(entry);
+            zos.write(uncompressedData);
+            zos.closeEntry();
+        }
+        byte[] payload = baos.toByteArray();
+        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
+                .isInstanceOf(MigrationServiceException.class)
+                .hasMessage("Ratio between compressed and uncompressed data is greater than 10.0");
+    }
+
+    /**
+     * Sign tiff pages should throw exception when too many entries.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    void signTiffPages_shouldThrowException_whenTooManyEntries() throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            for (int i = 0; i < 10001; i++) {
+                zos.putNextEntry(new ZipEntry("file" + i + ".txt"));
+                zos.write("data".getBytes());
+                zos.closeEntry();
+            }
+        }
+        byte[] payload = baos.toByteArray();
+
+        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
+                .isInstanceOf(MigrationServiceException.class)
+                .hasMessage("Number of entries in the archive is greater than 10000");
     }
 
     /**

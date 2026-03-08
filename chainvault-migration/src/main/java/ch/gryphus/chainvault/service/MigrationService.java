@@ -142,7 +142,7 @@ public class MigrationService {
             int totalEntryArchive = 0;
 
             int thresholdSize = 1000000000; // 1GB
-            double thresholdRatio = 10;
+            double thresholdRatio = 10.0;
             int thresholdEntries = 10000;
 
             while (entries.hasMoreElements()) {
