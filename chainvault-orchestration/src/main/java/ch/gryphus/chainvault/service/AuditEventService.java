@@ -141,7 +141,7 @@ public class AuditEventService {
                 piKey,
                 MigrationAudit.MigrationStatus.FAILED,
                 errorCode,
-                e.getMessage(),
+                e.getCause().getMessage(),
                 eventTaskType,
                 e.getMessage());
 
