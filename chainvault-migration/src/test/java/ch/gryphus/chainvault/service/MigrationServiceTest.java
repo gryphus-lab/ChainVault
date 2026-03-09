@@ -81,13 +81,14 @@ class MigrationServiceTest {
     private double zipThresholdRatio;
     private int zipThresholdEntries;
 
+    String workingDirectory = "/tmp";
+
     /**
      * Sets up.
      */
     @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
-        String tempDir = "/tmp";
         zipThresholdSize = 5000000; // 5MB for tests
         zipThresholdRatio = 10.0;
         zipThresholdEntries = 10000;
@@ -100,7 +101,7 @@ class MigrationServiceTest {
                         new XmlMapper(),
                         new ObjectMapper(),
                         new Tika(),
-                        tempDir,
+                        workingDirectory,
                         zipThresholdSize,
                         zipThresholdRatio,
                         zipThresholdEntries);
@@ -461,7 +462,7 @@ class MigrationServiceTest {
         assertThatThrownBy(
                         () ->
                                 migrationServiceUnderTest.signTiffPages(
-                                        zip, ctx, migrationServiceUnderTest.getTempDir()))
+                                        zip, ctx, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage("No TIFF pages found in ZIP");
     }
@@ -487,7 +488,7 @@ class MigrationServiceTest {
         assertThatThrownBy(
                         () ->
                                 migrationServiceUnderTest.signTiffPages(
-                                        payload, ctx, migrationServiceUnderTest.getTempDir()))
+                                        payload, ctx, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Total size of the archive is greater than the threshold %d bytes"
@@ -514,7 +515,7 @@ class MigrationServiceTest {
         assertThatThrownBy(
                         () ->
                                 migrationServiceUnderTest.signTiffPages(
-                                        payload, ctx, migrationServiceUnderTest.getTempDir()))
+                                        payload, ctx, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Ratio between compressed and uncompressed data is greater than %s"
@@ -541,7 +542,7 @@ class MigrationServiceTest {
         assertThatThrownBy(
                         () ->
                                 migrationServiceUnderTest.signTiffPages(
-                                        payload, ctx, migrationServiceUnderTest.getTempDir()))
+                                        payload, ctx, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Number of entries in the archive is greater than %d"
@@ -623,7 +624,7 @@ class MigrationServiceTest {
                                         null,
                                         meta,
                                         ctx,
-                                        migrationServiceUnderTest.getTempDir()))
+                                        workingDirectory))
                 .isInstanceOf(NullPointerException.class);
     }
 
