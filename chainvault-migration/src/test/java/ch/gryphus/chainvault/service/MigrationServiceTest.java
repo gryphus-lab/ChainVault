@@ -75,12 +75,21 @@ class MigrationServiceTest {
     private MigrationContext ctx;
     private SourceMetadata meta;
 
+    private int zipThresholdSize;
+    private double zipThresholdRatio;
+    private int zipThresholdEntries;
+
     /**
      * Sets up.
      */
     @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
+        String tempDir = "/tmp";
+        zipThresholdSize = 5000000; // 5MB for tests
+        zipThresholdRatio = 10.0;
+        zipThresholdEntries = 10000;
+
         migrationServiceUnderTest =
                 new MigrationService(
                         mockRestClient,
@@ -88,9 +97,11 @@ class MigrationServiceTest {
                         mockSftpTargetConfig,
                         new XmlMapper(),
                         new ObjectMapper(),
-                        new Tika());
-
-        migrationServiceUnderTest.setWorkingDirectory("/tmp");
+                        new Tika(),
+                        tempDir,
+                        zipThresholdSize,
+                        zipThresholdRatio,
+                        zipThresholdEntries);
 
         String docId = "DOC-TEST-001";
         ctx = new MigrationContext();
@@ -219,7 +230,7 @@ class MigrationServiceTest {
     @Test
     void testSignTiffPage_withValidPayloadZip() throws Exception {
         // Setup
-        byte[] payload = Files.readAllBytes(Path.of("src/test/resources/zips/invoice_001.zip"));
+        byte[] payload = Files.readAllBytes(Path.of("src/test/resources/zips/valid_archive.zip"));
 
         // Run the test
         final List<TiffPage> result = migrationServiceUnderTest.signTiffPages(payload, ctx);
@@ -228,7 +239,7 @@ class MigrationServiceTest {
         assertThat(result).hasSize(5);
         assertThat(result.getFirst().name()).isEqualTo(("DOC-ARCH-2025-001_001.tiff"));
         assertThat(HashUtils.sha256(result.getFirst().data()))
-                .isEqualTo("9b1a52954976dd00ece92a5404aba3a8752182b52ddf7609bb5c8c3c2af78e7b");
+                .isEqualTo("a7c2d26a6c721dd9dba9cd6aec405552217c6ede0c9cf7cd5bcccca2a3d4e705");
     }
 
     /**
@@ -391,7 +402,7 @@ class MigrationServiceTest {
      */
     @Test
     void signTiffPages_shouldExtractAndPreserveOrder() throws Exception {
-        byte[] zip = Files.readAllBytes(Path.of("src/test/resources/zips/invoice_001.zip"));
+        byte[] zip = Files.readAllBytes(Path.of("src/test/resources/zips/valid_archive.zip"));
         String docId = "DOC-ARCH-2025-001";
 
         List<TiffPage> pages = migrationServiceUnderTest.signTiffPages(zip, ctx);
@@ -439,6 +450,26 @@ class MigrationServiceTest {
                 .hasMessage("No TIFF pages found in ZIP");
     }
 
+    @Test
+    void signTiffPages_shouldThrowException_whenTotalSizeExceeded() throws IOException {
+        byte[] overLimitData = Files.readAllBytes(Path.of("src/test/resources/zips/over_10mb.zip"));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            ZipEntry entry = new ZipEntry("too_large.tiff");
+            zos.putNextEntry(entry);
+            zos.write(overLimitData);
+            zos.closeEntry();
+        }
+        byte[] payload = baos.toByteArray();
+
+        // 3. Execution & Verification
+        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
+                .isInstanceOf(MigrationServiceException.class)
+                .hasMessage(
+                        "Total size of the archive is greater than the threshold %d bytes"
+                                .formatted(zipThresholdSize));
+    }
+
     /**
      * Sign tiff pages should throw exception when compression ratio exceeded.
      *
@@ -446,10 +477,8 @@ class MigrationServiceTest {
      */
     @Test
     void signTiffPages_shouldThrowException_whenCompressionRatioExceeded() throws Exception {
-        // Create a buffer of 2MB of zeros (uncompressed)
         byte[] uncompressedData = new byte[2_000_000];
 
-        // Compress it into a small byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             ZipEntry entry = new ZipEntry("zipBomb.txt");
@@ -460,7 +489,9 @@ class MigrationServiceTest {
         byte[] payload = baos.toByteArray();
         assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
                 .isInstanceOf(MigrationServiceException.class)
-                .hasMessage("Ratio between compressed and uncompressed data is greater than 10.0");
+                .hasMessage(
+                        "Ratio between compressed and uncompressed data is greater than %s"
+                                .formatted(zipThresholdRatio));
     }
 
     /**
@@ -482,7 +513,9 @@ class MigrationServiceTest {
 
         assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
                 .isInstanceOf(MigrationServiceException.class)
-                .hasMessage("Number of entries in the archive is greater than 10000");
+                .hasMessage(
+                        "Number of entries in the archive is greater than %d"
+                                .formatted(zipThresholdEntries));
     }
 
     /**

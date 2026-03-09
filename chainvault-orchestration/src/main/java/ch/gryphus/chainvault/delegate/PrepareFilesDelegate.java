@@ -39,7 +39,6 @@ public class PrepareFilesDelegate implements JavaDelegate {
                     SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");
                     MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
 
-                    migrationService.setWorkingDirectory("/tmp");
                     Path zipPath = migrationService.createChainZip(docId, pages, meta, ctx);
                     ctx.setZipHash(HashUtils.sha256(zipPath));
 

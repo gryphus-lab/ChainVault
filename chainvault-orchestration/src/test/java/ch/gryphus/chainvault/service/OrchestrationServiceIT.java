@@ -9,7 +9,6 @@ import static org.awaitility.Awaitility.await;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -62,14 +61,6 @@ class OrchestrationServiceIT extends BaseServiceIT {
     @Autowired private MigrationService migrationService;
 
     @Autowired private OrchestrationService orchestrationService;
-
-    /**
-     * Sets up.
-     */
-    @BeforeEach
-    void setUp() {
-        migrationService.setWorkingDirectory("/tmp");
-    }
 
     /**
      * Configure properties.
