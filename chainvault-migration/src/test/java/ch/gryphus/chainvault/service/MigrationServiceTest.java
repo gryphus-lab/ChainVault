@@ -460,9 +460,7 @@ class MigrationServiceTest {
         byte[] zip = createZipWithTiffs(List.of("readme.txt", "no tiffs here"));
 
         assertThatThrownBy(
-                        () ->
-                                migrationServiceUnderTest.signTiffPages(
-                                        zip, ctx, workingDirectory))
+                        () -> migrationServiceUnderTest.signTiffPages(zip, ctx, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage("No TIFF pages found in ZIP");
     }
@@ -620,11 +618,7 @@ class MigrationServiceTest {
         assertThatThrownBy(
                         () ->
                                 migrationServiceUnderTest.createChainZip(
-                                        "DOC-001",
-                                        null,
-                                        meta,
-                                        ctx,
-                                        workingDirectory))
+                                        "DOC-001", null, meta, ctx, workingDirectory))
                 .isInstanceOf(NullPointerException.class);
     }
 
