@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.await;
 
+import ch.gryphus.chainvault.config.Constants;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
@@ -99,7 +100,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
     @Test
     void migrateDocument_shouldUploadToRealSftp() throws IOException, InterruptedException {
         String docId = "DOC-ARCH-2025-001";
-        Map<String, Object> variables = Map.of("docId", docId);
+        Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, docId);
 
         // Check if process workflow is started
         assertThat(orchestrationService.startProcess(variables)).isNotNull();
@@ -138,7 +139,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
     @Test
     void migrateDocument_withNonExistingDoc_shouldFailGracefully() {
         String invalidId = "DOC-NOT-EXISTS-999";
-        Map<String, Object> variables = Map.of("docId", invalidId);
+        Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, invalidId);
 
         // exception is handled as an on the BPM layer
         assertThatNoException().isThrownBy(() -> orchestrationService.startProcess(variables));

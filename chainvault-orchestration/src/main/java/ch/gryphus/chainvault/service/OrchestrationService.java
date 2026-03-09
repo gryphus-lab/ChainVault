@@ -3,6 +3,7 @@
  */
 package ch.gryphus.chainvault.service;
 
+import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import io.opentelemetry.api.trace.Span;
@@ -43,16 +44,18 @@ public class OrchestrationService {
     @Transactional
     public String startProcess(Map<String, Object> variables) {
         ProcessInstance processInstance =
-                runtimeService.startProcessInstanceByKey("chainvault", variables);
+                runtimeService.startProcessInstanceByKey(
+                        Constants.BPMN_PROCESS_DEFINITION_KEY, variables);
 
         String processInstanceId = processInstance.getProcessInstanceId();
+        String docId = (String) variables.get(Constants.BPMN_PROC_VAR_DOC_ID);
 
         // Create audit record
-        MigrationAudit audit = new MigrationAudit();
+        var audit = new MigrationAudit();
         audit.setProcessInstanceKey(processInstanceId);
         audit.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
-        audit.setBpmnProcessId("chainvault");
-        audit.setDocumentId((String) variables.get("docId"));
+        audit.setBpmnProcessId(Constants.BPMN_PROCESS_DEFINITION_KEY);
+        audit.setDocumentId(docId);
         audit.setStatus(MigrationAudit.MigrationStatus.RUNNING);
         audit.setStartedAt(Instant.now());
 

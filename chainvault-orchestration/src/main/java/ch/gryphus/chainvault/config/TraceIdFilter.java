@@ -43,7 +43,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
     }
 
     private @Nullable String getTraceId() {
-        TraceContext context = this.tracer.currentTraceContext().context();
+        TraceContext context = tracer.currentTraceContext().context();
         return context != null ? context.traceId() : null;
     }
 }

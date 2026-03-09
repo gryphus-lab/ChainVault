@@ -3,9 +3,9 @@
  */
 package ch.gryphus.chainvault.delegate;
 
+import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.service.AuditEventService;
-import ch.gryphus.chainvault.service.MigrationServiceException;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -37,10 +37,10 @@ public class MigrationExecutor {
     public void executeStep(
             DelegateExecution execution, String taskType, String errorCode, MigrationTask task) {
         Span span = Span.current();
-        String docId = (String) execution.getVariable("docId");
+        String docId = (String) execution.getVariable(Constants.BPMN_PROC_VAR_DOC_ID);
         String piKey = execution.getProcessInstanceId();
 
-        span.setAttribute("document.id", docId);
+        span.setAttribute(Constants.SPAN_ATTR_DOCUMENT_ID, docId);
         log.info("{} started for docId: {}", taskType, docId);
         auditEventService.updateAuditEventStart(piKey, docId, taskType, span);
 
@@ -50,7 +50,7 @@ public class MigrationExecutor {
 
             span.addEvent(
                     "%s.success".formatted(taskType),
-                    Attributes.of(AttributeKey.stringKey("document.id"), docId));
+                    Attributes.of(AttributeKey.stringKey(Constants.SPAN_ATTR_DOCUMENT_ID), docId));
 
             auditEventService.updateAuditEventEnd(
                     piKey,
@@ -58,12 +58,12 @@ public class MigrationExecutor {
                     null,
                     null,
                     taskType,
-                    taskType + " completed successfully");
+                    "%s completed successfully".formatted(taskType));
 
-        } catch (Exception e) {
-            auditEventService.handleException(e, span, piKey, errorCode, taskType);
-        } finally {
             log.info("{} completed for docId: {}", taskType, docId);
+        } catch (Exception e) {
+            log.error("{} encountered an error while executing step", taskType, e);
+            auditEventService.handleException(e, span, piKey, errorCode, taskType);
         }
     }
 
@@ -77,11 +77,9 @@ public class MigrationExecutor {
          *
          * @param span  the span
          * @param docId the doc id
-         * @throws IOException               the io exception
-         * @throws MigrationServiceException the migration service exception
-         * @throws NoSuchAlgorithmException  the no such algorithm exception
+         * @throws IOException              the io exception
+         * @throws NoSuchAlgorithmException the no such algorithm exception
          */
-        void run(Span span, String docId)
-                throws IOException, MigrationServiceException, NoSuchAlgorithmException;
+        void run(Span span, String docId) throws IOException, NoSuchAlgorithmException;
     }
 }

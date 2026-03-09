@@ -16,7 +16,9 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class HashUtilsTest {
 
-    /** The Temp dir. */
+    /**
+     * The Temp dir.
+     */
     @TempDir Path tempDir;
 
     /**
@@ -36,6 +38,7 @@ class HashUtilsTest {
     /**
      * Test sha 2562 with byte array.
      *
+     * @throws Exception the exception
      */
     @Test
     void testSha2562withByteArray() throws Exception {

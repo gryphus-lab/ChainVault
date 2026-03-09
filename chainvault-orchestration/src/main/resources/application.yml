@@ -20,8 +20,8 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
-    default-schema: chainvault
-    liquibase-schema: chainvault
+    default-schema: ${POSTGRES_SCHEMA:chainvault}
+    liquibase-schema: ${POSTGRES_SCHEMA:chainvault}
 
   # JPA / Hibernate (optional - if you use entities/repositories)
   jpa:

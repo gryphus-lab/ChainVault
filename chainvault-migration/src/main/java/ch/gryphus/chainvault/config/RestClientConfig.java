@@ -18,8 +18,8 @@ public class RestClientConfig {
      * Rest client rest client.
      *
      * @param baseUrl the base url
-     * @param token the token
-     * @return  the rest client
+     * @param token   the token
+     * @return the rest client
      */
     @Bean
     public RestClient restClient(

@@ -8,7 +8,9 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import java.util.Map;
 import lombok.Data;
 
-/** The type Migration provenance. */
+/**
+ * The type Migration provenance.
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
 public class MigrationProvenance {

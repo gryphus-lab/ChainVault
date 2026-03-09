@@ -3,6 +3,7 @@
  */
 package ch.gryphus.chainvault.service;
 
+import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.*;
 import ch.gryphus.chainvault.utils.HashUtils;
@@ -54,9 +55,23 @@ public class MigrationService {
     private final double zipThresholdRatio;
     private final int zipThresholdEntries;
 
+    /**
+     * Instantiates a new Migration service.
+     *
+     * @param restClient          the rest client
+     * @param template            the sftp remote file template
+     * @param sftpTargetConfig    the sftp target config
+     * @param xmlMapper           the XML mapper
+     * @param objectMapper        the object mapper
+     * @param tika                the tika
+     * @param tempDir             the temp dir
+     * @param zipThresholdSize    the zip threshold size
+     * @param zipThresholdRatio   the zip threshold ratio
+     * @param zipThresholdEntries the zip threshold entries
+     */
     public MigrationService(
             RestClient restClient,
-            SftpRemoteFileTemplate sftpRemoteFileTemplate,
+            SftpRemoteFileTemplate template,
             SftpTargetConfig sftpTargetConfig,
             XmlMapper xmlMapper,
             ObjectMapper objectMapper,
@@ -66,7 +81,7 @@ public class MigrationService {
             @Value("${migration.zip-threshold-ratio:10.0}") double zipThresholdRatio,
             @Value("${migration.zip-threshold-entries:10000}") int zipThresholdEntries) {
         this.restClient = restClient;
-        this.sftpRemoteFileTemplate = sftpRemoteFileTemplate;
+        sftpRemoteFileTemplate = template;
         this.sftpTargetConfig = sftpTargetConfig;
         this.xmlMapper = xmlMapper;
         this.objectMapper = objectMapper;
@@ -81,7 +96,8 @@ public class MigrationService {
      * Extract and hash map.
      *
      * @param docId the doc id
-     * @return  the map
+     * @return the map
+     * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public Map<String, Object> extractAndHash(String docId) throws NoSuchAlgorithmException {
         Map<String, Object> map = new HashMap<>();
@@ -145,9 +161,10 @@ public class MigrationService {
      * Sign tiff pages list.
      *
      * @param payload the payload
-     * @param ctx the ctx
-     * @return  the list
-     * @throws IOException the io exception
+     * @param ctx     the ctx
+     * @return the list
+     * @throws IOException              the io exception
+     * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public List<TiffPage> signTiffPages(byte[] payload, MigrationContext ctx)
             throws IOException, NoSuchAlgorithmException {
@@ -160,26 +177,29 @@ public class MigrationService {
         try (ZipFile zipFile = new ZipFile(file)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-            int totalSizeArchive = 0;
-            int totalEntryArchive = 0;
+            long totalSizeArchive = 0L;
+            long totalEntryArchive = 0L;
 
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                InputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
-                try (OutputStream os =
-                        new BufferedOutputStream(
-                                new FileOutputStream(tempDir + "/output_onlyfortesting.txt"))) {
+
+                try (InputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+                        OutputStream os =
+                                new BufferedOutputStream(
+                                        new FileOutputStream(
+                                                "%s/output_onlyfortesting.txt"
+                                                        .formatted(tempDir)))) {
 
                     totalEntryArchive++;
 
                     int nBytes;
                     byte[] buffer = new byte[2048];
-                    int totalSizeEntry = 0;
+                    long totalSizeEntry = 0L;
 
                     while ((nBytes = is.read(buffer)) > 0) {
                         os.write(buffer, 0, nBytes);
                         totalSizeEntry += nBytes;
-                        totalSizeArchive += nBytes;
+                        totalSizeArchive = totalSizeArchive + nBytes;
 
                         double compressionRatio =
                                 (double) totalSizeEntry / entry.getCompressedSize();
@@ -229,12 +249,13 @@ public class MigrationService {
     /**
      * Create chain zip path.
      *
-     * @param docId the doc id
-     * @param pages the pages
+     * @param docId          the doc id
+     * @param pages          the pages
      * @param sourceMetadata the source metadata
-     * @param ctx the ctx
-     * @return  the path
-     * @throws IOException the io exception
+     * @param ctx            the ctx
+     * @return the path
+     * @throws IOException              the io exception
+     * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public Path createChainZip(
             String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
@@ -253,7 +274,7 @@ public class MigrationService {
             }
 
             Map<String, Object> manifest = new LinkedHashMap<>();
-            manifest.put("docId", docId);
+            manifest.put(Constants.BPMN_PROC_VAR_DOC_ID, docId);
             manifest.put("timestamp", Instant.now().toString());
             manifest.put("pageCount", pages.size());
             manifest.put("pageHashes", ctx.getPageHashes());
@@ -263,10 +284,14 @@ public class MigrationService {
                 manifest.put(
                         "sourceMetadata",
                         Map.of(
-                                "docId", sourceMetadata.getDocId(),
-                                "title", sourceMetadata.getTitle(),
-                                "creationDate", sourceMetadata.getCreationDate(),
-                                "clientId", sourceMetadata.getClientId()));
+                                Constants.BPMN_PROC_VAR_DOC_ID,
+                                sourceMetadata.getDocId(),
+                                "title",
+                                sourceMetadata.getTitle(),
+                                "creationDate",
+                                sourceMetadata.getCreationDate(),
+                                "clientId",
+                                sourceMetadata.getClientId()));
             }
 
             String manifestJson =
@@ -286,11 +311,11 @@ public class MigrationService {
     /**
      * Upload to sftp.
      *
-     * @param ctx the ctx
-     * @param docId the doc id
-     * @param xml the xml
+     * @param ctx     the ctx
+     * @param docId   the doc id
+     * @param xml     the XML
      * @param zipPath the zip path
-     * @param pdfPath the pdf path
+     * @param pdfPath the PDF path
      */
     public void uploadToSftp(
             MigrationContext ctx, String docId, String xml, Path zipPath, Path pdfPath) {
@@ -315,11 +340,11 @@ public class MigrationService {
     }
 
     /**
-     * Merge tiff to pdf path.
+     * Merge tiff to PDF path.
      *
      * @param pages the pages
      * @param docId the doc id
-     * @return  the path
+     * @return the path
      * @throws IOException the io exception
      */
     public Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
@@ -344,10 +369,10 @@ public class MigrationService {
      * Build xml archival metadata.
      *
      * @param sourceMetadata the source metadata
-     * @param ctx the ctx
-     * @return  the archival metadata
+     * @param ctx            the ctx
+     * @return the archival metadata
      */
-    public ArchivalMetadata buildXml(SourceMetadata sourceMetadata, MigrationContext ctx) {
+    public static ArchivalMetadata buildXml(SourceMetadata sourceMetadata, MigrationContext ctx) {
         ArchivalMetadata metadata = new ArchivalMetadata();
 
         metadata.setDocumentId(ctx.getDocId());
@@ -379,9 +404,9 @@ public class MigrationService {
     /**
      * Transform metadata to xml string.
      *
-     * @param sourceMetadata the source metadata
+     * @param sourceMetadata   the source metadata
      * @param migrationContext the migration context
-     * @return  the string
+     * @return the string
      */
     public String transformMetadataToXml(
             SourceMetadata sourceMetadata, MigrationContext migrationContext) {
@@ -396,7 +421,7 @@ public class MigrationService {
      * Gets detected mime type.
      *
      * @param in the in
-     * @return  the detected mime type
+     * @return the detected mime type
      * @throws IOException the io exception
      */
     public String getDetectedMimeType(InputStream in) throws IOException {

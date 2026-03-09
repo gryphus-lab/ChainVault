@@ -9,7 +9,9 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
 import lombok.Data;
 
-/** The type Archival metadata. */
+/**
+ * The type Archival metadata.
+ */
 @XmlRootElement(name = "ArchivalMetadata")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
