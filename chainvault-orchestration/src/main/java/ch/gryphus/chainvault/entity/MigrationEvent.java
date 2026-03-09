@@ -34,7 +34,7 @@ import org.hibernate.type.SqlTypes;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"eventData"})
+@ToString(exclude = "eventData")
 public class MigrationEvent {
 
     @Id

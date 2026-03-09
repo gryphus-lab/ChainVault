@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.awaitility.Awaitility.await;
 
+import ch.gryphus.chainvault.config.Constants;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.BindMode;
@@ -173,26 +175,28 @@ class DockerServicesE2EIT extends BaseDockerIT {
         Thread[] threads = new Thread[5];
         AtomicBoolean allSuccess = new AtomicBoolean(true);
 
-        for (int i = 0; i < threads.length; i++) {
-            threads[i] =
-                    new Thread(
-                            () -> {
-                                try (Connection conn =
-                                        DriverManager.getConnection(
-                                                postgres.getJdbcUrl(),
-                                                postgres.getUsername(),
-                                                postgres.getPassword())) {
-                                    Statement stmt = conn.createStatement();
-                                    ResultSet rs = stmt.executeQuery("SELECT 1");
-                                    if (!rs.next()) {
-                                        allSuccess.set(false);
-                                    }
-                                } catch (Exception _) {
-                                    allSuccess.set(false);
-                                }
-                            });
-            threads[i].start();
-        }
+        IntStream.range(0, threads.length)
+                .forEachOrdered(
+                        i -> {
+                            threads[i] =
+                                    new Thread(
+                                            () -> {
+                                                try (Connection conn =
+                                                        DriverManager.getConnection(
+                                                                postgres.getJdbcUrl(),
+                                                                postgres.getUsername(),
+                                                                postgres.getPassword())) {
+                                                    Statement stmt = conn.createStatement();
+                                                    ResultSet rs = stmt.executeQuery("SELECT 1");
+                                                    if (!rs.next()) {
+                                                        allSuccess.set(false);
+                                                    }
+                                                } catch (Exception _) {
+                                                    allSuccess.set(false);
+                                                }
+                                            });
+                            threads[i].start();
+                        });
 
         for (Thread thread : threads) {
             assertThatNoException().isThrownBy(thread::join);
@@ -268,9 +272,10 @@ class DockerServicesE2EIT extends BaseDockerIT {
             Statement stmt = conn.createStatement();
             ResultSet rs =
                     stmt.executeQuery(
-                            "SELECT datname FROM pg_database WHERE datname = '" + DB_NAME + "'");
+                            "SELECT datname FROM pg_database WHERE datname = '%s'"
+                                    .formatted(Constants.POSTGRES_DB_NAME));
             assertThat(rs.next()).isTrue();
-            assertThat(rs.getString(1)).isEqualTo(DB_NAME);
+            assertThat(rs.getString(1)).isEqualTo(Constants.POSTGRES_DB_NAME);
         }
     }
 

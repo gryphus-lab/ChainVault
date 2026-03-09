@@ -3,14 +3,19 @@
  */
 package ch.gryphus.chainvault.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * The type Migration audit.
@@ -31,17 +36,16 @@ import lombok.ToString;
                     columnList = "source_system, status, created_at DESC"),
             @Index(name = "idx_migration_audit_trace_id", columnList = "trace_id")
         },
-        uniqueConstraints = {
-            @UniqueConstraint(
-                    name = "uk_migration_unique",
-                    columnNames = {"process_instance_key", "document_id"})
-        })
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_migration_unique",
+                        columnNames = {"process_instance_key", "document_id"}))
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"inputPayloadHash"})
+@ToString(exclude = "inputPayloadHash")
 public class MigrationAudit {
 
     @Id
@@ -176,6 +180,6 @@ public class MigrationAudit {
     // Optional: auto-update last_updated_at
     @PreUpdate
     protected void onUpdate() {
-        this.lastUpdatedAt = Instant.now();
+        lastUpdatedAt = Instant.now();
     }
 }

@@ -3,6 +3,7 @@
  */
 package ch.gryphus.chainvault.docker;
 
+import ch.gryphus.chainvault.config.Constants;
 import java.time.Duration;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -16,15 +17,8 @@ import org.testcontainers.utility.DockerImageName;
  */
 public abstract class BaseDockerIT {
 
-    /**
-     * The constant DB_NAME.
-     */
-    protected static final String DB_NAME = "chainvault";
-
-    private static final String DB_USER = "chainvault";
-
     // Test credentials - hardcoded for testing purposes only
-    private static final String DB_PASSWORD = "secret";
+    private static final String POSTGRES_DB_PASSWORD = "secret";
 
     /**
      * The constant postgres.
@@ -32,9 +26,9 @@ public abstract class BaseDockerIT {
     @Container
     static final PostgreSQLContainer postgres =
             new PostgreSQLContainer(DockerImageName.parse("postgres:16-alpine"))
-                    .withDatabaseName(DB_NAME)
-                    .withUsername(DB_USER)
-                    .withPassword(DB_PASSWORD)
+                    .withDatabaseName(Constants.POSTGRES_DB_NAME)
+                    .withUsername(Constants.POSTGRES_DB_USER)
+                    .withPassword(POSTGRES_DB_PASSWORD)
                     .withExposedPorts(5432)
                     .withClasspathResourceMapping(
                             "db/init-scripts", "/docker-entrypoint-initdb.d", BindMode.READ_ONLY)

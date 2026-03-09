@@ -13,6 +13,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.flowable.engine.delegate.BpmnError;
 import org.springframework.stereotype.Service;
 
@@ -37,13 +38,13 @@ public class AuditEventService {
     public void updateAuditEventStart(
             String processInstanceId, String docId, String eventTaskType, Span span) {
 
-        MigrationAudit audit =
+        var audit =
                 auditRepo
                         .findByProcessInstanceKey(processInstanceId)
                         .orElseThrow(
                                 () ->
                                         new IllegalStateException(
-                                                "No audit for " + processInstanceId));
+                                                "No audit for %s".formatted(processInstanceId)));
 
         String traceId = span.getSpanContext().getTraceId();
 
@@ -55,7 +56,7 @@ public class AuditEventService {
         audit.setTraceId(traceId);
         auditRepo.save(audit);
 
-        MigrationEvent event = new MigrationEvent();
+        var event = new MigrationEvent();
         event.setMigrationAuditId(audit.getId());
         event.setEventType(MigrationEvent.MigrationEventType.TASK_STARTED);
         event.setTaskType(eventTaskType);
@@ -81,13 +82,13 @@ public class AuditEventService {
             String errorMsg,
             String eventTaskType,
             String eventMsg) {
-        MigrationAudit audit =
+        var audit =
                 auditRepo
                         .findByProcessInstanceKey(processInstanceId)
                         .orElseThrow(
                                 () ->
                                         new IllegalStateException(
-                                                "No audit for " + processInstanceId));
+                                                "No audit for %s".formatted(processInstanceId)));
 
         audit.setStatus(status);
 
@@ -101,7 +102,7 @@ public class AuditEventService {
         audit.setTraceId(traceId);
         auditRepo.save(audit);
 
-        MigrationEvent event = new MigrationEvent();
+        var event = new MigrationEvent();
         event.setMigrationAuditId(audit.getId());
 
         event.setEventType(
@@ -141,9 +142,9 @@ public class AuditEventService {
                 piKey,
                 MigrationAudit.MigrationStatus.FAILED,
                 errorCode,
-                e.getMessage(),
+                ExceptionUtils.getStackTrace(e),
                 eventTaskType,
-                e.getMessage());
+                ExceptionUtils.getMessage(e));
 
         // Throw BPMN error to trigger boundary event
         throw new BpmnError(errorCode, e.getMessage());

@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import java.util.Map;
 import org.flowable.engine.RuntimeService;
@@ -48,12 +49,13 @@ class OrchestrationServiceTest {
     @Test
     void testStartProcess() {
         // Setup
-        final Map<String, Object> variables = Map.ofEntries(Map.entry("docId", "123"));
+        Map<String, Object> variables =
+                Map.ofEntries(Map.entry(Constants.BPMN_PROC_VAR_DOC_ID, "123"));
         when(mockRuntimeService.startProcessInstanceByKey(anyString(), anyMap()))
                 .thenReturn(mockProcessInstance);
 
         // Run the test
-        final String result = orchestrationServiceUnderTest.startProcess(variables);
+        String result = orchestrationServiceUnderTest.startProcess(variables);
 
         // Verify the results
         assertThat(result).isEqualTo("test");

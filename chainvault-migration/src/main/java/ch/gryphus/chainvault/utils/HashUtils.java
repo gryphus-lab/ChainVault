@@ -21,8 +21,9 @@ public class HashUtils {
      * Sha 256 string.
      *
      * @param path the path
-     * @return  the string
-     * @throws IOException the io exception
+     * @return the string
+     * @throws IOException              the io exception
+     * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public static String sha256(Path path) throws IOException, NoSuchAlgorithmException {
         return sha256(Files.readAllBytes(path));
@@ -33,6 +34,7 @@ public class HashUtils {
      *
      * @param data the data
      * @return the string
+     * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public static String sha256(byte[] data) throws NoSuchAlgorithmException {
         return Hex.encodeHexString(MessageDigest.getInstance("SHA-256").digest(data));

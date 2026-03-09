@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.config.TraceIdFilter;
 import ch.gryphus.chainvault.service.OrchestrationService;
 import jakarta.servlet.FilterChain;
@@ -67,7 +68,7 @@ class OrchestrationRestControllerTest {
         // Setup
         when(mockOrchestrationService.startProcess(any())).thenReturn("test");
 
-        Map<String, Object> variables = Map.of("docId", "123");
+        Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, "123");
         String json = objectMapper.writeValueAsString(variables);
 
         // Run the test and verify the results

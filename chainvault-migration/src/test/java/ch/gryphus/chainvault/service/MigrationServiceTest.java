@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.ArchivalMetadata;
 import ch.gryphus.chainvault.domain.MigrationContext;
@@ -13,6 +14,7 @@ import ch.gryphus.chainvault.domain.SourceMetadata;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -49,7 +51,7 @@ import tools.jackson.dataformat.xml.XmlMapper;
 /**
  * The type Migration service test.
  */
-@SuppressWarnings({"rawtypes"})
+@SuppressWarnings("rawtypes")
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class MigrationServiceTest {
@@ -149,7 +151,7 @@ class MigrationServiceTest {
                             return function.exchange(null, mockResponse);
                         });
 
-        final Map<String, Object> result = migrationServiceUnderTest.extractAndHash("DOC-TEST-001");
+        Map<String, Object> result = migrationServiceUnderTest.extractAndHash("DOC-TEST-001");
 
         assertThat(result).hasSize(3); // context + metadata + payload
         Object obj = result.get("ctx");
@@ -233,7 +235,7 @@ class MigrationServiceTest {
         byte[] payload = Files.readAllBytes(Path.of("src/test/resources/zips/valid_archive.zip"));
 
         // Run the test
-        final List<TiffPage> result = migrationServiceUnderTest.signTiffPages(payload, ctx);
+        List<TiffPage> result = migrationServiceUnderTest.signTiffPages(payload, ctx);
 
         // Verify the results
         assertThat(result).hasSize(5);
@@ -292,7 +294,7 @@ class MigrationServiceTest {
     @Test
     void testMergeTiffToPdf_HappyPath() throws Exception {
         // Setup
-        final List<TiffPage> pages =
+        List<TiffPage> pages =
                 List.of(
                         new TiffPage(
                                 "sample1.tiff",
@@ -304,7 +306,8 @@ class MigrationServiceTest {
                                         Path.of("src/test/resources/tiffs/sample2.tiff"))));
 
         // Run the test
-        final Path result = migrationServiceUnderTest.mergeTiffToPdf(pages, "docId");
+        Path result =
+                migrationServiceUnderTest.mergeTiffToPdf(pages, Constants.BPMN_PROC_VAR_DOC_ID);
 
         // Verify the results
         assertThat(result.toFile()).exists();
@@ -319,21 +322,21 @@ class MigrationServiceTest {
     @Test
     void testTransformMetadataToXml() {
         // Setup
-        meta.setDocId("docId");
+        meta.setDocId(Constants.BPMN_PROC_VAR_DOC_ID);
         meta.setTitle("title");
         meta.setCreationDate("creationDate");
         meta.setClientId("clientId");
         meta.setDocumentType("documentType");
         meta.setPayloadUrl("payloadUrl");
 
-        ctx.setDocId("docId");
+        ctx.setDocId(Constants.BPMN_PROC_VAR_DOC_ID);
         ctx.setPayloadHash("payloadHash");
         ctx.setZipHash("zipHash");
         ctx.setPdfHash("pdfHash");
         ctx.setPageHashes(Map.ofEntries(Map.entry("value", "value")));
 
         // Run the test
-        final String result = migrationServiceUnderTest.transformMetadataToXml(meta, ctx);
+        String result = migrationServiceUnderTest.transformMetadataToXml(meta, ctx);
 
         // Verify the results
         String xmlFilename = "src/test/resources/xmls/ArchivalMetadata.xml";
@@ -356,10 +359,10 @@ class MigrationServiceTest {
     @Test
     void testGetDetectedMimeType() throws Exception {
         // Setup
-        final InputStream in = new ByteArrayInputStream("content".getBytes());
+        InputStream in = new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8));
 
         // Run the test
-        final String result = migrationServiceUnderTest.getDetectedMimeType(in);
+        String result = migrationServiceUnderTest.getDetectedMimeType(in);
 
         // Verify the results
         assertThat(result).isEqualTo("text/plain");
@@ -373,10 +376,10 @@ class MigrationServiceTest {
     @Test
     void testGetDetectedMimeType_EmptyIn() throws Exception {
         // Setup
-        final InputStream in = InputStream.nullInputStream();
+        InputStream in = InputStream.nullInputStream();
 
         // Run the test
-        final String result = migrationServiceUnderTest.getDetectedMimeType(in);
+        String result = migrationServiceUnderTest.getDetectedMimeType(in);
 
         // Verify the results
         assertThat(result).isEqualTo("application/octet-stream");
@@ -388,7 +391,7 @@ class MigrationServiceTest {
     @Test
     void testGetDetectedMimeType_BrokenIn() {
         // Setup
-        final InputStream in = new BrokenInputStream();
+        InputStream in = new BrokenInputStream();
 
         // Run the test
         assertThatThrownBy(() -> migrationServiceUnderTest.getDetectedMimeType(in))
@@ -450,6 +453,11 @@ class MigrationServiceTest {
                 .hasMessage("No TIFF pages found in ZIP");
     }
 
+    /**
+     * Sign tiff pages should throw exception when total size exceeded.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     void signTiffPages_shouldThrowException_whenTotalSizeExceeded() throws IOException {
         byte[] overLimitData = Files.readAllBytes(Path.of("src/test/resources/zips/over_10mb.zip"));
@@ -505,7 +513,7 @@ class MigrationServiceTest {
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             for (int i = 0; i < 10001; i++) {
                 zos.putNextEntry(new ZipEntry("file" + i + ".txt"));
-                zos.write("data".getBytes());
+                zos.write("data".getBytes(StandardCharsets.UTF_8));
                 zos.closeEntry();
             }
         }
@@ -562,7 +570,7 @@ class MigrationServiceTest {
                     tiffCount++;
                     assertThat(zis.readAllBytes()).hasSizeGreaterThan(5);
                 } else if ("manifest.json".equals(entry.getName())) {
-                    manifestContent = new String(zis.readAllBytes());
+                    manifestContent = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
                 }
             }
 
@@ -603,7 +611,7 @@ class MigrationServiceTest {
         ctx.addPageHash("p1.tif", "h1");
         ctx.addPageHash("p2.tif", "h2");
 
-        ArchivalMetadata xml = migrationServiceUnderTest.buildXml(meta, ctx);
+        ArchivalMetadata xml = MigrationService.buildXml(meta, ctx);
 
         assertThat(xml.getDocumentId()).isEqualTo("DOC-TEST-001");
         assertThat(xml.getTitle()).isEqualTo("Test Invoice 2026");
@@ -624,7 +632,7 @@ class MigrationServiceTest {
     void buildXml_shouldHandleMissingMetadataGracefully() {
         SourceMetadata nullMeta = new SourceMetadata(); // all fields null
 
-        ArchivalMetadata xml = migrationServiceUnderTest.buildXml(nullMeta, ctx);
+        ArchivalMetadata xml = MigrationService.buildXml(nullMeta, ctx);
 
         assertThat(xml.getTitle()).isEqualTo("Untitled Document");
         assertThat(xml.getPageCount()).isZero();
@@ -684,7 +692,7 @@ class MigrationServiceTest {
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             for (int i = 0; i < entries.size(); i += 2) {
                 zos.putNextEntry(new ZipEntry(entries.get(i)));
-                zos.write(entries.get(i + 1).getBytes());
+                zos.write(entries.get(i + 1).getBytes(StandardCharsets.UTF_8));
                 zos.closeEntry();
             }
         }

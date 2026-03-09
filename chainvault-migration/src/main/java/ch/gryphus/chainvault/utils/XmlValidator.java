@@ -42,7 +42,7 @@ public class XmlValidator {
      * Is valid boolean.
      *
      * @param xmlString the xml string
-     * @return  the boolean
+     * @return the boolean
      */
     public static boolean isValid(String xmlString) {
         try {

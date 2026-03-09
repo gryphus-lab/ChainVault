@@ -8,7 +8,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-/** The type Sftp properties. */
+/**
+ * The type Sftp properties.
+ */
 @Data
 @Component
 @ConfigurationProperties(prefix = "target.sftp")
@@ -20,5 +22,5 @@ public class SftpProperties {
     private Resource privateKey;
     private Resource knownHosts;
     private String remoteDirectory = "/incoming/migration";
-    private boolean allowUnknownKeys = false;
+    private boolean allowUnknownKeys;
 }
