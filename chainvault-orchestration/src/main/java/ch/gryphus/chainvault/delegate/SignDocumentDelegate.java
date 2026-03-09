@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.delegate;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.MigrationService;
+import java.nio.file.Path;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,11 @@ public class SignDocumentDelegate implements JavaDelegate {
                     byte[] payload = (byte[]) execution.getTransientVariable("payload");
                     MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
 
-                    List<TiffPage> pages = migrationService.signTiffPages(payload, ctx);
+                    Path workingDirectory =
+                            (Path) execution.getTransientVariable("workingDirectory");
+                    List<TiffPage> pages =
+                            migrationService.signTiffPages(
+                                    payload, ctx, workingDirectory.toString());
                     execution.setTransientVariable("pages", pages);
                 });
     }

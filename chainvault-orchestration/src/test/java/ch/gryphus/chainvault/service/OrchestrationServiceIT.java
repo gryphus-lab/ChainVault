@@ -103,10 +103,11 @@ class OrchestrationServiceIT extends BaseServiceIT {
         Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, docId);
 
         // Check if process workflow is started
-        assertThat(orchestrationService.startProcess(variables)).isNotNull();
+        String processInstanceId = orchestrationService.startProcess(variables);
+        assertThat(processInstanceId).isNotNull();
 
         // Wait for upload to appear in SFTP (poll the container)
-        String expectedDir = "/home/testuser/upload/%s".formatted(docId);
+        String expectedDir = "/home/testuser/upload/%s-%s".formatted(processInstanceId, docId);
 
         await().atMost(Duration.ofSeconds(10))
                 .pollInterval(Duration.ofSeconds(1))

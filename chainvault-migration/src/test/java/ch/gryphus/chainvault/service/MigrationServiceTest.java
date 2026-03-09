@@ -235,7 +235,9 @@ class MigrationServiceTest {
         byte[] payload = Files.readAllBytes(Path.of("src/test/resources/zips/valid_archive.zip"));
 
         // Run the test
-        List<TiffPage> result = migrationServiceUnderTest.signTiffPages(payload, ctx);
+        List<TiffPage> result =
+                migrationServiceUnderTest.signTiffPages(
+                        payload, ctx, migrationServiceUnderTest.getTempDir());
 
         // Verify the results
         assertThat(result).hasSize(5);
@@ -280,7 +282,8 @@ class MigrationServiceTest {
                 docId,
                 Files.readString(Path.of("src/test/resources/sftp/sample_meta.xml")),
                 Path.of("src/test/resources/sftp/sample.zip"),
-                Path.of("src/test/resources/sftp/sample.pdf"));
+                Path.of("src/test/resources/sftp/sample.pdf"),
+                "abcde");
 
         // Verify the results
         verify(mockSftpRemoteFileTemplate).execute(any(SessionCallback.class));
@@ -307,7 +310,10 @@ class MigrationServiceTest {
 
         // Run the test
         Path result =
-                migrationServiceUnderTest.mergeTiffToPdf(pages, Constants.BPMN_PROC_VAR_DOC_ID);
+                migrationServiceUnderTest.mergeTiffToPdf(
+                        pages,
+                        Constants.BPMN_PROC_VAR_DOC_ID,
+                        migrationServiceUnderTest.getTempDir());
 
         // Verify the results
         assertThat(result.toFile()).exists();
@@ -408,7 +414,9 @@ class MigrationServiceTest {
         byte[] zip = Files.readAllBytes(Path.of("src/test/resources/zips/valid_archive.zip"));
         String docId = "DOC-ARCH-2025-001";
 
-        List<TiffPage> pages = migrationServiceUnderTest.signTiffPages(zip, ctx);
+        List<TiffPage> pages =
+                migrationServiceUnderTest.signTiffPages(
+                        zip, ctx, migrationServiceUnderTest.getTempDir());
 
         assertThat(pages)
                 .hasSize(5)
@@ -433,7 +441,9 @@ class MigrationServiceTest {
                                 "readme.txt", "ignore me",
                                 "page-002.tif", "TIFF2"));
 
-        List<TiffPage> pages = migrationServiceUnderTest.signTiffPages(zip, ctx);
+        List<TiffPage> pages =
+                migrationServiceUnderTest.signTiffPages(
+                        zip, ctx, migrationServiceUnderTest.getTempDir());
 
         assertThat(pages).hasSize(2);
         assertThat(pages.get(1).name()).isEqualTo("page-002.tif");
@@ -448,7 +458,10 @@ class MigrationServiceTest {
     void signTiffPages_shouldThrowWhenNoTiffs() throws Exception {
         byte[] zip = createZipWithTiffs(List.of("readme.txt", "no tiffs here"));
 
-        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(zip, ctx))
+        assertThatThrownBy(
+                        () ->
+                                migrationServiceUnderTest.signTiffPages(
+                                        zip, ctx, migrationServiceUnderTest.getTempDir()))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage("No TIFF pages found in ZIP");
     }
@@ -471,7 +484,10 @@ class MigrationServiceTest {
         byte[] payload = baos.toByteArray();
 
         // 3. Execution & Verification
-        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
+        assertThatThrownBy(
+                        () ->
+                                migrationServiceUnderTest.signTiffPages(
+                                        payload, ctx, migrationServiceUnderTest.getTempDir()))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Total size of the archive is greater than the threshold %d bytes"
@@ -495,7 +511,10 @@ class MigrationServiceTest {
             zos.closeEntry();
         }
         byte[] payload = baos.toByteArray();
-        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
+        assertThatThrownBy(
+                        () ->
+                                migrationServiceUnderTest.signTiffPages(
+                                        payload, ctx, migrationServiceUnderTest.getTempDir()))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Ratio between compressed and uncompressed data is greater than %s"
@@ -519,7 +538,10 @@ class MigrationServiceTest {
         }
         byte[] payload = baos.toByteArray();
 
-        assertThatThrownBy(() -> migrationServiceUnderTest.signTiffPages(payload, ctx))
+        assertThatThrownBy(
+                        () ->
+                                migrationServiceUnderTest.signTiffPages(
+                                        payload, ctx, migrationServiceUnderTest.getTempDir()))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Number of entries in the archive is greater than %d"
@@ -555,7 +577,9 @@ class MigrationServiceTest {
         ctx.addPageHash("sample2.tiff", "hash-page2");
 
         // Act
-        Path zip = migrationServiceUnderTest.createChainZip("DOC-TEST-001", pages, meta, ctx);
+        Path zip =
+                migrationServiceUnderTest.createChainZip(
+                        "DOC-TEST-001", pages, meta, ctx, migrationServiceUnderTest.getTempDir());
 
         assertThat(Files.exists(zip)).isTrue();
 
@@ -593,7 +617,13 @@ class MigrationServiceTest {
     @Test
     void createChainZip_shouldFailOnNullPages() {
         assertThatThrownBy(
-                        () -> migrationServiceUnderTest.createChainZip("DOC-001", null, meta, ctx))
+                        () ->
+                                migrationServiceUnderTest.createChainZip(
+                                        "DOC-001",
+                                        null,
+                                        meta,
+                                        ctx,
+                                        migrationServiceUnderTest.getTempDir()))
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -660,7 +690,9 @@ class MigrationServiceTest {
                                 "sample2.tif",
                                 Files.readAllBytes(
                                         Path.of("src/test/resources/tiffs/sample2.tiff"))));
-        Path pdfPath = migrationServiceUnderTest.mergeTiffToPdf(pages, "DOC-TEST-PDF");
+        Path pdfPath =
+                migrationServiceUnderTest.mergeTiffToPdf(
+                        pages, "DOC-TEST-PDF", migrationServiceUnderTest.getTempDir());
 
         assertThat(Files.exists(pdfPath)).isTrue();
 
@@ -679,7 +711,9 @@ class MigrationServiceTest {
      */
     @Test
     void mergeTiffToPdf_shouldHandleEmptyList() throws Exception {
-        Path pdf = migrationServiceUnderTest.mergeTiffToPdf(List.of(), "DOC-EMPTY");
+        Path pdf =
+                migrationServiceUnderTest.mergeTiffToPdf(
+                        List.of(), "DOC-EMPTY", migrationServiceUnderTest.getTempDir());
 
         try (PDDocument doc = Loader.loadPDF(pdf.toFile())) {
             assertThat(doc.getNumberOfPages()).isZero();
