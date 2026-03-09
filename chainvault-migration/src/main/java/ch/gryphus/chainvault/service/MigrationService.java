@@ -19,9 +19,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -30,6 +27,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
@@ -43,7 +41,6 @@ import tools.jackson.dataformat.xml.XmlMapper;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class MigrationService {
 
     private final RestClient restClient;
@@ -52,8 +49,33 @@ public class MigrationService {
     private final XmlMapper xmlMapper;
     private final ObjectMapper objectMapper;
     private final Tika tika;
+    private final String tempDir;
+    private final int zipThresholdSize;
+    private final double zipThresholdRatio;
+    private final int zipThresholdEntries;
 
-    @Getter @Setter private String workingDirectory;
+    public MigrationService(
+            RestClient restClient,
+            SftpRemoteFileTemplate sftpRemoteFileTemplate,
+            SftpTargetConfig sftpTargetConfig,
+            XmlMapper xmlMapper,
+            ObjectMapper objectMapper,
+            Tika tika,
+            @Value("${migration.temp-dir:/tmp}") String tempDir,
+            @Value("${migration.zip-threshold-size:1000000000}") int zipThresholdSize,
+            @Value("${migration.zip-threshold-ratio:10.0}") double zipThresholdRatio,
+            @Value("${migration.zip-threshold-entries:10000}") int zipThresholdEntries) {
+        this.restClient = restClient;
+        this.sftpRemoteFileTemplate = sftpRemoteFileTemplate;
+        this.sftpTargetConfig = sftpTargetConfig;
+        this.xmlMapper = xmlMapper;
+        this.objectMapper = objectMapper;
+        this.tika = tika;
+        this.tempDir = tempDir;
+        this.zipThresholdSize = zipThresholdSize;
+        this.zipThresholdRatio = zipThresholdRatio;
+        this.zipThresholdEntries = zipThresholdEntries;
+    }
 
     /**
      * Extract and hash map.
@@ -132,7 +154,7 @@ public class MigrationService {
         List<TiffPage> pages = new ArrayList<>();
 
         // security hotspot fix against zip bombs
-        File file = new File("%s/temp_%s.zip".formatted(workingDirectory, ctx.getDocId()));
+        File file = new File("%s/temp_%s.zip".formatted(tempDir, ctx.getDocId()));
         FileUtils.writeByteArrayToFile(file, payload);
 
         try (ZipFile zipFile = new ZipFile(file)) {
@@ -141,17 +163,12 @@ public class MigrationService {
             int totalSizeArchive = 0;
             int totalEntryArchive = 0;
 
-            int thresholdSize = 1000000000; // 1GB
-            double thresholdRatio = 10.0;
-            int thresholdEntries = 10000;
-
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
                 InputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
                 try (OutputStream os =
                         new BufferedOutputStream(
-                                new FileOutputStream(
-                                        workingDirectory + "/output_onlyfortesting.txt"))) {
+                                new FileOutputStream(tempDir + "/output_onlyfortesting.txt"))) {
 
                     totalEntryArchive++;
 
@@ -166,24 +183,24 @@ public class MigrationService {
 
                         double compressionRatio =
                                 (double) totalSizeEntry / entry.getCompressedSize();
-                        if (compressionRatio > thresholdRatio) {
+                        if (compressionRatio > zipThresholdRatio) {
                             throw new MigrationServiceException(
                                     "Ratio between compressed and uncompressed data is greater than %s"
-                                            .formatted(thresholdRatio));
+                                            .formatted(zipThresholdRatio));
                         }
                     }
                 }
 
-                if (totalSizeArchive > thresholdSize) {
+                if (totalSizeArchive > zipThresholdSize) {
                     throw new MigrationServiceException(
                             "Total size of the archive is greater than the threshold %d bytes"
-                                    .formatted(thresholdSize));
+                                    .formatted(zipThresholdSize));
                 }
 
-                if (totalEntryArchive > thresholdEntries) {
+                if (totalEntryArchive > zipThresholdEntries) {
                     throw new MigrationServiceException(
                             "Number of entries in the archive is greater than %d"
-                                    .formatted(thresholdEntries));
+                                    .formatted(zipThresholdEntries));
                 }
             }
         }
@@ -223,7 +240,7 @@ public class MigrationService {
             String docId, List<TiffPage> pages, SourceMetadata sourceMetadata, MigrationContext ctx)
             throws IOException, NoSuchAlgorithmException {
 
-        Path zipPath = new File("%s/%s_chain.zip".formatted(workingDirectory, docId)).toPath();
+        Path zipPath = new File("%s/%s_chain.zip".formatted(tempDir, docId)).toPath();
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
             for (int i = 0; i < pages.size(); i++) {
@@ -306,7 +323,7 @@ public class MigrationService {
      * @throws IOException the io exception
      */
     public Path mergeTiffToPdf(List<TiffPage> pages, String docId) throws IOException {
-        Path pdf = new File("%s/%s.pdf".formatted(workingDirectory, docId)).toPath();
+        Path pdf = new File("%s/%s.pdf".formatted(tempDir, docId)).toPath();
         try (var doc = new PDDocument()) {
             for (var page : pages) {
                 BufferedImage img = ImageIO.read(new ByteArrayInputStream(page.data()));

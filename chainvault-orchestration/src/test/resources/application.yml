@@ -56,6 +56,9 @@ source:
     token: dummy-for-test
 
 migration:
+  zip-threshold-size: 1000000000
+  zip-threshold-ratio: 10.0
+  zip-threshold-entries: 10000
   temp-dir: /tmp/migration-${random.uuid}
   chunk-size-for-inventory: 500   # when fetching lists
 
