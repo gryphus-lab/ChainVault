@@ -28,7 +28,7 @@ COMPANIES = [
 
 def create_random_tiff(args):
     file_path, seed = args
-    img_w, img_h = (1024, 1024)
+    img_w, img_h = (595, 842)
     rng = np.random.default_rng(seed)
 
     sample_text = os.path.basename(file_path)
@@ -37,7 +37,7 @@ def create_random_tiff(args):
     img = Image.fromarray(data)
     draw = ImageDraw.Draw(img)
 
-    font_size = 48
+    font_size = 24
     try:
         font = ImageFont.truetype(
             "/usr/share/fonts/ttf-dejavu/DejaVuSans-Bold.ttf", font_size
