@@ -2,6 +2,9 @@ services:
   grafana-lgtm:
     image: 'grafana/otel-lgtm:latest'
     container_name: 'otel-lgtm'
+    environment:
+      - ENABLE_OBI=true
+      - OBI_TARGET=java
     volumes:
       - ./env/prometheus.yaml:/otel-lgtm/prometheus.yaml
     ports:

@@ -319,8 +319,8 @@
           ],
           "limit": 20,
           "metricsQueryType": "range",
-          "query": "",
-          "queryType": "traceqlSearch",
+          "query": "{resource.service.name=\"chainvault-document-migration\" && duration>1ms && duration<60s && name=\"http post /chainvault/process\"}",
+          "queryType": "traceql",
           "refId": "A",
           "serviceMapUseNativeHistograms": false,
           "tableType": "traces"
@@ -456,8 +456,12 @@
     "list": [
       {
         "current": {
-          "text": "All",
-          "value": "$__all"
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
         },
         "datasource": {
           "type": "tempo",
@@ -504,6 +508,6 @@
   "timezone": "browser",
   "title": "ChainVault Migration Dashboard",
   "uid": "chainvault-migration-observability",
-  "version": 3,
+  "version": 2,
   "weekStart": ""
 }
