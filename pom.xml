@@ -60,7 +60,7 @@
         
         <!-- monitoring -->
         <otel.version>2.9.0</otel.version>
-        <opentelemetry-exporter-otlp.version>1.55.0</opentelemetry-exporter-otlp.version>
+        <opentelemetry-exporter-otlp.version>1.60.1</opentelemetry-exporter-otlp.version>
         <opentelemetry-exporter-prometheus.version>1.60.1-alpha</opentelemetry-exporter-prometheus.version>
         <opentelemetry-logback-appender-1.0.version>2.25.0-alpha</opentelemetry-logback-appender-1.0.version>
     </properties>
