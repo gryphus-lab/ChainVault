@@ -27,6 +27,8 @@ public class InitVariablesService implements JavaDelegate {
                 execution,
                 "init-variables",
                 "INIT_FAILED",
-                (span, docId, map) -> log.info("Init variables executed for docId: {}", docId));
+                (span, docId, map) -> {
+                    // do nothing
+                });
     }
 }
