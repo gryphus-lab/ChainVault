@@ -5,14 +5,17 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.TiffPage;
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.utils.HashUtils;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,31 +23,35 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("mergePdf")
-@RequiredArgsConstructor
-public class MergePdfDelegate implements JavaDelegate {
+public class MergePdfDelegate extends AbstractTracingDelegate {
     private final MigrationService migrationService;
-    private final MigrationExecutor executor;
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Instantiates a new Merge pdf delegate.
+     *
+     * @param openTelemetry    the open telemetry
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public MergePdfDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "merge-pdfs", "MERGE_FAILED");
+        this.migrationService = migrationService;
+    }
+
     @Override
-    public void execute(DelegateExecution execution) {
-        executor.executeStep(
-                execution,
-                "merge-pdfs",
-                "ASSEMBLY_FAILED",
-                (span, docId, map) -> {
-                    List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
-                    MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
+            throws IOException, NoSuchAlgorithmException {
+        List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
+        MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
 
-                    Path workingDirectory =
-                            (Path) execution.getTransientVariable("workingDirectory");
-                    Path pdfPath =
-                            migrationService.mergeTiffToPdf(
-                                    pages, docId, workingDirectory.toString());
-                    ctx.setPdfHash(HashUtils.sha256(pdfPath));
+        Path workingDirectory = (Path) execution.getTransientVariable("workingDirectory");
+        Path pdfPath = migrationService.mergeTiffToPdf(pages, docId, workingDirectory.toString());
+        ctx.setPdfHash(HashUtils.sha256(pdfPath));
 
-                    execution.setTransientVariable("ctx", ctx);
-                    execution.setTransientVariable("pdfPath", pdfPath);
-                });
+        execution.setTransientVariable("ctx", ctx);
+        execution.setTransientVariable("pdfPath", pdfPath);
     }
 }

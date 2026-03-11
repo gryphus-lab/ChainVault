@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker compose down -v
+docker compose -p chainvault down -v
 mvn clean verify

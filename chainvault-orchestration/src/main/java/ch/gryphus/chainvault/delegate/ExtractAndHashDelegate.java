@@ -3,15 +3,18 @@
  */
 package ch.gryphus.chainvault.delegate;
 
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,34 +22,42 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("extractAndHash")
-@RequiredArgsConstructor
-public class ExtractAndHashDelegate implements JavaDelegate {
+public class ExtractAndHashDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
-    private final MigrationExecutor executor;
+
+    /**
+     * Instantiates a new Extract and hash delegate.
+     *
+     * @param openTelemetry    the open telemetry
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public ExtractAndHashDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "extract-hash", "EXTRACTION_FAILED");
+        this.migrationService = migrationService;
+    }
 
     @Override
-    public void execute(DelegateExecution execution) {
-        executor.executeStep(
-                execution,
-                "extract-hash",
-                "EXTRACTION_FAILED",
-                (span, docId, map) -> {
-                    Path path =
-                            Paths.get(
-                                    "%s-%s"
-                                            .formatted(
-                                                    migrationService.getTempDir(),
-                                                    execution.getProcessInstanceId()));
-                    Files.createDirectory(path);
-                    log.info("Created directory: {}", path);
-                    execution.setTransientVariable("workingDirectory", path);
+    public void doExecute(DelegateExecution execution, Span span, String docId)
+            throws IOException, NoSuchAlgorithmException {
+        Path path =
+                Paths.get(
+                        "%s-%s"
+                                .formatted(
+                                        migrationService.getTempDir(),
+                                        execution.getProcessInstanceId()));
+        Files.createDirectory(path);
+        log.info("Created directory: {}", path);
+        execution.setTransientVariable("workingDirectory", path);
 
-                    Map<String, Object> map1 = migrationService.extractAndHash(docId);
+        Map<String, Object> map1 = migrationService.extractAndHash(docId);
 
-                    execution.setTransientVariable("ctx", map1.get("ctx"));
-                    execution.setTransientVariable("meta", map1.get("meta"));
-                    execution.setTransientVariable("payload", map1.get("payload"));
-                });
+        execution.setTransientVariable("ctx", map1.get("ctx"));
+        execution.setTransientVariable("meta", map1.get("meta"));
+        execution.setTransientVariable("payload", map1.get("payload"));
     }
 }

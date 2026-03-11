@@ -21,16 +21,15 @@ class MigrationApplicationTest {
      */
     @Test
     void testMainWithMock() {
-        try (MockedStatic<SpringApplication> springApplicationMock =
-                mockStatic(SpringApplication.class)) {
+        try (MockedStatic<SpringApplication> mockedStatic = mockStatic(SpringApplication.class)) {
             ConfigurableApplicationContext mockContext = mock(ConfigurableApplicationContext.class);
-            springApplicationMock
+            mockedStatic
                     .when(() -> SpringApplication.run(MigrationApplication.class, new String[] {}))
                     .thenReturn(mockContext);
 
             MigrationApplication.main(new String[] {});
 
-            springApplicationMock.verify(
+            mockedStatic.verify(
                     () -> SpringApplication.run(MigrationApplication.class, new String[] {}));
         }
     }

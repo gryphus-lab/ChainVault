@@ -4,12 +4,15 @@
 package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.nio.file.Path;
-import lombok.RequiredArgsConstructor;
+import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 
@@ -18,46 +21,48 @@ import org.springframework.util.FileSystemUtils;
  */
 @Slf4j
 @Component("uploadSftp")
-@RequiredArgsConstructor
-public class SftpUploadDelegate implements JavaDelegate {
+public class SftpUploadDelegate extends AbstractTracingDelegate {
     private final MigrationService migrationService;
-    private final MigrationExecutor executor;
+
+    /**
+     * Instantiates a new Sftp upload delegate.
+     *
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public SftpUploadDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "upload-sftp", "UPLOAD_FAILED");
+        this.migrationService = migrationService;
+    }
 
     @Override
-    public void execute(DelegateExecution execution) {
-        executor.executeStep(
-                execution,
-                "upload-sftp",
-                "UPLOAD_FAILED",
-                (span, docId, map) -> {
-                    MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
-                    String xml = (String) execution.getTransientVariable("xml");
-                    Path zipPath = (Path) execution.getTransientVariable("zipPath");
-                    Path pdfPath = (Path) execution.getTransientVariable("pdfPath");
-                    String processInstanceId = execution.getProcessInstanceId();
-                    migrationService.uploadToSftp(
-                            ctx, docId, xml, zipPath, pdfPath, processInstanceId);
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
+            throws IOException, NoSuchAlgorithmException {
+        MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+        String xml = (String) execution.getTransientVariable("xml");
+        Path zipPath = (Path) execution.getTransientVariable("zipPath");
+        Path pdfPath = (Path) execution.getTransientVariable("pdfPath");
+        String processInstanceId = execution.getProcessInstanceId();
+        migrationService.uploadToSftp(ctx, docId, xml, zipPath, pdfPath, processInstanceId);
 
-                    execution.setTransientVariable(
-                            "outputFileKey",
-                            "%s/%s-%s"
-                                    .formatted(
-                                            migrationService
-                                                    .getSftpTargetConfig()
-                                                    .getRemoteDirectory(),
-                                            processInstanceId,
-                                            docId));
+        execution.setTransientVariable(
+                "outputFileKey",
+                "%s/%s-%s"
+                        .formatted(
+                                migrationService.getSftpTargetConfig().getRemoteDirectory(),
+                                processInstanceId,
+                                docId));
 
-                    Path workingDirectory =
-                            (Path) execution.getTransientVariable("workingDirectory");
-                    String zipPathRef =
-                            zipPath.toString()
-                                    .replaceAll("%s/".formatted(workingDirectory.toString()), "");
-                    execution.setTransientVariable("chainOfCustodyZip", zipPathRef);
+        Path workingDirectory = (Path) execution.getTransientVariable("workingDirectory");
+        String zipPathRef =
+                zipPath.toString().replaceAll("%s/".formatted(workingDirectory.toString()), "");
+        execution.setTransientVariable("chainOfCustodyZip", zipPathRef);
 
-                    // cleanup temporary working directory
-                    FileSystemUtils.deleteRecursively(workingDirectory);
-                    log.info("Deleted working directory {}", workingDirectory);
-                });
+        // cleanup temporary working directory
+        FileSystemUtils.deleteRecursively(workingDirectory);
+        log.info("Deleted working directory {}", workingDirectory);
     }
 }

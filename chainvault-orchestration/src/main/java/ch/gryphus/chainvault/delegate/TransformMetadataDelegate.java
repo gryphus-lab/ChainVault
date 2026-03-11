@@ -5,11 +5,14 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.SourceMetadata;
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
-import lombok.RequiredArgsConstructor;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,24 +20,32 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("transformMetadata")
-@RequiredArgsConstructor
-public class TransformMetadataDelegate implements JavaDelegate {
+public class TransformMetadataDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
-    private final MigrationExecutor executor;
+
+    /**
+     * Instantiates a new Transform metadata delegate.
+     *
+     * @param openTelemetry    the open telemetry
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public TransformMetadataDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "transform-metadata", "TRANSFORM_FAILED");
+        this.migrationService = migrationService;
+    }
 
     @Override
-    public void execute(DelegateExecution execution) {
-        executor.executeStep(
-                execution,
-                "transform-metadata",
-                "ASSEMBLY_FAILED",
-                (span, docId, map) -> {
-                    MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
-                    SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
+            throws IOException, NoSuchAlgorithmException {
+        MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+        SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");
 
-                    String xml = migrationService.transformMetadataToXml(meta, ctx);
-                    execution.setTransientVariable("xml", xml);
-                });
+        String xml = migrationService.transformMetadataToXml(meta, ctx);
+        execution.setTransientVariable("xml", xml);
     }
 }
