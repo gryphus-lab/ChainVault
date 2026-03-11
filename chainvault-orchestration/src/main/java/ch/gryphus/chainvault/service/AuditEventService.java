@@ -148,35 +148,36 @@ public class AuditEventService {
     /**
      * Handle exception.
      *
-     * @param e             the e
+     * @param exception     the exception
      * @param span          the span
      * @param piKey         the pi key
      * @param errorCode     the error code
      * @param eventTaskType the event task type
      */
     public void handleException(
-            Exception e, Span span, String piKey, String errorCode, String eventTaskType) {
+            Exception exception, Span span, String piKey, String errorCode, String eventTaskType) {
         // Record failure event + exception
         span.addEvent(
                 "%s.failed".formatted(eventTaskType),
                 Attributes.of(
-                        AttributeKey.stringKey("error.message"), e.getMessage(),
-                        AttributeKey.stringKey("error.type"), e.getClass().getSimpleName()));
+                        AttributeKey.stringKey("error.message"), exception.getMessage(),
+                        AttributeKey.stringKey("error.type"),
+                                exception.getClass().getSimpleName()));
 
-        span.recordException(e);
-        span.setStatus(StatusCode.ERROR, e.getMessage());
+        span.recordException(exception);
+        span.setStatus(StatusCode.ERROR, exception.getMessage());
 
-        // Update audit
+        // Update audit with error details
         updateAuditEventEnd(
                 piKey,
                 MigrationAudit.MigrationStatus.FAILED,
                 errorCode,
-                ExceptionUtils.getStackTrace(e),
+                ExceptionUtils.getStackTrace(exception),
                 eventTaskType,
-                ExceptionUtils.getMessage(e),
+                ExceptionUtils.getMessage(exception),
                 Collections.emptyMap());
 
         // Throw BPMN error to trigger boundary event
-        throw new BpmnError(errorCode, e.getMessage());
+        throw new BpmnError(errorCode, exception.getMessage());
     }
 }

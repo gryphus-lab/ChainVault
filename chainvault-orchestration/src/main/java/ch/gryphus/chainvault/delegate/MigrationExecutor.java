@@ -77,13 +77,13 @@ public class MigrationExecutor {
         /**
          * Run.
          *
-         * @param span  the span
-         * @param docId the doc id
-         * @param map   the map
+         * @param span   the span
+         * @param docId  the doc id
+         * @param varMap the var map
          * @throws IOException              the io exception
          * @throws NoSuchAlgorithmException the no such algorithm exception
          */
-        void run(Span span, String docId, Map<String, Object> map)
+        void run(Span span, String docId, Map<String, Object> varMap)
                 throws IOException, NoSuchAlgorithmException;
     }
 }

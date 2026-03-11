@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The type Orchestration service.
@@ -41,7 +40,6 @@ public class OrchestrationService {
      * @param variables the variables
      * @return the string
      */
-    @Transactional
     public String startProcess(Map<String, Object> variables) {
         ProcessInstance processInstance =
                 runtimeService.startProcessInstanceByKey(
@@ -50,13 +48,13 @@ public class OrchestrationService {
         String processInstanceId = processInstance.getProcessInstanceId();
         String docId = (String) variables.get(Constants.BPMN_PROC_VAR_DOC_ID);
 
-        // Create audit record
+        // Create initial audit record
         var audit = new MigrationAudit();
         audit.setProcessInstanceKey(processInstanceId);
         audit.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
         audit.setBpmnProcessId(Constants.BPMN_PROCESS_DEFINITION_KEY);
         audit.setDocumentId(docId);
-        audit.setStatus(MigrationAudit.MigrationStatus.RUNNING);
+        audit.setStatus(MigrationAudit.MigrationStatus.PENDING);
         audit.setStartedAt(Instant.now());
 
         String traceId = Span.current().getSpanContext().getTraceId();

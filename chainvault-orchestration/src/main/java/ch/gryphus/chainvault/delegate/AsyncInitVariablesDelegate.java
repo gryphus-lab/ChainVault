@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
  * The type Init variables service.
  */
 @Slf4j
-@Component
+@Component("asyncInitVars")
 @RequiredArgsConstructor
-public class InitVariablesService implements JavaDelegate {
+public class AsyncInitVariablesDelegate implements JavaDelegate {
 
     private final MigrationService migrationService;
     private final MigrationExecutor executor;
@@ -25,8 +25,8 @@ public class InitVariablesService implements JavaDelegate {
     public void execute(DelegateExecution execution) {
         executor.executeStep(
                 execution,
-                "init-variables",
-                "INIT_FAILED",
+                "async-init-vars",
+                null,
                 (span, docId, map) -> {
                     // do nothing
                 });
