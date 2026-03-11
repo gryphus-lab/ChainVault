@@ -5,9 +5,13 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.TiffPage;
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.utils.HashUtils;
+import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,28 +26,34 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MergePdfDelegate extends AbstractTracingDelegate {
     private final MigrationService migrationService;
-    private final MigrationExecutor executor;
+    private final AuditEventService auditEventService;
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void doExecute(DelegateExecution execution) {
-        executor.executeStep(
-                execution,
-                "merge-pdfs",
-                "ASSEMBLY_FAILED",
-                (span, docId, map) -> {
-                    List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
-                    MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+    protected AuditEventService getAuditEventService() {
+        return auditEventService;
+    }
 
-                    Path workingDirectory =
-                            (Path) execution.getTransientVariable("workingDirectory");
-                    Path pdfPath =
-                            migrationService.mergeTiffToPdf(
-                                    pages, docId, workingDirectory.toString());
-                    ctx.setPdfHash(HashUtils.sha256(pdfPath));
+    @Override
+    protected String getTaskType() {
+        return "merge-pdfs";
+    }
 
-                    execution.setTransientVariable("ctx", ctx);
-                    execution.setTransientVariable("pdfPath", pdfPath);
-                });
+    @Override
+    protected String getErrorCode() {
+        return "";
+    }
+
+    @Override
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
+            throws IOException, NoSuchAlgorithmException {
+        List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
+        MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+
+        Path workingDirectory = (Path) execution.getTransientVariable("workingDirectory");
+        Path pdfPath = migrationService.mergeTiffToPdf(pages, docId, workingDirectory.toString());
+        ctx.setPdfHash(HashUtils.sha256(pdfPath));
+
+        execution.setTransientVariable("ctx", ctx);
+        execution.setTransientVariable("pdfPath", pdfPath);
     }
 }

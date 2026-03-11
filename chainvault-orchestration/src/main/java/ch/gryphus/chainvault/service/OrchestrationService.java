@@ -55,7 +55,6 @@ public class OrchestrationService {
         Context parentContext = Context.current().with(parentSpan);
 
         try (Scope scope = parentContext.makeCurrent()) {
-            // Important: Inject the parent context into Flowable
             String traceParent =
                     String.format(
                             "00-%s-%s-01",

@@ -5,8 +5,12 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.TiffPage;
+import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
+import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,24 +26,32 @@ import org.springframework.stereotype.Component;
 public class SignDocumentDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
-    private final MigrationExecutor executor;
+    private final AuditEventService auditEventService;
 
     @Override
-    public void doExecute(DelegateExecution execution) {
-        executor.executeStep(
-                execution,
-                "sign-document",
-                "SIGN_FAILED",
-                (span, docId, map) -> {
-                    byte[] payload = (byte[]) execution.getTransientVariable("payload");
-                    MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+    protected AuditEventService getAuditEventService() {
+        return auditEventService;
+    }
 
-                    Path workingDirectory =
-                            (Path) execution.getTransientVariable("workingDirectory");
-                    List<TiffPage> pages =
-                            migrationService.signTiffPages(
-                                    payload, ctx, workingDirectory.toString());
-                    execution.setTransientVariable("pages", pages);
-                });
+    @Override
+    protected String getTaskType() {
+        return "sign-document";
+    }
+
+    @Override
+    protected String getErrorCode() {
+        return "SIGN_FAILED";
+    }
+
+    @Override
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
+            throws IOException, NoSuchAlgorithmException {
+        byte[] payload = (byte[]) execution.getTransientVariable("payload");
+        MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
+
+        Path workingDirectory = (Path) execution.getTransientVariable("workingDirectory");
+        List<TiffPage> pages =
+                migrationService.signTiffPages(payload, ctx, workingDirectory.toString());
+        execution.setTransientVariable("pages", pages);
     }
 }

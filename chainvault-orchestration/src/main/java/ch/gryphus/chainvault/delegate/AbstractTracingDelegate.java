@@ -3,11 +3,17 @@
  */
 package ch.gryphus.chainvault.delegate;
 
+import ch.gryphus.chainvault.config.Constants;
+import ch.gryphus.chainvault.entity.MigrationAudit;
+import ch.gryphus.chainvault.service.AuditEventService;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.*;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -19,36 +25,69 @@ import org.flowable.engine.delegate.JavaDelegate;
  */
 public abstract class AbstractTracingDelegate implements JavaDelegate {
 
+    protected abstract AuditEventService getAuditEventService();
+
+    protected abstract String getTaskType();
+
+    protected abstract String getErrorCode();
+
     @Override
     public void execute(DelegateExecution execution) {
-        // 1. Get the trace context string from the process variables
         String traceParent = (String) execution.getVariable("traceParent");
-
-        // 2. Extract into OTel context
         Context parentContext = extractContext(traceParent);
 
-        // 3. Start the span
+        // Start the span as a child
         Span span =
                 GlobalOpenTelemetry.getTracer("chainvault-tracer")
-                        .spanBuilder(execution.getCurrentActivityId())
+                        .spanBuilder(getTaskType())
                         .setParent(parentContext)
                         .startSpan();
 
         try (Scope scope = span.makeCurrent()) {
-            doExecute(execution);
+            executeManagedStep(execution, span);
+        } catch (Exception e) {
+            span.recordException(e);
+            getAuditEventService()
+                    .handleException(
+                            e,
+                            span,
+                            execution.getProcessInstanceId(),
+                            getErrorCode(),
+                            getTaskType());
         } finally {
             span.end();
         }
     }
 
-    /**
-     * Do execute.
-     *
-     * @param execution the execution
-     */
-    protected abstract void doExecute(DelegateExecution execution);
+    private void executeManagedStep(DelegateExecution execution, Span span) throws Exception {
+        String docId = (String) execution.getVariable(Constants.BPMN_PROC_VAR_DOC_ID);
+        span.setAttribute(Constants.SPAN_ATTR_DOCUMENT_ID, docId);
 
-    private Context extractContext(String traceParent) {
+        getAuditEventService()
+                .updateAuditEventStart(
+                        execution.getProcessInstanceId(), docId, getTaskType(), span);
+
+        // Run the specific task logic
+        doExecute(execution, span, docId);
+
+        span.addEvent(
+                getTaskType() + ".success",
+                Attributes.of(AttributeKey.stringKey(Constants.SPAN_ATTR_DOCUMENT_ID), docId));
+        getAuditEventService()
+                .updateAuditEventEnd(
+                        execution.getProcessInstanceId(),
+                        MigrationAudit.MigrationStatus.SUCCESS,
+                        null,
+                        null,
+                        getTaskType(),
+                        getTaskType() + " completed",
+                        execution.getTransientVariables());
+    }
+
+    protected abstract void doExecute(DelegateExecution execution, Span span, String docId)
+            throws IOException, NoSuchAlgorithmException;
+
+    private static Context extractContext(String traceParent) {
         if (traceParent == null) return Context.root();
         return GlobalOpenTelemetry.getPropagators()
                 .getTextMapPropagator()
