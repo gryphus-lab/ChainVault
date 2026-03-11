@@ -26,7 +26,7 @@ public class AsyncInitVariablesDelegate implements JavaDelegate {
         executor.executeStep(
                 execution,
                 "async-init-vars",
-                null,
+                "ASYNC-INIT_FAILED",
                 (span, docId, map) -> {
                     // do nothing
                 });
