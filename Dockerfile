@@ -6,7 +6,7 @@ COPY chainvault-orchestration ./chainvault-orchestration
 COPY chainvault-report-aggregate ./chainvault-report-aggregate
 RUN mvn -DskipTests -q package
 
-FROM eclipse-temurin:25.0.2_10-jre-alpine-3.22 AS runtime
+FROM eclipse-temurin:25-jre-alpine-3.23 AS runtime
 ARG USERNAME=chainvault
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
