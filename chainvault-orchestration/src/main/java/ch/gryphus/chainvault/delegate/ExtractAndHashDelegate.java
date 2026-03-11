@@ -11,7 +11,6 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,13 +19,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component("extractAndHash")
 @RequiredArgsConstructor
-public class ExtractAndHashDelegate implements JavaDelegate {
+public class ExtractAndHashDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
     private final MigrationExecutor executor;
 
     @Override
-    public void execute(DelegateExecution execution) {
+    public void doExecute(DelegateExecution execution) {
         executor.executeStep(
                 execution,
                 "extract-hash",

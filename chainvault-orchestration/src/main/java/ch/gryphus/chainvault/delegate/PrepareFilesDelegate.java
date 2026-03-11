@@ -13,7 +13,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,14 +21,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component("prepareFiles")
 @RequiredArgsConstructor
-public class PrepareFilesDelegate implements JavaDelegate {
+public class PrepareFilesDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
     private final MigrationExecutor executor;
 
     @SuppressWarnings("unchecked")
     @Override
-    public void execute(DelegateExecution execution) {
+    public void doExecute(DelegateExecution execution) {
         executor.executeStep(
                 execution,
                 "prepare-files",

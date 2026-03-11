@@ -9,7 +9,6 @@ import ch.gryphus.chainvault.service.MigrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,13 +17,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component("transformMetadata")
 @RequiredArgsConstructor
-public class TransformMetadataDelegate implements JavaDelegate {
+public class TransformMetadataDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
     private final MigrationExecutor executor;
 
     @Override
-    public void execute(DelegateExecution execution) {
+    public void doExecute(DelegateExecution execution) {
         executor.executeStep(
                 execution,
                 "transform-metadata",
