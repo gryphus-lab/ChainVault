@@ -6,7 +6,7 @@ package ch.gryphus.chainvault.delegate;
 import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.service.AuditEventService;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.*;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
@@ -15,24 +15,19 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The type Abstract tracing delegate.
  */
 public abstract class AbstractTracingDelegate implements JavaDelegate {
 
-    // Inject these once in the constructor of your child classes
+    @Autowired private OpenTelemetry openTelemetry;
+
     private final AuditEventService auditService;
     private final String taskType;
     private final String errorCode;
 
-    /**
-     * Instantiates a new Abstract tracing delegate.
-     *
-     * @param auditService the audit service
-     * @param taskType     the task type
-     * @param errorCode    the error code
-     */
     protected AbstractTracingDelegate(
             AuditEventService auditService, String taskType, String errorCode) {
         this.auditService = auditService;
@@ -42,11 +37,14 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution execution) {
+        // Use the utility to get the parent context
         String traceParent = (String) execution.getVariable("traceParent");
-        Context parentContext = OTelUtils.extractContextFromTraceParent(traceParent);
+        Context parentContext = OTelUtils.extractContext(openTelemetry, traceParent);
 
+        // Start Child Span
         Span span =
-                GlobalOpenTelemetry.getTracer("chainvault-tracer")
+                openTelemetry
+                        .getTracer("chainvault")
                         .spanBuilder(taskType)
                         .setParent(parentContext)
                         .startSpan();
@@ -56,9 +54,8 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
             auditService.updateAuditEventStart(
                     execution.getProcessInstanceId(), docId, taskType, span);
 
-            doExecute(execution, span, docId); // Delegate logic
+            doExecute(execution, span, docId);
 
-            span.addEvent(taskType + ".success");
             auditService.updateAuditEventEnd(
                     execution.getProcessInstanceId(),
                     MigrationAudit.MigrationStatus.SUCCESS,
@@ -76,15 +73,6 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
         }
     }
 
-    /**
-     * Do execute.
-     *
-     * @param execution the execution
-     * @param span      the span
-     * @param docId     the doc id
-     * @throws NoSuchAlgorithmException the no such algorithm exception
-     * @throws IOException              the io exception
-     */
     protected abstract void doExecute(DelegateExecution execution, Span span, String docId)
-            throws NoSuchAlgorithmException, IOException;
+            throws IOException, NoSuchAlgorithmException;
 }

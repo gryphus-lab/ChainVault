@@ -3,7 +3,7 @@
  */
 package ch.gryphus.chainvault.delegate;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.Collections;
@@ -17,37 +17,38 @@ public class OTelUtils {
         /* This utility class should not be instantiated */
     }
 
-    // Define the Getter explicitly
-    private static final TextMapGetter<Map<String, String>> GETTER = new MapTextMapGetter();
+    // Explicitly define the Getter for Map types
+    private static final TextMapGetter<Map<String, String>> MAP_GETTER =
+            new TextMapGetter<>() {
+                @Override
+                public Iterable<String> keys(Map<String, String> carrier) {
+                    return carrier.keySet();
+                }
+
+                @Override
+                public String get(Map<String, String> carrier, String key) {
+                    return carrier == null ? null : carrier.get(key);
+                }
+            };
 
     /**
-     * Extract context from trace parent context.
+     * Extract context context.
      *
-     * @param traceParent the trace parent
+     * @param openTelemetry the open telemetry
+     * @param traceParent   the trace parent
      * @return the context
      */
-    public static Context extractContextFromTraceParent(String traceParent) {
+    public static Context extractContext(OpenTelemetry openTelemetry, String traceParent) {
         if (traceParent == null || traceParent.isEmpty()) {
             return Context.root();
         }
 
+        // Wrap the string in a map that the Getter understands
         Map<String, String> carrier = Collections.singletonMap("traceparent", traceParent);
 
-        // Use the explicit GETTER instead of the lambda
-        return GlobalOpenTelemetry.getPropagators()
+        return openTelemetry
+                .getPropagators()
                 .getTextMapPropagator()
-                .extract(Context.current(), carrier, GETTER);
-    }
-
-    private static class MapTextMapGetter implements TextMapGetter<Map<String, String>> {
-        @Override
-        public String get(Map<String, String> carrier, String s) {
-            return carrier != null ? carrier.get(s) : null;
-        }
-
-        @Override
-        public Iterable<String> keys(Map<String, String> carrier) {
-            return carrier != null ? carrier.keySet() : Collections.emptyList();
-        }
+                .extract(Context.current(), carrier, MAP_GETTER);
     }
 }
