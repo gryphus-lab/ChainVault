@@ -18,18 +18,7 @@ public class OTelUtils {
     }
 
     // Explicitly define the Getter for Map types
-    private static final TextMapGetter<Map<String, String>> MAP_GETTER =
-            new TextMapGetter<>() {
-                @Override
-                public Iterable<String> keys(Map<String, String> carrier) {
-                    return carrier.keySet();
-                }
-
-                @Override
-                public String get(Map<String, String> carrier, String key) {
-                    return carrier == null ? null : carrier.get(key);
-                }
-            };
+    private static final TextMapGetter<Map<String, String>> MAP_GETTER = new MapTextMapGetter();
 
     /**
      * Extract context context.
@@ -50,5 +39,17 @@ public class OTelUtils {
                 .getPropagators()
                 .getTextMapPropagator()
                 .extract(Context.current(), carrier, MAP_GETTER);
+    }
+
+    private static class MapTextMapGetter implements TextMapGetter<Map<String, String>> {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+            return carrier.keySet();
+        }
+
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+            return carrier == null ? null : carrier.get(key);
+        }
     }
 }

@@ -4,6 +4,7 @@
 package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.service.AuditEventService;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -21,10 +22,11 @@ public class HandleErrorDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Handle error delegate.
      *
-     * @param auditService the audit service
+     * @param openTelemetry the open telemetry
+     * @param auditService  the audit service
      */
-    public HandleErrorDelegate(AuditEventService auditService) {
-        super(auditService, "handle-error", "");
+    public HandleErrorDelegate(OpenTelemetry openTelemetry, AuditEventService auditService) {
+        super(openTelemetry, auditService, "handle-error", "");
     }
 
     @Override

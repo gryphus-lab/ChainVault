@@ -5,6 +5,7 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,12 +29,15 @@ public class ExtractAndHashDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Extract and hash delegate.
      *
+     * @param openTelemetry    the open telemetry
      * @param auditService     the audit service
      * @param migrationService the migration service
      */
     public ExtractAndHashDelegate(
-            AuditEventService auditService, MigrationService migrationService) {
-        super(auditService, "extract-hash", "EXTRACTION_FAILED");
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "extract-hash", "EXTRACTION_FAILED");
         this.migrationService = migrationService;
     }
 

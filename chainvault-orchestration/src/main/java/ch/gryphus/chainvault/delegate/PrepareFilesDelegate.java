@@ -9,6 +9,7 @@ import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.utils.HashUtils;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,12 +31,15 @@ public class PrepareFilesDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Prepare files delegate.
      *
+     * @param openTelemetry    the open telemetry
      * @param auditService     the audit service
      * @param migrationService the migration service
      */
     protected PrepareFilesDelegate(
-            AuditEventService auditService, MigrationService migrationService) {
-        super(auditService, "prepare-files", "PREPARE_FAILED");
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "prepare-files", "PREPARE_FAILED");
         this.migrationService = migrationService;
     }
 

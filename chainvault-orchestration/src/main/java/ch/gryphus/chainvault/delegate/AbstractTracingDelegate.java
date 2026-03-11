@@ -7,7 +7,6 @@ import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.service.AuditEventService;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.*;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -15,21 +14,31 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The type Abstract tracing delegate.
  */
 public abstract class AbstractTracingDelegate implements JavaDelegate {
 
-    @Autowired private OpenTelemetry openTelemetry;
-
+    private final OpenTelemetry openTelemetry;
     private final AuditEventService auditService;
     private final String taskType;
     private final String errorCode;
 
+    /**
+     * Instantiates a new Abstract tracing delegate.
+     *
+     * @param openTelemetry the open telemetry
+     * @param auditService  the audit service
+     * @param taskType      the task type
+     * @param errorCode     the error code
+     */
     protected AbstractTracingDelegate(
-            AuditEventService auditService, String taskType, String errorCode) {
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            String taskType,
+            String errorCode) {
+        this.openTelemetry = openTelemetry;
         this.auditService = auditService;
         this.taskType = taskType;
         this.errorCode = errorCode;
@@ -73,6 +82,15 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
         }
     }
 
+    /**
+     * Do execute.
+     *
+     * @param execution the execution
+     * @param span      the span
+     * @param docId     the doc id
+     * @throws IOException              the io exception
+     * @throws NoSuchAlgorithmException the no such algorithm exception
+     */
     protected abstract void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException;
 }

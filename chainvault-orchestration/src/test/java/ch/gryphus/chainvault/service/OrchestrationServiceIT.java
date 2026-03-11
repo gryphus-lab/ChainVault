@@ -3,7 +3,8 @@
  */
 package ch.gryphus.chainvault.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.awaitility.Awaitility.await;
 
 import ch.gryphus.chainvault.config.Constants;

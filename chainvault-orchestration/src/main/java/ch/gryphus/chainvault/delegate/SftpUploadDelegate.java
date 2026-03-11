@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.delegate;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,8 +30,11 @@ public class SftpUploadDelegate extends AbstractTracingDelegate {
      * @param auditService     the audit service
      * @param migrationService the migration service
      */
-    public SftpUploadDelegate(AuditEventService auditService, MigrationService migrationService) {
-        super(auditService, "upload-sftp", "UPLOAD_FAILED");
+    public SftpUploadDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "upload-sftp", "UPLOAD_FAILED");
         this.migrationService = migrationService;
     }
 

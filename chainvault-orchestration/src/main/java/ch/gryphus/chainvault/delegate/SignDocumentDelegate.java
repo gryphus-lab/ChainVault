@@ -7,6 +7,7 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,11 +29,15 @@ public class SignDocumentDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Sign document delegate.
      *
+     * @param openTelemetry    the open telemetry
      * @param auditService     the audit service
      * @param migrationService the migration service
      */
-    public SignDocumentDelegate(AuditEventService auditService, MigrationService migrationService) {
-        super(auditService, "sign-document", "SIGN_FAILED");
+    public SignDocumentDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
+        super(openTelemetry, auditService, "sign-document", "SIGN_FAILED");
         this.migrationService = migrationService;
     }
 
