@@ -9,7 +9,6 @@ import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +54,7 @@ public class OrchestrationService {
         // Store the parent context for the async handoff
         Context parentContext = Context.current().with(parentSpan);
 
-        try (Scope scope = parentContext.makeCurrent()) {
+        try (var _ = parentContext.makeCurrent()) {
             String traceParent =
                     String.format(
                             "00-%s-%s-01",
