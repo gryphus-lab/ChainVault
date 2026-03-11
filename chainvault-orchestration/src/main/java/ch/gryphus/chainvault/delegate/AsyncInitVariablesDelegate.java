@@ -35,14 +35,21 @@ public class AsyncInitVariablesDelegate implements JavaDelegate {
         }
 
         Span childSpan =
-                tracer.spanBuilder("Flowable: " + execution.getCurrentActivityId())
+                tracer.spanBuilder("Flowable: %s".formatted(execution.getCurrentActivityId()))
                         .setParent(parentContext)
                         .setSpanKind(SpanKind.INTERNAL)
                         .startSpan();
 
         try (Scope scope = childSpan.makeCurrent()) {
             executor.executeStep(
-                    execution, "async-init-vars", "ASYNC-INIT_FAILED", (span, docId, map) -> {});
+                    execution,
+                    "async-init-vars",
+                    "ASYNC-INIT_FAILED",
+                    (span, docId, map) ->
+                            log.info(
+                                    "async-init-vars executed for docId {}, and scope: {}",
+                                    docId,
+                                    scope));
         }
     }
 }

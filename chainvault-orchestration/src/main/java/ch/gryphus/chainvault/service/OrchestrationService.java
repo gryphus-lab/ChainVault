@@ -7,7 +7,6 @@ import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.entity.MigrationAudit;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import java.time.Instant;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -23,20 +22,16 @@ import org.springframework.stereotype.Service;
 public class OrchestrationService {
     private final RuntimeService runtimeService;
     private final MigrationAuditRepository auditRepo;
-    private final Tracer tracer;
 
     /**
      * Instantiates a new Orchestration service.
      *
      * @param runtimeService the runtime service
      * @param auditRepo      the audit repo
-     * @param tracer         the tracer
      */
-    public OrchestrationService(
-            RuntimeService runtimeService, MigrationAuditRepository auditRepo, Tracer tracer) {
+    public OrchestrationService(RuntimeService runtimeService, MigrationAuditRepository auditRepo) {
         this.runtimeService = runtimeService;
         this.auditRepo = auditRepo;
-        this.tracer = tracer;
     }
 
     /**
@@ -46,8 +41,6 @@ public class OrchestrationService {
      * @return the string
      */
     public String startProcess(Map<String, Object> variables) {
-        Span currentSpan = tracer.spanBuilder("start-process").startSpan();
-
         ProcessInstance processInstance =
                 runtimeService.startProcessInstanceByKey(
                         Constants.BPMN_PROCESS_DEFINITION_KEY, variables);
@@ -64,7 +57,7 @@ public class OrchestrationService {
         audit.setStatus(MigrationAudit.MigrationStatus.PENDING);
         audit.setStartedAt(Instant.now());
 
-        String traceId = currentSpan.getSpanContext().getTraceId();
+        String traceId = Span.current().getSpanContext().getTraceId();
         audit.setTraceId(traceId);
 
         auditRepo.save(audit);

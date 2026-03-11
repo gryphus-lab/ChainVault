@@ -9,10 +9,6 @@ import static org.mockito.Mockito.when;
 
 import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.Tracer;
 import java.util.Map;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -35,14 +31,9 @@ class OrchestrationServiceTest {
 
     @Mock private MigrationAuditRepository auditRepository;
 
-    @Mock private Tracer mockTracer;
     private OrchestrationService orchestrationServiceUnderTest;
 
     @Mock private ProcessInstance mockProcessInstance;
-
-    @Mock private SpanBuilder mockSpanBuilder;
-    @Mock private Span mockSpan;
-    @Mock private SpanContext mockSpanContext;
 
     /**
      * Sets up.
@@ -50,12 +41,8 @@ class OrchestrationServiceTest {
     @BeforeEach
     void setUp() {
         orchestrationServiceUnderTest =
-                new OrchestrationService(mockRuntimeService, auditRepository, mockTracer);
+                new OrchestrationService(mockRuntimeService, auditRepository);
 
-        when(mockTracer.spanBuilder(any())).thenReturn(mockSpanBuilder);
-        when(mockSpanBuilder.startSpan()).thenReturn(mockSpan);
-        when(mockSpan.getSpanContext()).thenReturn(mockSpanContext);
-        when(mockSpanContext.getTraceId()).thenReturn("12345");
         when(mockProcessInstance.getProcessInstanceId()).thenReturn("test");
     }
 
