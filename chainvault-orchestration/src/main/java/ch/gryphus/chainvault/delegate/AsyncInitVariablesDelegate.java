@@ -13,7 +13,6 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
