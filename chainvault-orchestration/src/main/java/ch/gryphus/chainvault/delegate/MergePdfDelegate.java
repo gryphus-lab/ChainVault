@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -23,24 +22,18 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("mergePdf")
-@RequiredArgsConstructor
 public class MergePdfDelegate extends AbstractTracingDelegate {
     private final MigrationService migrationService;
-    private final AuditEventService auditEventService;
 
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "merge-pdfs";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "";
+    /**
+     * Instantiates a new Merge pdf delegate.
+     *
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public MergePdfDelegate(AuditEventService auditService, MigrationService migrationService) {
+        super(auditService, "merge-pdfs", "MERGE_FAILED");
+        this.migrationService = migrationService;
     }
 
     @Override

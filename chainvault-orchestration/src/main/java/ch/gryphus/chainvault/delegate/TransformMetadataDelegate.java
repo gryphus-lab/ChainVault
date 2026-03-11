@@ -10,7 +10,6 @@ import ch.gryphus.chainvault.service.MigrationService;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -20,25 +19,20 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("transformMetadata")
-@RequiredArgsConstructor
 public class TransformMetadataDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
-    private final AuditEventService auditEventService;
 
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "transform-metadata";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "TRANSFORM_FAILED";
+    /**
+     * Instantiates a new Transform metadata delegate.
+     *
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public TransformMetadataDelegate(
+            AuditEventService auditService, MigrationService migrationService) {
+        super(auditService, "transform-metadata", "TRANSFORM_FAILED");
+        this.migrationService = migrationService;
     }
 
     @Override

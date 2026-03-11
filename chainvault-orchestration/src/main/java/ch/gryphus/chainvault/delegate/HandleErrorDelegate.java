@@ -7,7 +7,6 @@ import ch.gryphus.chainvault.service.AuditEventService;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -17,24 +16,15 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("handleError")
-@RequiredArgsConstructor
 public class HandleErrorDelegate extends AbstractTracingDelegate {
 
-    private final AuditEventService auditEventService;
-
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "handle-error";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "";
+    /**
+     * Instantiates a new Handle error delegate.
+     *
+     * @param auditService the audit service
+     */
+    public HandleErrorDelegate(AuditEventService auditService) {
+        super(auditService, "handle-error", "");
     }
 
     @Override

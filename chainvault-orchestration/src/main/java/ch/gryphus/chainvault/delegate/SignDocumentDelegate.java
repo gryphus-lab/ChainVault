@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -22,25 +21,19 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("signDocument")
-@RequiredArgsConstructor
 public class SignDocumentDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
-    private final AuditEventService auditEventService;
 
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "sign-document";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "SIGN_FAILED";
+    /**
+     * Instantiates a new Sign document delegate.
+     *
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public SignDocumentDelegate(AuditEventService auditService, MigrationService migrationService) {
+        super(auditService, "sign-document", "SIGN_FAILED");
+        this.migrationService = migrationService;
     }
 
     @Override

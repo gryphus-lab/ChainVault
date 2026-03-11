@@ -10,7 +10,6 @@ import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -21,24 +20,18 @@ import org.springframework.util.FileSystemUtils;
  */
 @Slf4j
 @Component("uploadSftp")
-@RequiredArgsConstructor
 public class SftpUploadDelegate extends AbstractTracingDelegate {
     private final MigrationService migrationService;
-    private final AuditEventService auditEventService;
 
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "upload-sftp";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "UPLOAD_FAILED";
+    /**
+     * Instantiates a new Sftp upload delegate.
+     *
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public SftpUploadDelegate(AuditEventService auditService, MigrationService migrationService) {
+        super(auditService, "upload-sftp", "UPLOAD_FAILED");
+        this.migrationService = migrationService;
     }
 
     @Override

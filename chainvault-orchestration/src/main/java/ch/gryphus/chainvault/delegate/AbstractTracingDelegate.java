@@ -9,7 +9,6 @@ import ch.gryphus.chainvault.service.AuditEventService;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.*;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.io.IOException;
@@ -22,68 +21,70 @@ import org.flowable.engine.delegate.JavaDelegate;
  */
 public abstract class AbstractTracingDelegate implements JavaDelegate {
 
-    protected abstract AuditEventService getAuditEventService();
+    // Inject these once in the constructor of your child classes
+    private final AuditEventService auditService;
+    private final String taskType;
+    private final String errorCode;
 
-    protected abstract String getTaskType();
-
-    protected abstract String getErrorCode();
+    /**
+     * Instantiates a new Abstract tracing delegate.
+     *
+     * @param auditService the audit service
+     * @param taskType     the task type
+     * @param errorCode    the error code
+     */
+    protected AbstractTracingDelegate(
+            AuditEventService auditService, String taskType, String errorCode) {
+        this.auditService = auditService;
+        this.taskType = taskType;
+        this.errorCode = errorCode;
+    }
 
     @Override
     public void execute(DelegateExecution execution) {
-        // 1. Reconstruct Context from stored TraceParent string
         String traceParent = (String) execution.getVariable("traceParent");
         Context parentContext = OTelUtils.extractContextFromTraceParent(traceParent);
 
-        // 2. Start a child span
         Span span =
                 GlobalOpenTelemetry.getTracer("chainvault-tracer")
-                        .spanBuilder(getTaskType())
+                        .spanBuilder(taskType)
                         .setParent(parentContext)
-                        .setSpanKind(SpanKind.INTERNAL)
                         .startSpan();
 
         try (Scope scope = span.makeCurrent()) {
-            executeManagedStep(execution, span);
+            String docId = (String) execution.getVariable(Constants.BPMN_PROC_VAR_DOC_ID);
+            auditService.updateAuditEventStart(
+                    execution.getProcessInstanceId(), docId, taskType, span);
+
+            doExecute(execution, span, docId); // Delegate logic
+
+            span.addEvent(taskType + ".success");
+            auditService.updateAuditEventEnd(
+                    execution.getProcessInstanceId(),
+                    MigrationAudit.MigrationStatus.SUCCESS,
+                    null,
+                    null,
+                    taskType,
+                    "Success",
+                    execution.getTransientVariables());
         } catch (Exception e) {
             span.recordException(e);
-            getAuditEventService()
-                    .handleException(
-                            e,
-                            span,
-                            execution.getProcessInstanceId(),
-                            getErrorCode(),
-                            getTaskType());
+            auditService.handleException(
+                    e, span, execution.getProcessInstanceId(), errorCode, taskType);
         } finally {
             span.end();
         }
     }
 
-    private void executeManagedStep(DelegateExecution execution, Span span)
-            throws IOException, NoSuchAlgorithmException {
-        String docId = (String) execution.getVariable(Constants.BPMN_PROC_VAR_DOC_ID);
-        span.setAttribute(Constants.SPAN_ATTR_DOCUMENT_ID, docId);
-
-        getAuditEventService()
-                .updateAuditEventStart(
-                        execution.getProcessInstanceId(), docId, getTaskType(), span);
-
-        // Execute unique business logic
-        doExecute(execution, span, docId);
-
-        span.addEvent(
-                getTaskType() + ".success",
-                Attributes.of(AttributeKey.stringKey(Constants.SPAN_ATTR_DOCUMENT_ID), docId));
-        getAuditEventService()
-                .updateAuditEventEnd(
-                        execution.getProcessInstanceId(),
-                        MigrationAudit.MigrationStatus.SUCCESS,
-                        null,
-                        null,
-                        getTaskType(),
-                        "%s completed".formatted(getTaskType()),
-                        execution.getTransientVariables());
-    }
-
+    /**
+     * Do execute.
+     *
+     * @param execution the execution
+     * @param span      the span
+     * @param docId     the doc id
+     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws IOException              the io exception
+     */
     protected abstract void doExecute(DelegateExecution execution, Span span, String docId)
-            throws IOException, NoSuchAlgorithmException;
+            throws NoSuchAlgorithmException, IOException;
 }

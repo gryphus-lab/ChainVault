@@ -5,7 +5,6 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.service.AuditEventService;
 import io.opentelemetry.api.trace.Span;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -15,24 +14,15 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("asyncInitVars")
-@RequiredArgsConstructor
 public class AsyncInitVariablesDelegate extends AbstractTracingDelegate {
 
-    private final AuditEventService auditEventService;
-
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "async-init-vars";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "ASYNC-INIT_FAILED";
+    /**
+     * Instantiates a new Async init variables delegate.
+     *
+     * @param auditService the audit service
+     */
+    public AsyncInitVariablesDelegate(AuditEventService auditService) {
+        super(auditService, "async-init-vars", "ASYNC-INIT_FAILED");
     }
 
     @Override

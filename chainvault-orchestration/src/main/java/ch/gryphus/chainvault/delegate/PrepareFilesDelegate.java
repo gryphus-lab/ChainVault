@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -24,25 +23,20 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("prepareFiles")
-@RequiredArgsConstructor
 public class PrepareFilesDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
-    private final AuditEventService auditEventService;
 
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "prepare-files";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "PREPARE_FAILED";
+    /**
+     * Instantiates a new Prepare files delegate.
+     *
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    protected PrepareFilesDelegate(
+            AuditEventService auditService, MigrationService migrationService) {
+        super(auditService, "prepare-files", "PREPARE_FAILED");
+        this.migrationService = migrationService;
     }
 
     @Override

@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -22,25 +21,20 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("extractAndHash")
-@RequiredArgsConstructor
 public class ExtractAndHashDelegate extends AbstractTracingDelegate {
 
     private final MigrationService migrationService;
-    private final AuditEventService auditEventService;
 
-    @Override
-    protected AuditEventService getAuditEventService() {
-        return auditEventService;
-    }
-
-    @Override
-    protected String getTaskType() {
-        return "extract-hash";
-    }
-
-    @Override
-    protected String getErrorCode() {
-        return "EXTRACTION_FAILED";
+    /**
+     * Instantiates a new Extract and hash delegate.
+     *
+     * @param auditService     the audit service
+     * @param migrationService the migration service
+     */
+    public ExtractAndHashDelegate(
+            AuditEventService auditService, MigrationService migrationService) {
+        super(auditService, "extract-hash", "EXTRACTION_FAILED");
+        this.migrationService = migrationService;
     }
 
     @Override
