@@ -1,3 +1,4 @@
+# docker-compose-lgtm.yml for chainvault
 services:
   grafana-lgtm:
     image: 'grafana/otel-lgtm:latest'
