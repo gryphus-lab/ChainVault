@@ -81,6 +81,9 @@ class MigrationServiceTest {
     private double zipThresholdRatio;
     private int zipThresholdEntries;
 
+    /**
+     * The Working directory.
+     */
     static final String WORKING_DIRECTORY = "/tmp";
 
     /**
@@ -187,6 +190,40 @@ class MigrationServiceTest {
         assertThatExceptionOfType(MigrationServiceException.class)
                 .isThrownBy(() -> migrationServiceUnderTest.extractAndHash(docId))
                 .withMessageContaining("Unable to find document with id: %s".formatted(docId));
+    }
+
+    /**
+     * Test extract and hash when no payload url exists.
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    void testExtractAndHash_whenNoPayloadUrlExists() throws Exception {
+        String docId = "DOC-NO-PAYLOAD-URL-001";
+        meta.setPayloadUrl(null);
+
+        // setup
+        when(mockRequestHeadersSpec.exchange(
+                        any(RestClient.RequestHeadersSpec.ExchangeFunction.class)))
+                .thenAnswer( // returns valid metadata
+                        invocation -> {
+                            RestClient.RequestHeadersSpec.ExchangeFunction function =
+                                    invocation.getArgument(0);
+
+                            when(mockResponse.getStatusCode())
+                                    .thenReturn(HttpStatus.OK); // return 200 OK
+                            when(mockResponse.bodyTo(SourceMetadata.class))
+                                    .thenReturn(meta); // return valid metadata
+                            return function.exchange(null, mockResponse);
+                        });
+
+        Map<String, Object> result = migrationServiceUnderTest.extractAndHash(docId);
+        assertThat(result).hasSize(2); // context + metadata
+        Object obj = result.get("ctx");
+        assertThat(obj).isInstanceOf(MigrationContext.class);
+
+        MigrationContext migrationContext = (MigrationContext) obj;
+        assertThat(migrationContext.getMetadataHash()).isNotNull(); // metadata hash exists
+        assertThat(migrationContext.getPayloadHash()).isNull(); // payload hash does not exist
     }
 
     /**
