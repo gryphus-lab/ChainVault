@@ -1,5 +1,4 @@
 # mise.toml
-
 [tools]
 java = "temurin-25" # or "temurin-25", "zulu-25", "openjdk-25", "graalvm-community-25"
 # Use 'mise ls-remote java' to pick your preferred distribution/vendor
@@ -11,7 +10,7 @@ maven = "3.9" # still solid; or "latest" / "3.9.x" if you need a patch
 
 [env]
 # Leverage Java 25 features (e.g., generous defaults for virtual threads)
-_JAVA_OPTIONS = "-Xmx2048m -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto -Dspring.profiles.active=local"
+_JAVA_OPTIONS = "-Xmx2048m -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto"
 MAVEN_OPTS = "-Xmx1024m"
 
 # Spring Boot 4 common defaults
@@ -40,15 +39,19 @@ dev = { run = [
   "docker compose up -d postgres",
   "sleep 5",
   "docker compose exec -T postgres pg_isready -U postgres -t 30 || exit 1",
-  "cd chainvault-orchestration && mvn spring-boot:run -am -Dspring.profiles.active=local"
+  "cd chainvault-orchestration && mvn spring-boot:run -am -Dspring.profiles.active=local",
 ] }
+
 # Package the executable JAR
 package = { run = "mvn clean package -DskipTests -am" }
 
-# Full CI-style check (ideal for GitHub Actions)
+# Full CI-style checkw
 ci = { run = [
   "mvn clean verify",
-  "java --spring.profiles.active=local -jar target/*.jar",
+  "docker compose up -d postgres",
+  "sleep 5",
+  "docker compose exec -T postgres pg_isready -U postgres -t 30 || exit 1",
+  "java -jar chainvault-orchestration/target/*.jar --spring.profiles.active=local",
 ] }
 
 # Docker build (single-stage example; adjust Dockerfile path)
