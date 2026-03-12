@@ -54,10 +54,10 @@ public class ExtractAndHashDelegate extends AbstractTracingDelegate {
         log.info("Created directory: {}", path);
         execution.setTransientVariable("workingDirectory", path);
 
-        Map<String, Object> map1 = migrationService.extractAndHash(docId);
+        Map<String, Object> map = migrationService.extractAndHash(docId);
 
-        execution.setTransientVariable("ctx", map1.get("ctx"));
-        execution.setTransientVariable("meta", map1.get("meta"));
-        execution.setTransientVariable("payload", map1.get("payload"));
+        execution.setTransientVariable("ctx", map.get("ctx"));
+        execution.setTransientVariable("meta", map.get("meta"));
+        execution.setTransientVariable("payload", map.get("payload"));
     }
 }

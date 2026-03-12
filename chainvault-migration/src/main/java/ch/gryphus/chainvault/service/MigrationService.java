@@ -290,19 +290,17 @@ public class MigrationService {
             manifest.put("pageHashes", ctx.getPageHashes());
             manifest.put("payloadHash", ctx.getPayloadHash());
 
-            if (sourceMetadata != null) {
-                manifest.put(
-                        "sourceMetadata",
-                        Map.of(
-                                Constants.BPMN_PROC_VAR_DOC_ID,
-                                sourceMetadata.getDocId(),
-                                "title",
-                                sourceMetadata.getTitle(),
-                                "creationDate",
-                                sourceMetadata.getCreationDate(),
-                                "clientId",
-                                sourceMetadata.getClientId()));
-            }
+            manifest.put(
+                    "sourceMetadata",
+                    Map.of(
+                            Constants.BPMN_PROC_VAR_DOC_ID,
+                            sourceMetadata.getDocId(),
+                            "title",
+                            sourceMetadata.getTitle(),
+                            "creationDate",
+                            sourceMetadata.getCreationDate(),
+                            "clientId",
+                            sourceMetadata.getClientId()));
 
             String manifestJson =
                     objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(manifest);
