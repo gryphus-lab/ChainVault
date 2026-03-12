@@ -1,7 +1,7 @@
 # mise.toml
 
 [tools]
-java = "25" # or "temurin-25", "zulu-25", "openjdk-25", "graalvm-community-25"
+java = "temurin-25" # or "temurin-25", "zulu-25", "openjdk-25", "graalvm-community-25"
 # Use 'mise ls-remote java' to pick your preferred distribution/vendor
 maven = "3.9" # still solid; or "latest" / "3.9.x" if you need a patch
 
