@@ -44,14 +44,12 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build and verify
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
         run: mise run verify
 
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          TESTCONTAINERS_RYUK_DISABLED: "true"
         run: |
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
-            -Dsonar.projectKey=gryphus-lab_chainvault \
-            -Dsonar.organization=gryphus-lab \
-            -Dsonar.java.binaries=chainvault-migration/target/classes,chainvault-orchestration/target/classes
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
