@@ -29,8 +29,8 @@ bootstrap = { run = "mvn dependency:go-offline" }
 # Clean + install all modules (no tests)
 build = { run = "mvn clean install -DskipTests" }
 
-# Full build + tests + verifications
-verify = { run = "mvn clean verify" }
+# Full build + tests + verifications + JaCoCo coverage
+verify = { run = "mvn clean verify -Pcoverage" }
 
 # Tests only
 test = { run = "mvn clean test" }

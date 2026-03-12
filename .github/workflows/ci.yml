@@ -43,9 +43,15 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and analyze
+      - name: Build and verify
+        run: mise run verify
+
+      - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           TESTCONTAINERS_RYUK_DISABLED: "true"
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar -Pcoverage
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar \
+            -Dsonar.projectKey=gryphus-lab_chainvault \
+            -Dsonar.organization=gryphus-lab \
+            -Dsonar.java.binaries=chainvault-migration/target/classes,chainvault-orchestration/target/classes
