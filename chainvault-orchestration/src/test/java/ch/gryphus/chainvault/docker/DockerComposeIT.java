@@ -29,6 +29,7 @@ class DockerComposeIT {
     /**
      * The constant dockerCompose.
      */
+    @SuppressWarnings("resource")
     @Container
     static final ComposeContainer dockerCompose =
             new ComposeContainer(new File("../docker-compose.yml"))
