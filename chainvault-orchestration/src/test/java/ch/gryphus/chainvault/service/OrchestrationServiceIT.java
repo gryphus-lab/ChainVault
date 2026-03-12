@@ -60,8 +60,6 @@ class OrchestrationServiceIT extends BaseServiceIT {
                     .withExposedPorts(22)
                     .waitingFor(Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1));
 
-    @Autowired private MigrationService migrationService;
-
     @Autowired private OrchestrationService orchestrationService;
 
     /**
