@@ -283,10 +283,10 @@ class DockerServicesE2EIT extends BaseDockerIT {
      * Test dynamic sftp port allocation.
      */
     @Test
-    @DisplayName("SFTP port should be dynamically allocated")
-    void testDynamicSftpPortAllocation() {
+    @DisplayName("SFTP port should be allocated")
+    void testSftpPortAllocation() {
         Integer mappedPort = sftp.getMappedPort(22);
-        assertThat(mappedPort).isPositive().isGreaterThan(1024); // Should be ephemeral port
+        assertThat(mappedPort).isPositive().isGreaterThan(2222);
     }
 
     /**

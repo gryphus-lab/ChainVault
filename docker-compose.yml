@@ -63,7 +63,7 @@ services:
   sftp-test:
     image: atmoz/sftp:latest
     ports:
-      - "22"
+      - "2222:22"
     volumes:
       - ./data/upload:/home/testuser/upload
     command: testuser:testpass123:::upload

@@ -1,0 +1,80 @@
+# mise.toml
+[tools]
+java = "temurin-25" # or "temurin-25", "zulu-25", "openjdk-25", "graalvm-community-25"
+# Use 'mise ls-remote java' to pick your preferred distribution/vendor
+maven = "3.9" # still solid; or "latest" / "3.9.x" if you need a patch
+
+# ────────────────────────────────────────
+# Environment (activated repo-wide)
+# ────────────────────────────────────────
+
+[env]
+# Leverage Java 25 features (e.g., generous defaults for virtual threads)
+_JAVA_OPTIONS = "-Xmx2048m -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto"
+MAVEN_OPTS = "-Xmx1024m"
+
+# Spring Boot 4 common defaults
+SPRING_PROFILES_ACTIVE = "local"
+
+# ────────────────────────────────────────
+# Tasks (run from anywhere — mise uses root config)
+# ────────────────────────────────────────
+
+[tasks]
+
+# One-time setup after clone / clean machine
+bootstrap = { run = "mvn dependency:go-offline" }
+
+# Clean + install all modules (no tests)
+build = { run = "mvn clean install -DskipTests" }
+
+# Full build + tests + verifications + JaCoCo coverage
+verify = { run = "mvn clean verify -Pcoverage" }
+
+# Tests only
+test = { run = "mvn clean test" }
+
+# Dev run
+dev = { run = [
+  "docker compose up -d postgres",
+  "sleep 5",
+  "docker compose exec -T postgres pg_isready -U postgres -t 30 || exit 1",
+  "cd chainvault-orchestration && mvn spring-boot:run -am -Dspring.profiles.active=local",
+] }
+
+# Package the executable JAR
+package = { run = "mvn clean package -DskipTests -am" }
+
+# Full CI-style checkw
+ci = { run = [
+  "mvn clean verify",
+  "docker compose up -d postgres",
+  "sleep 5",
+  "docker compose exec -T postgres pg_isready -U postgres -t 30 || exit 1",
+  "java -jar chainvault-orchestration/target/*.jar --spring.profiles.active=local",
+] }
+
+# Docker build (single-stage example; adjust Dockerfile path)
+docker-build = { run = "docker build -t gryphus-lab/chainvault:latest -f Dockerfile ." }
+
+# Versioned Docker build + tag from POM (multi-module aware)
+docker-build-versioned = { run = '''
+  VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -pl api -am -N)
+  docker build -t gryphus-lab/chainvault:$VERSION -t gryphus-lab/chainvault:latest -f ./Dockerfile .
+''' }
+
+# Optional: push (login to registry first via docker/ghcr/etc.)
+docker-push = { run = "docker push gryphus-lab/chainvault:latest" }
+
+# If using docker-compose (e.g., for DB, redis, etc.)
+compose-up = { run = "docker compose -f ./docker-compose-lgtm.yml -f ./docker-compose.yml up -d" }
+
+# If using docker-compose (e.g., for DB, redis, etc.)
+compose-down = { run = "docker compose -p chainvault down -v" }
+
+# Dependency debugging (great in multi-module)
+deps = { run = "mvn dependency:tree" }
+
+# Formatting / linting (spotless, etc.)
+fmt = { run = "mvn spotless:apply" }
+check = { run = "mvn spotless:check" }
