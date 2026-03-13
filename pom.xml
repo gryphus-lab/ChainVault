@@ -60,9 +60,6 @@
         <sonar.projectKey>gryphus-lab_chainvault</sonar.projectKey>
         <sonar.organization>gryphus-lab</sonar.organization>
         
-        <!-- exclude spring boot configuration classes -->
-        <sonar.exclusions>**/config/**.*</sonar.exclusions>
-        
         <!-- monitoring -->
         <opentelemetry.version>1.60.1</opentelemetry.version>
         <opentelemetry-exporter-prometheus.version>1.60.1-alpha</opentelemetry-exporter-prometheus.version>

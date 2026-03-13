@@ -64,8 +64,6 @@ services:
     image: atmoz/sftp:latest
     ports:
       - "2222:22"
-    volumes:
-      - ./data/upload:/home/testuser/upload
     command: testuser:testpass123:::upload
     healthcheck:
       test: [ "CMD", "ls", "/home/testuser/upload" ]
