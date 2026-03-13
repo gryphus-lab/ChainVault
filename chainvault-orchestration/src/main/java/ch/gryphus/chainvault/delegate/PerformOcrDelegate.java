@@ -9,7 +9,6 @@ import ch.gryphus.chainvault.service.MigrationService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +51,7 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
             throw new IllegalStateException("No TIFF pages found for OCR");
         }
 
-        List<String> ocrResults =
-                migrationService.performOcrOnTiffPages(tiffPages);
+        List<String> ocrResults = migrationService.performOcrOnTiffPages(tiffPages);
 
         execution.setTransientVariable("ocrResults", ocrResults);
         execution.setTransientVariable(
