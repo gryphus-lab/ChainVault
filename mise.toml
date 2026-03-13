@@ -68,10 +68,10 @@ compose-down = { run = "docker compose -p chainvault down", description = "Docke
 compose-down-full = { run = "docker compose -p chainvault down -v", description = "Docker compose down - all services and volumes" }
 
 # run smoke test
-smoke-test = { run = "./start_test.sh", description = "Run smoke test"}
+smoke-test = { run = "./start_test.sh", description = "Run smoke test" }
 
 # run load test
-load-test = { run = "./start_test.sh -i 1000", description = "Run load test with 1000 iterations"}
+load-test = { run = "./start_test.sh -i 1000", description = "Run load test with 1000 iterations" }
 
 # Dependency
 deps = { run = "mvn dependency:tree", description = "Generate maven dependency tree" }
