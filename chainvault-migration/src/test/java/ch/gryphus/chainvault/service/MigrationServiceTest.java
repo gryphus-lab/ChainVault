@@ -194,6 +194,8 @@ class MigrationServiceTest {
 
     /**
      * Test extract and hash when no payload url exists.
+     *
+     * @throws Exception the exception
      */
     @SuppressWarnings("unchecked")
     @Test

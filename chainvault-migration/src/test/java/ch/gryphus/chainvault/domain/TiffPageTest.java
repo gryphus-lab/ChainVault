@@ -11,10 +11,18 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * The type Tiff page test.
+ */
 class TiffPageTest {
 
     private TiffPage tiffPageUnderTest;
 
+    /**
+     * Sets up.
+     *
+     * @throws Exception the exception
+     */
     @BeforeEach
     void setUp() throws Exception {
         tiffPageUnderTest =
@@ -23,6 +31,9 @@ class TiffPageTest {
                         Files.readAllBytes(Paths.get("src/test/resources/tiffs/sample1.tiff")));
     }
 
+    /**
+     * Test equals returns false if same filename with different content.
+     */
     @Test
     void testEqualsReturnsFalseIfSameFilenameWithDifferentContent() {
         assertThat(
@@ -33,6 +44,11 @@ class TiffPageTest {
                 .isFalse();
     }
 
+    /**
+     * Test equals returns false for same content with different filename.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testEqualsReturnsFalseForSameContentWithDifferentFilename() throws Exception {
         TiffPage anotherTiffPage =
@@ -43,16 +59,25 @@ class TiffPageTest {
         assertThat(tiffPageUnderTest.equals(anotherTiffPage)).isFalse();
     }
 
+    /**
+     * Test hash code returns non zero value.
+     */
     @Test
     void testHashCodeReturnsNonZeroValue() {
         assertThat(tiffPageUnderTest.hashCode()).isNotZero();
     }
 
+    /**
+     * Test to string returns expected string.
+     */
     @Test
     void testToStringReturnsExpectedString() {
         assertThat(tiffPageUnderTest).hasToString("TiffPage{name=sample1.tiff}");
     }
 
+    /**
+     * Test name returns expected string.
+     */
     @Test
     void testNameReturnsExpectedString() {
         assertThat(tiffPageUnderTest.name()).isEqualTo("sample1.tiff");

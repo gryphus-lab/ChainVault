@@ -280,7 +280,7 @@ class DockerServicesE2EIT extends BaseDockerIT {
     }
 
     /**
-     * Test dynamic sftp port allocation.
+     * Test sftp port allocation.
      */
     @Test
     @DisplayName("SFTP port should be allocated")

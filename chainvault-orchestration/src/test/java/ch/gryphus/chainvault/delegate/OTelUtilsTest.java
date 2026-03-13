@@ -17,28 +17,47 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * The type O tel utils test.
+ */
 class OTelUtilsTest {
 
     private OpenTelemetry otel;
+
+    /**
+     * The Parent span.
+     */
     Span parentSpan;
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         otel = setupRealSdk();
         parentSpan = otel.getTracer("test").spanBuilder("root").startSpan();
     }
 
+    /**
+     * Tear down.
+     */
     @AfterEach
     void tearDown() {
         parentSpan.end();
     }
 
+    /**
+     * Verify sdk is real.
+     */
     @Test
     void verifySdkIsReal() {
         // This should NOT be a Noop
         assertThat(otel.toString()).isNotEqualTo("DefaultOpenTelemetry");
     }
 
+    /**
+     * Tes when trace parent is valid format.
+     */
     @Test
     void tesWhenTraceParentIsValidFormat() {
         SpanContext expectedContext = parentSpan.getSpanContext();
@@ -54,6 +73,9 @@ class OTelUtilsTest {
         assertThat(actualContext.getSpanId()).isEqualTo(expectedContext.getSpanId());
     }
 
+    /**
+     * Test with null or empty trace parent.
+     */
     @Test
     void testWithNullOrEmptyTraceParent() {
         String traceParent = ""; // empty value

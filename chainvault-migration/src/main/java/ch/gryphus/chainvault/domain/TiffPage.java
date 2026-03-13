@@ -8,8 +8,6 @@ import java.util.Objects;
 
 /**
  * The type Tiff page.
- * @param name  filename
- * @param data  file content byte array
  */
 public record TiffPage(String name, byte[] data) {
     @Override

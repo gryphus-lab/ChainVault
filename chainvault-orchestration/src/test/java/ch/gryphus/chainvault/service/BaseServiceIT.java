@@ -21,7 +21,7 @@ public abstract class BaseServiceIT {
     private static final String POSTGRES_DB_PASSWORD = "secret";
 
     /**
-     * The Postgres.
+     * The constant postgres.
      */
     @SuppressWarnings("resource")
     static final PostgreSQLContainer postgres =

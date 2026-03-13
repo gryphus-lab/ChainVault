@@ -26,7 +26,7 @@ public class RestClientConfig {
             @Value("${source.api.base-url:https://legacy-api.example.com}") String baseUrl,
             @Value("${source.api.token:}") String token) {
 
-        var builder = RestClient.builder().baseUrl(baseUrl);
+        RestClient.Builder builder = RestClient.builder().baseUrl(baseUrl);
 
         if (!token.isBlank()) {
             builder = builder.defaultHeader("Authorization", "Bearer %s".formatted(token));

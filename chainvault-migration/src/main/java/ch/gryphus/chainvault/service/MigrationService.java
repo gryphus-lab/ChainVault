@@ -62,9 +62,9 @@ public class MigrationService {
      * Instantiates a new Migration service.
      *
      * @param restClient          the rest client
-     * @param template            the sftp remote file template
+     * @param template            the template
      * @param sftpTargetConfig    the sftp target config
-     * @param xmlMapper           the XML mapper
+     * @param xmlMapper           the xml mapper
      * @param objectMapper        the object mapper
      * @param tika                the tika
      * @param tempDir             the temp dir
@@ -323,9 +323,9 @@ public class MigrationService {
      *
      * @param ctx               the ctx
      * @param docId             the doc id
-     * @param xml               the XML
+     * @param xml               the xml
      * @param zipPath           the zip path
-     * @param pdfPath           the PDF path
+     * @param pdfPath           the pdf path
      * @param processInstanceId the process instance id
      */
     public void uploadToSftp(
@@ -356,7 +356,7 @@ public class MigrationService {
     }
 
     /**
-     * Merge tiff to PDF path.
+     * Merge tiff to pdf path.
      *
      * @param pages            the pages
      * @param docId            the doc id
