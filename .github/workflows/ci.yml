@@ -31,7 +31,7 @@ jobs:
 
       - name: Setup Tesseract
         run: |
-          apt-get install -y \
+          sudo apt-get install -y \
             libleptonica-dev \
             libtesseract-dev \
             tesseract-ocr \
