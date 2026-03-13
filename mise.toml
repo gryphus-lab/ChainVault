@@ -64,6 +64,9 @@ docker-build-versioned = { run = '''
 compose-up = { run = "docker compose -f ./docker-compose-lgtm.yml -f ./docker-compose.yml up -d", description = "Docker compose zp - all services" }
 compose-down = { run = "docker compose -p chainvault down -v", description = "Docker compose down - all services" }
 
+# run load test
+run-load = { run = "./start_test.sh", description = "Run load test"}
+
 # Dependency
 deps = { run = "mvn dependency:tree", description = "Generate maven dependency tree" }
 
