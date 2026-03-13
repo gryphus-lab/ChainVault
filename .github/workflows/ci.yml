@@ -58,7 +58,7 @@ jobs:
           TESTCONTAINERS_RYUK_DISABLED: "true"
 
         run: |
-          mise unset TESSDATA_PREFIX
+          mise set TESSDATA_PREFIX=/usr/share/tessdata
           mise run github-build
 
       - name: SonarCloud Scan
