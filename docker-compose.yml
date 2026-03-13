@@ -52,7 +52,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./src/main/resources/db/init-scripts:/docker-entrypoint-initdb.d
+      - ./docker-resources/db/init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U chainvault" ]
       interval: 5s
@@ -78,8 +78,8 @@ services:
     ports:
       - "9091:9091"
     volumes:
-      - ./src/main/resources/json-server/scripts/setup.sh:/app/setup.sh
-      - ./src/main/resources/json-server/scripts/create_source_data.py:/data/create_source_data.py
+      - ./docker-resources/json-server/scripts/setup.sh:/app/setup.sh
+      - ./docker-resources/json-server/scripts/create_source_data.py:/data/create_source_data.py
     entrypoint: sh -c "chmod +x /app/setup.sh && /app/setup.sh"
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9091 || exit 1" ]
