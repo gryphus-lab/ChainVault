@@ -47,10 +47,14 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
         @SuppressWarnings("unchecked")
         List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
 
-        List<String> ocrResults = migrationService.performOcrOnTiffPages(pages);
+        if (pages != null && !pages.isEmpty()) {
+            List<String> ocrResults = migrationService.performOcrOnTiffPages(pages);
 
-        execution.setTransientVariable("ocrResults", ocrResults);
-        execution.setTransientVariable(
-                "ocrTextLength", ocrResults.stream().mapToInt(String::length).sum());
+            execution.setTransientVariable("ocrResults", ocrResults);
+            execution.setTransientVariable(
+                    "ocrTextLength", ocrResults.stream().mapToInt(String::length).sum());
+        } else {
+            log.warn("No pages found for document {}", docId);
+        }
     }
 }
