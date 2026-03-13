@@ -12,6 +12,7 @@ import io.opentelemetry.context.Context;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
+import net.sourceforge.tess4j.TesseractException;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.JavaDelegate;
 
@@ -96,5 +97,5 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     protected abstract void doExecute(DelegateExecution execution, Span span, String docId)
-            throws IOException, NoSuchAlgorithmException;
+            throws IOException, NoSuchAlgorithmException, TesseractException;
 }

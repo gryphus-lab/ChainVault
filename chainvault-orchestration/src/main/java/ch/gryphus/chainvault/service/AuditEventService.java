@@ -140,6 +140,7 @@ public class AuditEventService {
             event.setErrorMessage(errorMsg);
         }
 
+        event.setEventData(varMap);
         event.setMessage(eventMsg);
         event.setTraceId(traceId);
         eventRepo.save(event);

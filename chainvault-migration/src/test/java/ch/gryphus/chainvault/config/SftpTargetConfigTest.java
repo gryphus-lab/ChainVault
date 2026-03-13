@@ -19,6 +19,9 @@ import org.springframework.integration.file.remote.session.CachingSessionFactory
 import org.springframework.integration.file.remote.session.SessionFactory;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 
+/**
+ * The type Sftp target config test.
+ */
 @ExtendWith(MockitoExtension.class)
 class SftpTargetConfigTest {
 
@@ -27,11 +30,17 @@ class SftpTargetConfigTest {
 
     private SftpTargetConfig sftpTargetConfigUnderTest;
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         sftpTargetConfigUnderTest = new SftpTargetConfig(mockProps);
     }
 
+    /**
+     * Test sftp session factory.
+     */
     @Test
     void testSftpSessionFactory() {
         // Setup
@@ -52,6 +61,9 @@ class SftpTargetConfigTest {
         assertThat(result).isNotNull();
     }
 
+    /**
+     * Test sftp session factory sftp properties get password returns null.
+     */
     @Test
     void testSftpSessionFactory_SftpPropertiesGetPasswordReturnsNull() {
         // Setup
@@ -76,6 +88,9 @@ class SftpTargetConfigTest {
         assertThat(result).isNotNull();
     }
 
+    /**
+     * Test sftp session factory sftp properties get private key returns null.
+     */
     @Test
     void testSftpSessionFactory_SftpPropertiesGetPrivateKeyReturnsNull() {
         // Setup
@@ -97,6 +112,9 @@ class SftpTargetConfigTest {
         assertThat(result).isNotNull();
     }
 
+    /**
+     * Test sftp session factory sftp properties get known hosts returns null.
+     */
     @Test
     void testSftpSessionFactory_SftpPropertiesGetKnownHostsReturnsNull() {
         // Setup
@@ -115,6 +133,9 @@ class SftpTargetConfigTest {
         assertThat(result).isNotNull();
     }
 
+    /**
+     * Test sftp remote file template.
+     */
     @Test
     void testSftpRemoteFileTemplate() {
         // Run the test
@@ -125,6 +146,9 @@ class SftpTargetConfigTest {
         assertThat(result).isNotNull();
     }
 
+    /**
+     * Test get remote directory.
+     */
     @Test
     void testGetRemoteDirectory() {
         // Setup

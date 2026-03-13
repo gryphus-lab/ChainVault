@@ -131,6 +131,30 @@ public class MigrationAudit {
     @Column(name = "trace_id", length = 64)
     private String traceId; // OpenTelemetry trace ID for correlation
 
+    @Column(name = "ocr_attempted", nullable = false)
+    private Boolean ocrAttempted = false;
+
+    @Column(name = "ocr_page_count")
+    private Integer ocrPageCount;
+
+    @Column(name = "ocr_total_text_length")
+    private Long ocrTotalTextLength;
+
+    @Column(name = "ocr_success")
+    private Boolean ocrSuccess;
+
+    @Column(name = "ocr_error_code", length = 80)
+    private String ocrErrorCode;
+
+    @Column(name = "ocr_error_message", columnDefinition = "TEXT")
+    private String ocrErrorMessage;
+
+    @Column(name = "ocr_result_reference", length = 512)
+    private String ocrResultReference;
+
+    @Column(name = "ocr_completed_at")
+    private Instant ocrCompletedAt;
+
     /**
      * The enum Migration status.
      */

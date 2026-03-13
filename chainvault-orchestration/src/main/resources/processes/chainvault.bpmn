@@ -4,7 +4,7 @@
     <extensionElements>
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-02-25T12:07:07.166Z]]></design:creationdate>
-      <design:modificationdate><![CDATA[2026-03-11T10:40:25.782Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-03-13T17:09:57.252Z]]></design:modificationdate>
     </extensionElements>
     <serviceTask id="Task_HandleError" name="Handle Error" flowable:delegateExpression="${handleError}">
       <extensionElements>
@@ -50,6 +50,12 @@
       </extensionElements>
     </serviceTask>
     <serviceTask id="Task_InitVars" name="Async Init" flowable:async="true" flowable:asyncLeave="true" flowable:delegateExpression="${asyncInitVars}">
+      <extensionElements>
+        <design:stencilid><![CDATA[ServiceTask]]></design:stencilid>
+        <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="Task_OCR" name="Perform OCR" flowable:delegateExpression="${performOcr}">
       <extensionElements>
         <design:stencilid><![CDATA[ServiceTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
@@ -108,7 +114,7 @@
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
-    <sequenceFlow id="Flow_Merge" sourceRef="Task_Prepare" targetRef="Task_Merge">
+    <sequenceFlow id="Flow_Merge" sourceRef="Task_Prepare" targetRef="Task_OCR">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
@@ -198,6 +204,23 @@
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
       </extensionElements>
     </sequenceFlow>
+    <boundaryEvent id="BoundaryError_OCR" name="OCR Error" attachedToRef="Task_OCR">
+      <extensionElements>
+        <design:stencilid><![CDATA[IntermediateErrorEventBoundary]]></design:stencilid>
+        <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
+      </extensionElements>
+      <errorEventDefinition errorRef="OCR_FAILED"></errorEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="SequenceFlow_18" sourceRef="BoundaryError_OCR" targetRef="Task_HandleError">
+      <extensionElements>
+        <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
+      </extensionElements>
+    </sequenceFlow>
+    <sequenceFlow id="SequenceFlow_16" sourceRef="Task_OCR" targetRef="Task_Merge">
+      <extensionElements>
+        <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
+      </extensionElements>
+    </sequenceFlow>
     <sequenceFlow id="SequenceFlow_6" sourceRef="StartEvent_1" targetRef="Task_InitVars">
       <extensionElements>
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
@@ -210,10 +233,10 @@
         <omgdc:Bounds height="80.0" width="140.0" x="764.0" y="354.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Task_Merge" id="BPMNShape_Task_Merge">
-        <omgdc:Bounds height="80.0" width="100.0" x="867.0" y="110.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="932.0" y="110.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Task_Prepare" id="BPMNShape_Task_Prepare">
-        <omgdc:Bounds height="80.0" width="100.0" x="665.0" y="110.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="616.0" y="110.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Task_Transform" id="BPMNShape_Task_Transform">
         <omgdc:Bounds height="80.0" width="100.0" x="1086.0" y="110.0"></omgdc:Bounds>
@@ -229,6 +252,9 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Task_InitVars" id="BPMNShape_Task_InitVars">
         <omgdc:Bounds height="80.0" width="100.0" x="129.0" y="110.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Task_OCR" id="BPMNShape_Task_OCR">
+        <omgdc:Bounds height="80.0" width="100.0" x="769.0" y="110.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="StartEvent_1" id="BPMNShape_StartEvent_1">
         <omgdc:Bounds height="30.0" width="29.999999999999993" x="42.63593721378553" y="135.0"></omgdc:Bounds>
@@ -249,15 +275,15 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="BoundaryError_Merge" id="BPMNShape_BoundaryError_Merge">
-        <omgdc:Bounds height="30.0" width="30.0" x="920.0" y="175.0"></omgdc:Bounds>
+        <omgdc:Bounds height="30.0" width="30.0" x="985.0" y="175.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="64.0" x="907.0" y="221.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="64.0" x="972.0" y="221.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="BoundaryError_Prepare" id="BPMNShape_BoundaryError_Prepare">
-        <omgdc:Bounds height="30.0" width="30.0" x="716.0" y="175.0"></omgdc:Bounds>
+        <omgdc:Bounds height="30.0" width="30.0" x="667.0" y="175.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="73.0" x="695.5" y="223.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="73.0" x="646.5" y="223.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="BoundaryError_Transform" id="BPMNShape_BoundaryError_Transform">
@@ -290,6 +316,12 @@
           <omgdc:Bounds height="18.0" width="82.0" x="138.2" y="229.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="BoundaryError_OCR" id="BPMNShape_BoundaryError_OCR">
+        <omgdc:Bounds height="30.0" width="30.0" x="819.0" y="175.0"></omgdc:Bounds>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.0" width="57.0" x="795.3" y="209.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_15" id="BPMNEdge_SequenceFlow_15" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="70.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="179.0" y="205.0"></omgdi:waypoint>
         <omgdi:waypoint x="179.0" y="394.0"></omgdi:waypoint>
@@ -299,13 +331,21 @@
         <omgdi:waypoint x="1397.0" y="150.0"></omgdi:waypoint>
         <omgdi:waypoint x="1452.0" y="150.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_16" id="BPMNEdge_SequenceFlow_16" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
+        <omgdi:waypoint x="869.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="932.0" y="150.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="Flow_Merge" id="BPMNEdge_Flow_Merge" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="765.0" y="150.0"></omgdi:waypoint>
-        <omgdi:waypoint x="867.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="716.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="769.0" y="150.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_18" id="BPMNEdge_SequenceFlow_18" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="70.0" flowable:targetDockerY="40.0">
+        <omgdi:waypoint x="834.0" y="205.0"></omgdi:waypoint>
+        <omgdi:waypoint x="834.0" y="354.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_11" id="BPMNEdge_SequenceFlow_11" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="70.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="731.0" y="205.0"></omgdi:waypoint>
-        <omgdi:waypoint x="731.0" y="394.0"></omgdi:waypoint>
+        <omgdi:waypoint x="682.0" y="205.0"></omgdi:waypoint>
+        <omgdi:waypoint x="682.0" y="394.0"></omgdi:waypoint>
         <omgdi:waypoint x="764.0" y="394.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="Flow_ToFailedEnd" id="BPMNEdge_Flow_ToFailedEnd" flowable:sourceDockerX="70.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
@@ -313,8 +353,8 @@
         <omgdi:waypoint x="834.0" y="521.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_13" id="BPMNEdge_SequenceFlow_13" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="70.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="935.0" y="205.0"></omgdi:waypoint>
-        <omgdi:waypoint x="935.0" y="394.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1000.0" y="205.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1000.0" y="394.0"></omgdi:waypoint>
         <omgdi:waypoint x="904.0" y="394.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_8" id="BPMNEdge_SequenceFlow_8" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
@@ -336,7 +376,7 @@
         <omgdi:waypoint x="904.0" y="394.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="Flow_Transform" id="BPMNEdge_Flow_Transform" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="967.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1032.0" y="150.0"></omgdi:waypoint>
         <omgdi:waypoint x="1086.0" y="150.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_6" id="BPMNEdge_SequenceFlow_6" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
@@ -345,7 +385,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_7" id="BPMNEdge_SequenceFlow_7" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="560.0" y="150.0"></omgdi:waypoint>
-        <omgdi:waypoint x="665.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="616.0" y="150.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_4" id="BPMNEdge_SequenceFlow_4" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="390.43174570355967" y="150.0"></omgdi:waypoint>

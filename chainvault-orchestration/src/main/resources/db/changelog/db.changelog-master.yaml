@@ -121,3 +121,89 @@ databaseChangeLog:
             columns:
               - column:
                   name: trace_id
+  - changeSet:
+      id: 20260304-add-ocr-fields-to-migration-audit
+      author: migration
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            columnExists:
+              tableName: migration_audit
+              columnName: ocr_attempted
+      changes:
+        - addColumn:
+            tableName: migration_audit
+            columns:
+              - column:
+                  name: ocr_attempted
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+                  remarks: True if OCR was attempted on this migration
+
+              - column:
+                  name: ocr_page_count
+                  type: INTEGER
+                  constraints:
+                    nullable: true
+                  remarks: Number of TIFF pages that went through OCR
+
+              - column:
+                  name: ocr_total_text_length
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+                  remarks: Sum of characters extracted across all OCR'd pages
+
+              - column:
+                  name: ocr_success
+                  type: BOOLEAN
+                  constraints:
+                    nullable: true
+                  remarks: True if OCR completed without error
+
+              - column:
+                  name: ocr_error_code
+                  type: VARCHAR(80)
+                  constraints:
+                    nullable: true
+                  remarks: Error code if OCR failed (e.g. OCR_TESSERACT_ERROR)
+
+              - column:
+                  name: ocr_error_message
+                  type: TEXT
+                  constraints:
+                    nullable: true
+                  remarks: Detailed error message from OCR engine
+
+              - column:
+                  name: ocr_result_reference
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: true
+                  remarks: Path, S3 key, or reference to stored OCR output file/JSON
+
+              - column:
+                  name: ocr_completed_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: true
+                  remarks: When OCR processing finished (success or failure)
+
+        # Indexes for common queries
+        - createIndex:
+            tableName: migration_audit
+            indexName: idx_migration_audit_ocr_attempted_success
+            columns:
+              - column:
+                  name: ocr_attempted
+              - column:
+                  name: ocr_success
+
+        - createIndex:
+            tableName: migration_audit
+            indexName: idx_migration_audit_ocr_result_reference
+            columns:
+              - column:
+                  name: ocr_result_reference
