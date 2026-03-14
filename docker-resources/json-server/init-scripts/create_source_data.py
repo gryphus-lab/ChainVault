@@ -1,4 +1,3 @@
-import glob
 import json
 import os
 import random
@@ -10,24 +9,38 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import tifffile as tf
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
+
+LINE_SEPARATOR = (
+    "────────────────────────────────────────────────────────────────────────────────"
+)
 
 DEST_DIR = "./static/payloads/"
 TOTAL_BUNDLES = 10
 PAGES_PER_INVOICE = (1, 5)  # min–max pages per invoice
 
 COMPANIES = [
-    "Acme Solutions AG", "TechNova GmbH", "SwissData Systems AG",
-    "InnoTech Consulting GmbH", "Prime Solutions Schweiz AG",
-    "BlueSky IT Services GmbH", "Helvetic Software AG",
-    "Zurich Digital Solutions AG", "Alpine Logic GmbH",
+    "Acme Solutions AG",
+    "TechNova GmbH",
+    "SwissData Systems AG",
+    "InnoTech Consulting GmbH",
+    "Prime Solutions Schweiz AG",
+    "BlueSky IT Services GmbH",
+    "Helvetic Software AG",
+    "Zurich Digital Solutions AG",
+    "Alpine Logic GmbH",
 ]
 
 CLIENTS = [
-    "Global Pharma AG", "Swiss Finance Bank AG", "Alpine Logistics GmbH",
-    "MedTech Innovations SA", "Bern Energy Holding AG",
-    "Lucerne Retail Group AG", "Geneva Luxury Watches SA",
-    "Basel Pharma Distribution AG", "Zug Crypto Ventures AG",
+    "Global Pharma AG",
+    "Swiss Finance Bank AG",
+    "Alpine Logistics GmbH",
+    "MedTech Innovations SA",
+    "Bern Energy Holding AG",
+    "Lucerne Retail Group AG",
+    "Geneva Luxury Watches SA",
+    "Basel Pharma Distribution AG",
+    "Zug Crypto Ventures AG",
 ]
 
 ITEM_DESCRIPTIONS = [
@@ -51,6 +64,7 @@ FONT_PATHS = [
     "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
 ]
 
+
 def load_font(size, bold=False):
     for path in FONT_PATHS:
         try:
@@ -62,67 +76,80 @@ def load_font(size, bold=False):
             continue
     return ImageFont.load_default()
 
+
 def add_realistic_noise(image: Image.Image) -> Image.Image:
-    """Add scanner-like noise: Gaussian + salt-and-pepper + light vignette"""
-    img_array = np.array(image.convert('L'))  # grayscale for noise
+    img_array = np.array(image.convert("L"))  # grayscale for noise
 
     # Gaussian noise (moderate)
     gauss_noise = np.random.normal(0, 10, img_array.shape).astype(np.int16)
     noisy = img_array.astype(np.int16) + gauss_noise
     noisy = np.clip(noisy, 0, 255).astype(np.uint8)
 
-    # Salt and pepper (very light – real scanners rarely have heavy noise)
+    # Salt and pepper (very light)
     salt_pepper = np.random.rand(*img_array.shape) < 0.0015
     noisy[salt_pepper] = 255 if np.random.rand() > 0.5 else 0
 
     noisy_img = Image.fromarray(noisy)
 
     # Light vignette (darker edges)
-    mask = Image.new('L', noisy_img.size, 255)
+    mask = Image.new("L", noisy_img.size, 255)
     draw = ImageDraw.Draw(mask)
     w, h = mask.size
     draw.rectangle((0, 0, w, h), fill=255)
-    draw.ellipse((-w//5, -h//5, w*6//5, h*6//5), fill=200)  # softer vignette
+    draw.ellipse((-w // 5, -h // 5, w * 6 // 5, h * 6 // 5), fill=200)
     vignette = ImageEnhance.Brightness(noisy_img).enhance(0.94)
     vignette.putalpha(mask)
 
-    return vignette.convert('RGB')
+    return vignette.convert("RGB")
+
 
 def apply_random_transforms(image: Image.Image) -> Image.Image:
     """Apply small rotation, scaling, slight perspective distortion"""
-    # Random rotation ±1.5 degrees (realistic scanner misalignment)
-    angle = random.uniform(-1.5, 1.5)
+    # Random rotation ±1.5 degrees
+    angle = secrets.randbelow(3001) / 1000 - 1.5  # uniform [-1.5, 1.5]
     rotated = image.rotate(angle, resample=Image.BICUBIC, expand=True)
 
-    # Random scale 98–102% (slight resolution variation)
-    scale = random.uniform(0.98, 1.02)
+    # Random scale 98–102%
+    scale = 0.98 + secrets.randbelow(401) / 10000  # [0.98, 1.02]
     scaled_w = int(rotated.width * scale)
     scaled_h = int(rotated.height * scale)
     scaled = rotated.resize((scaled_w, scaled_h), Image.LANCZOS)
 
-    # Very light perspective (page curl simulation) – only sometimes
-    if random.random() < 0.35:
-        coeffs = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, random.uniform(0.0002, 0.0008), random.uniform(0.0001, 0.0005)]
+    # Light perspective (page curl simulation) – only sometimes
+    if secrets.randbelow(100) < 35:  # ~35% chance
+        coeffs = [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            secrets.randbelow(7) / 10000 + 0.0002,  # x warp
+            secrets.randbelow(5) / 10000 + 0.0001,  # y warp
+        ]
         scaled = scaled.transform(scaled.size, Image.PERSPECTIVE, coeffs, Image.BICUBIC)
 
     return scaled
 
+
 def create_invoice_pages():
     """Generate 1–5 pages of realistic invoice content"""
-    num_pages = random.randrange(*PAGES_PER_INVOICE)
+    num_pages = random.randrange(*PAGES_PER_INVOICE)  # random is fine for range here
     pages = []
 
-    invoice_date = datetime.now() - timedelta(days=random.randint(1, 60))
+    invoice_date = datetime.now() - timedelta(days=secrets.randbelow(60))
     due_date = invoice_date + timedelta(days=30)
-    invoice_nr = f"INV-{invoice_date.strftime('%Y%m')}-{random.randint(10000,99999)}"
-    sender = random.choice(COMPANIES)
-    client = random.choice(CLIENTS)
+    invoice_nr = (
+        f"INV-{invoice_date.strftime('%Y%m')}-{secrets.randbelow(90000) + 10000}"
+    )
+    sender = secrets.choice(COMPANIES)
+    client = secrets.choice(CLIENTS)
 
     # Header & master data (appears on every page)
     header_lines = [
         sender.upper(),
         "Musterstrasse 12, 8001 Zürich",
-        f"MwSt-Nr: CHE-{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(100,999)} MWST",
+        f"MwSt-Nr: CHE-{secrets.randbelow(900) + 100}.{secrets.randbelow(900) + 100}.{secrets.randbelow(900) + 100} MWST",
         "",
         f"Rechnungs-Nr: {invoice_nr}",
         f"Rechnungsdatum: {invoice_date.strftime('%d.%m.%Y')}",
@@ -133,13 +160,18 @@ def create_invoice_pages():
     ]
 
     # Line items (5–15 positions total, distributed across pages)
-    total_items = random.randint(5, 15)
-    items = random.choices(ITEM_DESCRIPTIONS, k=total_items)
+    total_items = secrets.randbelow(11) + 5  # 5–15
+    # FIXED: use choices() or list comprehension
+    sys_random = secrets.SystemRandom()
+    items = sys_random.choices(ITEM_DESCRIPTIONS, k=total_items)
+    # Alternative one-liner:
+    # items = [secrets.choice(ITEM_DESCRIPTIONS) for _ in range(total_items)]
+
     subtotal = 0
     line_items = []
 
     for desc, unit_price in items:
-        qty = random.choice([1, 1, 2, 4, 8, 10, 20, 40, 80, 120])
+        qty = secrets.choice([1, 1, 2, 4, 8, 10, 20, 40, 80, 120])
         amount = qty * unit_price
         subtotal += amount
         line_items.append((desc, qty, unit_price, amount))
@@ -149,7 +181,10 @@ def create_invoice_pages():
 
     # Split items across pages
     items_per_page = max(4, total_items // num_pages + 1)
-    page_groups = [line_items[i:i + items_per_page] for i in range(0, len(line_items), items_per_page)]
+    page_groups = [
+        line_items[i : i + items_per_page]
+        for i in range(0, len(line_items), items_per_page)
+    ]
 
     for page_idx, page_items in enumerate(page_groups, 1):
         page_text = header_lines.copy()
@@ -157,11 +192,13 @@ def create_invoice_pages():
         page_text += [
             "",
             "Pos.  Beschreibung                                      Anz.   Einzelpreis     Betrag",
-            "────────────────────────────────────────────────────────────────────────────────",
+            LINE_SEPARATOR,
         ]
 
-        start_pos = 1 + (page_idx-1) * items_per_page
-        for pos_offset, (desc, qty, unit_price, amount) in enumerate(page_items, start=start_pos):
+        start_pos = 1 + (page_idx - 1) * items_per_page
+        for pos_offset, (desc, qty, unit_price, amount) in enumerate(
+            page_items, start=start_pos
+        ):
             page_text.append(
                 f"{pos_offset:2d}    {desc:<50} {qty:4d}   {unit_price:10.2f}   {amount:12.2f}"
             )
@@ -170,10 +207,10 @@ def create_invoice_pages():
             page_text += ["", "(Fortsetzung auf nächster Seite)"]
         else:
             page_text += [
-                "────────────────────────────────────────────────────────────────────────────────",
+                LINE_SEPARATOR,
                 f"Zwischensumme{' ':>58}{subtotal:12.2f} CHF",
                 f"MwSt 8.1%{' ':>64}{vat:12.2f} CHF",
-                "────────────────────────────────────────────────────────────────────────────────",
+                LINE_SEPARATOR,
                 f"Gesamtbetrag{' ':>60}{total:12.2f} CHF",
                 "",
                 "Zahlungsbedingungen: 30 Tage netto",
@@ -187,8 +224,9 @@ def create_invoice_pages():
 
     return pages, invoice_nr, sender, client
 
+
 def render_page(text_lines, page_num, total_pages):
-    img = Image.new('RGB', (2480, 3508), color=(250, 250, 245))  # light off-white paper
+    img = Image.new("RGB", (2480, 3508), color=(250, 250, 245))  # light off-white paper
     draw = ImageDraw.Draw(img)
 
     font_header = load_font(72, bold=True)
@@ -225,13 +263,14 @@ def render_page(text_lines, page_num, total_pages):
 
     return img
 
+
 def create_invoice_tiff_bundle(bundle_index):
     suffix = f"{bundle_index:03d}"
     doc_id = f"DOC-INV-2026-{suffix}"
     zip_filename = f"invoice_{suffix}.zip"
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        pages, invoice_nr, sender, client = create_invoice_pages()
+        pages, invoice_nr, sender, _ = create_invoice_pages()
 
         tiff_files = []
         for i, page_text in enumerate(pages, 1):
@@ -243,7 +282,6 @@ def create_invoice_tiff_bundle(bundle_index):
             tf.imwrite(tiff_path, np.array(img), compression="zlib")
             tiff_files.append(tiff_path)
 
-        # Create ZIP
         zip_path = os.path.join(DEST_DIR, zip_filename)
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             for tiff in tiff_files:
@@ -254,8 +292,8 @@ def create_invoice_tiff_bundle(bundle_index):
         "docId": doc_id,
         "title": f"Rechnung {invoice_nr} - {sender}",
         "creationDate": datetime.now().isoformat(),
-        "clientId": f"CHE-{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(100,999)}",
-        "accountNo": f"CH{random.randint(10,99)}007620{''.join(str(random.randint(0,9)) for _ in range(10))}",
+        "clientId": f"CHE-{secrets.randbelow(900) + 100}.{secrets.randbelow(900) + 100}.{secrets.randbelow(900) + 100}",
+        "accountNo": f"CH{secrets.randbelow(90) + 10}007620{''.join(str(secrets.randbelow(10)) for _ in range(10))}",
         "documentType": "INVOICE",
         "department": "Buchhaltung",
         "status": "ARCHIVED",
@@ -267,6 +305,7 @@ def create_invoice_tiff_bundle(bundle_index):
 
     return metadata
 
+
 def main():
     os.makedirs(DEST_DIR, exist_ok=True)
     all_metadata = []
@@ -274,7 +313,9 @@ def main():
     print(f"Generating {TOTAL_BUNDLES} realistic invoice bundles...")
 
     with ProcessPoolExecutor(max_workers=4) as executor:
-        results = list(executor.map(create_invoice_tiff_bundle, range(1, TOTAL_BUNDLES + 1)))
+        results = list(
+            executor.map(create_invoice_tiff_bundle, range(1, TOTAL_BUNDLES + 1))
+        )
 
     for meta in results:
         all_metadata.append(meta)
@@ -284,6 +325,7 @@ def main():
         json.dump({"documents": all_metadata}, f, indent=2, ensure_ascii=False)
 
     print("\nDone. Check ./static/payloads/ and db.json")
+
 
 if __name__ == "__main__":
     main()
