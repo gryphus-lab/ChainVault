@@ -38,6 +38,15 @@ jobs:
             tesseract-ocr-deu \
             tesseract-ocr-eng
 
+      - name: Build Leptonica 1.84
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpng-dev libjpeg-dev libtiff-dev zlib1g-dev
+          git clone --depth 1 --branch 1.84.1 https://github.com
+          cd leptonica && ./autogen.sh && ./configure && make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+
       - name: Cache SonarQube packages
         uses: actions/cache@v5
         with:
