@@ -42,7 +42,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libpng-dev libjpeg-dev libtiff-dev zlib1g-dev
-          git clone --depth 1 --branch 1.84.1 https://github.com
+          git clone --depth 1 --branch 1.84.1 https://github.com/DanBloomberg/leptonica
           cd leptonica && ./autogen.sh && ./configure && make -j$(nproc)
           sudo make install
           sudo ldconfig
