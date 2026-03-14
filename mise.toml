@@ -33,7 +33,10 @@ bootstrap = { run = "mvn dependency:go-offline", description = "One-time setup a
 
 build = { run = "mvn clean install -DskipTests", description = "Clean + install all modules (no tests)" }
 
-verify = { run = "mvn clean verify -Pcoverage", description = "Full build + tests + verifications + JaCoCo coverage" }
+verify = { run = [
+  "docker compose -p chainvault down",
+  "mvn clean verify -Pcoverage",
+], description = "Full build + tests + verifications + JaCoCo coverage" }
 
 test = { run = "mvn integration-test", description = "Run unit and integration Tests" }
 
