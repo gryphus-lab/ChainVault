@@ -11,7 +11,6 @@ on:
 
 env:
   LEPTONICA_VERSION: "1.86.0"
-  LEPTONICA_URL: "https://github.com/DanBloomberg/leptonica/releases/download/${{ env.LEPTONICA_VERSION }}/leptonica-${{ env.LEPTONICA_VERSION }}.tar.gz"
   TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
   LD_LIBRARY_PATH: /usr/local/lib:$LD_LIBRARY_PATH
   JNA_LIBRARY_PATH: /usr/local/lib
@@ -48,7 +47,8 @@ jobs:
             libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libwebp-dev libopenjp2-7-dev libgif-dev \
             autoconf automake libtool pkg-config
           
-          curl --proto "=https" --tlsv1.2 -sSfLO ${{ env.LEPTONICA_URL }}
+          curl --proto "=https" --tlsv1.2 -sSfLO "https://github.com/DanBloomberg/leptonica/releases/download/${{ env.LEPTONICA_VERSION }}/leptonica-${{ env.LEPTONICA_VERSION }}.tar.gz"
+
           tar -xf leptonica-${{ env.LEPTONICA_VERSION }}.tar.gz
           cd leptonica-${{ env.LEPTONICA_VERSION }}
           ./autogen.sh && ./configure --prefix=/usr/local
