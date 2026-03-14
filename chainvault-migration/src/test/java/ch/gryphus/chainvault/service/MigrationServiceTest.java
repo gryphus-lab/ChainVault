@@ -18,11 +18,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.input.BrokenInputStream;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -751,6 +753,39 @@ class MigrationServiceTest {
         try (PDDocument doc = Loader.loadPDF(pdf.toFile())) {
             assertThat(doc.getNumberOfPages()).isZero();
         }
+    }
+
+    @Test
+    void testPerformOcrOnTiffPagesReturnsExpectedContent() throws Exception {
+        // Setup
+        List<TiffPage> pages =
+                List.of(
+                        new TiffPage(
+                                "test_ocr.tiff",
+                                Files.readAllBytes(
+                                        Path.of("src/test/resources/tiffs/test_ocr.tiff"))));
+
+        // Run the test
+        List<String> result = migrationServiceUnderTest.performOcrOnTiffPages(pages);
+
+        // Verify the results
+        String expectedContent =
+                Files.readString(
+                                Path.of("src/test/resources/tiffs/test_ocr_result.txt"),
+                                StandardCharsets.UTF_8)
+                        .trim();
+        assertThat(result).isEqualTo(List.of(expectedContent));
+    }
+
+    @Test
+    void testPerformOcrOnTiffPagesDoesNotThrowExceptionWhenInputIsNullOrEmpty() {
+        // Setup
+        assertThatNoException()
+                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(null));
+
+        List<TiffPage> pages = Collections.emptyList();
+        assertThatNoException()
+                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
     }
 
     // Helper to create small test ZIP
