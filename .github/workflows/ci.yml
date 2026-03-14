@@ -79,3 +79,8 @@ jobs:
           mise set TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
           mise run github-build
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
