@@ -47,7 +47,8 @@ jobs:
 
       - name: Build Leptonica 1.86.0 from Source
         run: |
-          wget https://github.com/user-attachments/files/22412990/leptonica-1.86.0.tar.gz
+          curl --proto "=https" --tlsv1.2 -sSfLO \
+            https://github.com/user-attachments/files/22412990/leptonica-1.86.0.tar.gz
           tar -xf leptonica-1.86.0.tar.gz
           cd leptonica-1.86.0
           ./autogen.sh
