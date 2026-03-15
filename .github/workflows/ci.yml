@@ -15,7 +15,7 @@ env:
   LD_LIBRARY_PATH: /usr/local/lib:$LD_LIBRARY_PATH
   JNA_LIBRARY_PATH: /usr/local/lib
   TESTCONTAINERS_RYUK_DISABLED: "true"
-
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # required for actions using Node.js 20
 jobs:
   build:
     name: Build and analyze
@@ -34,7 +34,7 @@ jobs:
 
       - name: Restore Leptonica Cache
         id: cache-leptonica
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /usr/local/lib/liblept*
           key: leptonica-${{ env.LEPTONICA_VERSION }}
@@ -63,7 +63,7 @@ jobs:
           sudo ldconfig /usr/local/lib
 
       - name: Cache Maven/Sonar
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
@@ -84,4 +84,4 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          report-type: test_results
+          report_type: test_results

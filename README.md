@@ -12,6 +12,7 @@ Used by Gryphus Lab to coordinate extraction, transformation, signing, merging a
 [![Flowable](https://img.shields.io/badge/orchestrated%20with-Flowable-0072C6)](https://www.flowable.com/)
 [![mise](https://img.shields.io/badge/managed%20with-mise-6f42c1)](https://mise.jdx.dev/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gryphus-lab_chainvault&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gryphus-lab_chainvault)
+[![codecov](https://codecov.io/gh/gryphus-lab/chainvault/graph/badge.svg?token=Dnk2zveXNX)](https://codecov.io/gh/gryphus-lab/chainvault)
 [![GitHub Actions CI](https://github.com/gryphus-lab/chainvault/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gryphus-lab/chainvault/actions/workflows/ci.yml)
 
 ## At a Glance
