@@ -19,25 +19,19 @@ import org.springframework.stereotype.Component;
 /**
  * The type Extract and hash delegate.
  */
+@SuppressWarnings("unchecked")
 @Slf4j
 @Component("performOcr")
 public class PerformOcrDelegate extends AbstractTracingDelegate {
 
-    private final MigrationService migrationService;
-
     /**
      * Instantiates a new Extract and hash delegate.
      *
-     * @param openTelemetry    the open telemetry
-     * @param auditService     the audit service
-     * @param migrationService the migration service
+     * @param openTelemetry the open telemetry
+     * @param auditService  the audit service
      */
-    public PerformOcrDelegate(
-            OpenTelemetry openTelemetry,
-            AuditEventService auditService,
-            MigrationService migrationService) {
+    public PerformOcrDelegate(OpenTelemetry openTelemetry, AuditEventService auditService) {
         super(openTelemetry, auditService, "perform-ocr", "OCR_FAILED");
-        this.migrationService = migrationService;
     }
 
     @Override
@@ -47,7 +41,7 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
         List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
 
         if (pages != null && !pages.isEmpty()) {
-            List<String> ocrResults = migrationService.performOcrOnTiffPages(pages);
+            List<String> ocrResults = MigrationService.performOcrOnTiffPages(pages);
 
             execution.setTransientVariable("ocrResults", ocrResults);
             execution.setTransientVariable(

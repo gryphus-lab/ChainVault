@@ -135,6 +135,12 @@ class OrchestrationServiceIT extends BaseServiceIT {
         assertThat(Integer.parseInt(fileCount.trim())).isEqualTo(3);
     }
 
+    /**
+     * Migrate document with metadata no payload should upload to real sftp.
+     *
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     void migrateDocument_withMetadataNoPayloadShouldUploadToRealSftp()
             throws IOException, InterruptedException {
