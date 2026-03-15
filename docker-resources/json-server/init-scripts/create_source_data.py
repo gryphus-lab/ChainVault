@@ -226,13 +226,13 @@ def create_invoice_pages():
 
 
 def render_page(text_lines, page_num, total_pages):
-    img = Image.new("RGB", (2480, 3508), color=(250, 250, 245))  # light off-white paper
+    img = Image.new("RGB", (1240, 1754), color=(250, 250, 245))  # light off-white paper
     draw = ImageDraw.Draw(img)
 
-    font_header = load_font(72, bold=True)
-    font_subheader = load_font(48, bold=True)
-    font_body = load_font(32)
-    font_small = load_font(26)
+    font_header = load_font(36, bold=True)
+    font_subheader = load_font(24, bold=True)
+    font_body = load_font(16)
+    font_small = load_font(13)
 
     y = 180
 
@@ -259,7 +259,7 @@ def render_page(text_lines, page_num, total_pages):
 
     # Page number
     page_txt = f"Seite {page_num} von {total_pages}"
-    draw.text((2200, 3300), page_txt, fill=(140, 140, 140), font=font_small)
+    draw.text((1100, 1650), page_txt, fill=(140, 140, 140), font=font_small)
 
     return img
 

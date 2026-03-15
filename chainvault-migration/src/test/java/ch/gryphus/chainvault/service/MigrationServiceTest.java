@@ -626,26 +626,26 @@ class MigrationServiceTest {
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zip))) {
             ZipEntry entry;
             int tiffCount = 0;
-            String manifestContent = null;
+            String actualResult = null;
 
             while ((entry = zis.getNextEntry()) != null) {
-                if (entry.getName().startsWith("page-")) {
+                if ("manifest.json".equals(entry.getName())) {
+                    actualResult = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
+                } else if (entry.getName().endsWith(".tiff") || entry.getName().endsWith(".tif")) {
                     tiffCount++;
                     assertThat(zis.readAllBytes()).hasSizeGreaterThan(5);
-                } else if ("manifest.json".equals(entry.getName())) {
-                    manifestContent = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
                 }
             }
 
             assertThat(tiffCount).isEqualTo(2);
-            assertThat(manifestContent).isNotNull();
+            assertThat(actualResult).isNotNull();
             String expectedResult =
                     """
                     {"docId":"DOC-TEST-001","pageCount":2,"pageHashes":{"sample1.tiff"\
                     :"hash-page1"},"payloadHash":"payload-sha256-abc123","sourceMetadata":\
                     {"docId":"DOC-TEST-001","title":"Test Invoice 2026","clientId":"CHE-123.456.789"}}\
                     """;
-            JSONAssert.assertEquals(expectedResult, manifestContent, JSONCompareMode.LENIENT);
+            JSONAssert.assertEquals(expectedResult, actualResult, JSONCompareMode.LENIENT);
         }
     }
 

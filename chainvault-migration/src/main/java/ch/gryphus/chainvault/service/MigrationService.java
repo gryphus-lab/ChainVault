@@ -277,9 +277,8 @@ public class MigrationService {
         Path zipPath = new File("%s/%s_chain.zip".formatted(workingDirectory, docId)).toPath();
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
-            for (int i = 0; i < pages.size(); i++) {
-                TiffPage page = pages.get(i);
-                String entryName = "page-%03d_%s".formatted(i + 1, page.name());
+            for (TiffPage page : pages) {
+                String entryName = "%s".formatted(page.name());
 
                 zos.putNextEntry(new ZipEntry(entryName));
                 zos.write(page.data());

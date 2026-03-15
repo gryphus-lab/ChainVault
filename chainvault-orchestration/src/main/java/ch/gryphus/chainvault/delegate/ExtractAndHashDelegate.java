@@ -50,8 +50,12 @@ public class ExtractAndHashDelegate extends AbstractTracingDelegate {
                                 .formatted(
                                         migrationService.getTempDir(),
                                         execution.getProcessInstanceId()));
-        Files.createDirectory(path);
-        log.info("Created directory: {}", path);
+        if (Files.notExists(path)) {
+            Files.createDirectory(path);
+            log.info("Created directory: {}", path);
+        } else {
+            log.warn("Directory already exists: {}", path);
+        }
         execution.setTransientVariable("workingDirectory", path);
 
         Map<String, Object> map = migrationService.extractAndHash(docId);
