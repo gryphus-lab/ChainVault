@@ -277,9 +277,8 @@ public class MigrationService {
         Path zipPath = new File("%s/%s_chain.zip".formatted(workingDirectory, docId)).toPath();
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
-            for (int i = 0; i < pages.size(); i++) {
-                TiffPage page = pages.get(i);
-                String entryName = "page-%03d_%s".formatted(i + 1, page.name());
+            for (TiffPage page : pages) {
+                String entryName = "%s".formatted(page.name());
 
                 zos.putNextEntry(new ZipEntry(entryName));
                 zos.write(page.data());
@@ -391,9 +390,11 @@ public class MigrationService {
      *
      * @param sourceMetadata the source metadata
      * @param ctx            the ctx
+     * @param inputMap       the input map
      * @return the archival metadata
      */
-    public static ArchivalMetadata buildXml(SourceMetadata sourceMetadata, MigrationContext ctx) {
+    public static ArchivalMetadata buildXml(
+            SourceMetadata sourceMetadata, MigrationContext ctx, Map<String, Object> inputMap) {
         ArchivalMetadata metadata = new ArchivalMetadata();
 
         metadata.setDocumentId(ctx.getDocId());
@@ -418,7 +419,13 @@ public class MigrationService {
 
         metadata.setProvenance(provenance);
 
-        metadata.setCustomFields(Map.of("sourceSystem", "legacy-archive-v1"));
+        Map<String, Object> customFields = new HashMap<>();
+        if (inputMap != null) {
+            customFields.putAll(inputMap);
+        }
+        customFields.put("sourceSystem", "legacy-archive-v1");
+        metadata.setCustomFields(customFields);
+
         return metadata;
     }
 
@@ -427,15 +434,18 @@ public class MigrationService {
      *
      * @param sourceMetadata   the source metadata
      * @param migrationContext the migration context
+     * @param map              the map
      * @return the string
      */
     public String transformMetadataToXml(
-            SourceMetadata sourceMetadata, MigrationContext migrationContext) {
+            SourceMetadata sourceMetadata,
+            MigrationContext migrationContext,
+            Map<String, Object> map) {
         return xmlMapper
                 .rebuild()
                 .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
                 .build()
-                .writeValueAsString(buildXml(sourceMetadata, migrationContext));
+                .writeValueAsString(buildXml(sourceMetadata, migrationContext, map));
     }
 
     /**

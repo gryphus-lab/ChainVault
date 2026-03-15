@@ -234,6 +234,48 @@ class AuditEventServiceTest {
         verify(mockEventRepo).save(any(MigrationEvent.class));
     }
 
+    @Test
+    void testHandleException_LogsOCRExceptionDetails() {
+        // Setup
+        Span span = Span.current();
+
+        // Configure MigrationAuditRepository.findByProcessInstanceKey(...).
+        Optional<MigrationAudit> migrationAudit =
+                Optional.of(
+                        MigrationAudit.builder()
+                                .id(0L)
+                                .processInstanceKey("processInstanceId")
+                                .documentId("docId")
+                                .status(MigrationAudit.MigrationStatus.PENDING)
+                                .failureReason("errorMsg")
+                                .errorCode("OCR_FAILED")
+                                .attemptCount(0)
+                                .startedAt(
+                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
+                                                .toInstant(ZoneOffset.UTC))
+                                .completedAt(
+                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
+                                                .toInstant(ZoneOffset.UTC))
+                                .inputPayloadHash("inputPayloadHash")
+                                .traceId("traceId")
+                                .build());
+        when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(migrationAudit);
+
+        // Run the test
+        assertThatRuntimeException()
+                .isThrownBy(
+                        () ->
+                                auditEventServiceUnderTest.handleException(
+                                        new Exception("errorMsg"),
+                                        span,
+                                        "piKey",
+                                        "errorCode",
+                                        "perform-ocr"))
+                .isInstanceOf(BpmnError.class);
+        verify(mockAuditRepo).save(any(MigrationAudit.class));
+        verify(mockEventRepo).save(any(MigrationEvent.class));
+    }
+
     /**
      * Test handle exception migration audit repository find by process instance key returns absent.
      */
@@ -244,7 +286,7 @@ class AuditEventServiceTest {
         when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(Optional.empty());
 
         // Run the test
-        assertThatIllegalStateException()
+        assertThatException()
                 .isThrownBy(
                         () ->
                                 auditEventServiceUnderTest.handleException(
@@ -252,6 +294,7 @@ class AuditEventServiceTest {
                                         span,
                                         "piKey",
                                         "errorCode",
-                                        "eventTaskType"));
+                                        "eventTaskType"))
+                .isInstanceOf(IllegalStateException.class);
     }
 }

@@ -383,7 +383,7 @@ class MigrationServiceTest {
         ctx.setPageHashes(Map.ofEntries(Map.entry("value", "value")));
 
         // Run the test
-        String result = migrationServiceUnderTest.transformMetadataToXml(meta, ctx);
+        String result = migrationServiceUnderTest.transformMetadataToXml(meta, ctx, null);
 
         // Verify the results
         String xmlFilename = "src/test/resources/xmls/ArchivalMetadata.xml";
@@ -626,26 +626,26 @@ class MigrationServiceTest {
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zip))) {
             ZipEntry entry;
             int tiffCount = 0;
-            String manifestContent = null;
+            String actualResult = null;
 
             while ((entry = zis.getNextEntry()) != null) {
-                if (entry.getName().startsWith("page-")) {
+                if ("manifest.json".equals(entry.getName())) {
+                    actualResult = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
+                } else if (entry.getName().endsWith(".tiff") || entry.getName().endsWith(".tif")) {
                     tiffCount++;
                     assertThat(zis.readAllBytes()).hasSizeGreaterThan(5);
-                } else if ("manifest.json".equals(entry.getName())) {
-                    manifestContent = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
                 }
             }
 
             assertThat(tiffCount).isEqualTo(2);
-            assertThat(manifestContent).isNotNull();
+            assertThat(actualResult).isNotNull();
             String expectedResult =
                     """
                     {"docId":"DOC-TEST-001","pageCount":2,"pageHashes":{"sample1.tiff"\
                     :"hash-page1"},"payloadHash":"payload-sha256-abc123","sourceMetadata":\
                     {"docId":"DOC-TEST-001","title":"Test Invoice 2026","clientId":"CHE-123.456.789"}}\
                     """;
-            JSONAssert.assertEquals(expectedResult, manifestContent, JSONCompareMode.LENIENT);
+            JSONAssert.assertEquals(expectedResult, actualResult, JSONCompareMode.LENIENT);
         }
     }
 
@@ -675,7 +675,7 @@ class MigrationServiceTest {
         ctx.addPageHash("p1.tif", "h1");
         ctx.addPageHash("p2.tif", "h2");
 
-        ArchivalMetadata xml = MigrationService.buildXml(meta, ctx);
+        ArchivalMetadata xml = MigrationService.buildXml(meta, ctx, null);
 
         assertThat(xml.getDocumentId()).isEqualTo("DOC-TEST-001");
         assertThat(xml.getTitle()).isEqualTo("Test Invoice 2026");
@@ -696,7 +696,7 @@ class MigrationServiceTest {
     void buildXml_shouldHandleMissingMetadataGracefully() {
         SourceMetadata nullMeta = new SourceMetadata(); // all fields null
 
-        ArchivalMetadata xml = MigrationService.buildXml(nullMeta, ctx);
+        ArchivalMetadata xml = MigrationService.buildXml(nullMeta, ctx, null);
 
         assertThat(xml.getTitle()).isEqualTo("Untitled Document");
         assertThat(xml.getPageCount()).isZero();
@@ -754,6 +754,11 @@ class MigrationServiceTest {
         }
     }
 
+    /**
+     * Test perform ocr on tiff pages well formed returns expected content.
+     *
+     * @throws Exception the exception
+     */
     @Test
     void testPerformOcrOnTiffPagesWellFormedReturnsExpectedContent() throws Exception {
         // Setup
@@ -777,11 +782,28 @@ class MigrationServiceTest {
     }
 
     @Test
-    void testPerformOcrOnTiffPagesDoesNotThrowExceptionWhenInputIsNullOrEmpty() {
+    void testPerformOcrOnTiffPagesThrowsException() {
         // Setup
+        List<TiffPage> pages =
+                List.of(
+                        new TiffPage(
+                                "bad_sample.tiff", "contents".getBytes(StandardCharsets.UTF_8)));
+
+        // Verify the results
+        assertThatException()
+                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
+    }
+
+    /**
+     * Test perform ocr on tiff pages does not throw exception when input is null or empty.
+     */
+    @Test
+    void testPerformOcrOnTiffPagesDoesNotThrowExceptionWhenInputIsNullOrEmpty() {
+        // check for null
         assertThatNoException()
                 .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(null));
 
+        // check for empty list
         List<TiffPage> pages = Collections.emptyList();
         assertThatNoException()
                 .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));

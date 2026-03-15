@@ -7,10 +7,12 @@ import ch.gryphus.chainvault.service.AuditEventService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileSystemUtils;
 
 /**
  * The type Handle error delegate.
@@ -32,6 +34,10 @@ public class HandleErrorDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
-        log.info("HandleErrorDelegate executed for {}", execution.getProcessInstanceId());
+        // cleanup temporary working directory
+        Path workingDirectory = (Path) execution.getTransientVariable("workingDirectory");
+
+        FileSystemUtils.deleteRecursively(workingDirectory);
+        log.info("Deleted working directory {}", workingDirectory);
     }
 }

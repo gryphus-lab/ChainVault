@@ -44,7 +44,6 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
     public void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException, TesseractException {
 
-        @SuppressWarnings("unchecked")
         List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
 
         if (pages != null && !pages.isEmpty()) {
@@ -53,6 +52,7 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
             execution.setTransientVariable("ocrResults", ocrResults);
             execution.setTransientVariable(
                     "ocrTextLength", ocrResults.stream().mapToInt(String::length).sum());
+            execution.setTransientVariable("ocrPageCount", ocrResults.size());
         } else {
             log.warn("No pages found for document {}", docId);
         }

@@ -11,6 +11,8 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -45,7 +47,12 @@ public class TransformMetadataDelegate extends AbstractTracingDelegate {
         MigrationContext ctx = (MigrationContext) execution.getTransientVariable("ctx");
         SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");
 
-        String xml = migrationService.transformMetadataToXml(meta, ctx);
+        Map<String, Object> map = new HashMap<>();
+        map.put("ocrResults", execution.getTransientVariable(("ocrResults")));
+        map.put("ocrTextLength", execution.getTransientVariable(("ocrTextLength")));
+        map.put("ocrPageCount", execution.getTransientVariable(("ocrPageCount")));
+
+        String xml = migrationService.transformMetadataToXml(meta, ctx, map);
         execution.setTransientVariable("xml", xml);
     }
 }

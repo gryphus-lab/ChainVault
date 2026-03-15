@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.flowable.engine.delegate.BpmnError;
@@ -100,13 +101,14 @@ public class AuditEventService {
         if (status == MigrationAudit.MigrationStatus.FAILED) {
             audit.setFailureReason(errorMsg);
             audit.setErrorCode(errorCode);
-        }
 
-        if (varMap.get("outputFileKey") != null) {
-            audit.setOutputFileKey((String) varMap.get("outputFileKey"));
-        }
-        if (varMap.get("chainOfCustodyZip") != null) {
-            audit.setChainOfCustodyZip(String.valueOf(varMap.get("chainOfCustodyZip")));
+            // Add OCR related error details
+            if (Objects.equals(eventTaskType, "perform-ocr")) {
+                audit.setOcrAttempted(true);
+                audit.setOcrSuccess(false);
+                audit.setOcrErrorCode("OCR_TESSERACT_ERROR");
+                audit.setOcrErrorMessage(errorMsg);
+            }
         }
 
         var ctx = (MigrationContext) varMap.get("ctx");
@@ -117,6 +119,23 @@ public class AuditEventService {
             if (ctx.getPdfHash() != null) {
                 audit.setMergedPdfHash(ctx.getPdfHash());
             }
+        }
+
+        // Update OCR related audit table fields
+        if (varMap.get("ocrResults") != null) {
+            audit.setOcrAttempted(true);
+            audit.setOcrCompletedAt(Instant.now());
+            audit.setOcrPageCount((Integer) varMap.get("ocrPageCount"));
+            audit.setOcrSuccess(true);
+            int ocrTextLength = (int) varMap.get("ocrTextLength");
+            audit.setOcrTotalTextLength((long) ocrTextLength);
+        }
+
+        if (varMap.get("outputFileKey") != null) {
+            audit.setOutputFileKey((String) varMap.get("outputFileKey"));
+        }
+        if (varMap.get("chainOfCustodyZip") != null) {
+            audit.setChainOfCustodyZip(String.valueOf(varMap.get("chainOfCustodyZip")));
         }
 
         String traceId = Span.current().getSpanContext().getTraceId();

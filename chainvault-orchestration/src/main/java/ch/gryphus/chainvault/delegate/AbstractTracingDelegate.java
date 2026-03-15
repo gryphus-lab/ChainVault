@@ -11,6 +11,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -68,6 +70,16 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
 
             doExecute(execution, span, docId);
 
+            // filter out byte array payloads
+            Map<String, Object> outputMap = new HashMap<>();
+            execution
+                    .getTransientVariables()
+                    .forEach(
+                            (key, value) -> {
+                                if (!(value instanceof byte[])) {
+                                    outputMap.put(key, value);
+                                }
+                            });
             auditService.updateAuditEventEnd(
                     execution.getProcessInstanceId(),
                     MigrationAudit.MigrationStatus.SUCCESS,
@@ -75,7 +87,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
                     null,
                     taskType,
                     "Success",
-                    execution.getTransientVariables());
+                    outputMap);
             log.info("{} finished", taskType);
         } catch (Exception e) {
             log.error("{} encountered an exception", taskType, e);
