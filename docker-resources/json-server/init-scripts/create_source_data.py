@@ -1,4 +1,3 @@
-import glob
 import json
 import os
 import secrets
@@ -9,24 +8,20 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import tifffile as tf
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 DEST_DIR = "./static/payloads/"
 TOTAL_BUNDLES = 10
-PAGES_PER_INVOICE = (1, 5)  # min–max pages per invoice
+PAGES_PER_INVOICE = (1, 5)
 
 COMPANIES = [
     "Acme Solutions AG", "TechNova GmbH", "SwissData Systems AG",
     "InnoTech Consulting GmbH", "Prime Solutions Schweiz AG",
-    "BlueSky IT Services GmbH", "Helvetic Software AG",
-    "Zurich Digital Solutions AG", "Alpine Logic GmbH",
 ]
 
 CLIENTS = [
     "Global Pharma AG", "Swiss Finance Bank AG", "Alpine Logistics GmbH",
     "MedTech Innovations SA", "Bern Energy Holding AG",
-    "Lucerne Retail Group AG", "Geneva Luxury Watches SA",
-    "Basel Pharma Distribution AG", "Zug Crypto Ventures AG",
 ]
 
 ITEM_DESCRIPTIONS = [
@@ -34,12 +29,7 @@ ITEM_DESCRIPTIONS = [
     ("Software-Lizenz (perpetual)", 9800.00),
     ("Cloud Hosting & Support 12 Monate", 3600.00),
     ("Entwicklung Custom Dashboard Modul", 145.00),
-    ("Wartung & Updates Jahresvertrag 2026", 4200.00),
     ("Reisekosten & Spesen (Zürich–Genf–Zürich)", 680.00),
-    ("Schulung Mitarbeitende (10 Personen × 2 Tage)", 4800.00),
-    ("API Integration & Testing Phase 2", 165.00),
-    ("Sicherheitsaudit & Penetrationstest", 5200.00),
-    ("Datenmigration & Validierung", 95.00),
 ]
 
 FONT_PATHS = [
@@ -47,7 +37,18 @@ FONT_PATHS = [
     "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+]
+
+# ───────────────────────────────────────────────
+# New: Invoice quality types for negative testing
+# ───────────────────────────────────────────────
+INVOICE_QUALITY_TYPES = [
+    "valid",          # clean, good OCR
+    "noisy",          # heavy Gaussian + salt/pepper
+    "low_contrast",   # very pale text
+    "rotated_heavy",  # strong rotation ±8°
+    "text_overlapping", # text crosses lines/borders
+    "garbage_chars",  # random symbols mixed in
 ]
 
 def load_font(size, bold=False):
@@ -62,21 +63,25 @@ def load_font(size, bold=False):
     return ImageFont.load_default()
 
 def add_realistic_noise(image: Image.Image, quality: str = "valid") -> Image.Image:
+    """Add noise depending on quality type"""
     img_array = np.array(image.convert('L'))
 
     if quality == "noisy":
+        # Heavy noise
         gauss = np.random.normal(0, 35, img_array.shape).astype(np.int16)
         noisy = img_array.astype(np.int16) + gauss
         noisy = np.clip(noisy, 0, 255).astype(np.uint8)
         salt_pepper = np.random.rand(*img_array.shape) < 0.015
         noisy[salt_pepper] = 255 if np.random.rand() > 0.5 else 0
     else:
+        # Light noise for other types
         gauss = np.random.normal(0, 8, img_array.shape).astype(np.int16)
         noisy = img_array.astype(np.int16) + gauss
         noisy = np.clip(noisy, 0, 255).astype(np.uint8)
 
     noisy_img = Image.fromarray(noisy)
 
+    # Vignette (all types)
     mask = Image.new('L', noisy_img.size, 255)
     draw = ImageDraw.Draw(mask)
     w, h = mask.size
@@ -87,28 +92,16 @@ def add_realistic_noise(image: Image.Image, quality: str = "valid") -> Image.Ima
     return vignette.convert('RGB')
 
 def apply_random_transforms(image: Image.Image, quality: str = "valid") -> Image.Image:
-    # Random rotation
-    angle_min, angle_max = (-1.5, 1.5) if quality != "rotated_heavy" else (-8.0, 8.0)
-    angle = secrets.randbelow(int((angle_max - angle_min) * 1000 + 1)) / 1000 + angle_min
+    angle_range = (-1.5, 1.5) if quality != "rotated_heavy" else (-8.0, 8.0)
+    angle = secrets.uniform(*angle_range)
     rotated = image.rotate(angle, resample=Image.BICUBIC, expand=True)
 
-    # Random scale 98–102%
     scale_min = 0.98 if quality != "rotated_heavy" else 0.92
-    scale = 0.92 + secrets.randbelow(1001) / 10000 if quality == "rotated_heavy" else 0.98 + secrets.randbelow(401) / 10000
+    scale = secrets.uniform(scale_min, 1.02)
     scaled = rotated.resize(
         (int(rotated.width * scale), int(rotated.height * scale)),
         Image.LANCZOS
     )
-
-    # Light perspective (page curl) – sometimes
-    if secrets.randbelow(100) < 35:
-        coeffs = [
-            1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0,
-            secrets.randbelow(7) / 10000 + 0.0002,
-            secrets.randbelow(5) / 10000 + 0.0001
-        ]
-        scaled = scaled.transform(scaled.size, Image.PERSPECTIVE, coeffs, Image.BICUBIC)
 
     return scaled
 
@@ -184,12 +177,14 @@ def create_invoice_pages(quality: str = "valid"):
                 "Vielen Dank für Ihr Vertrauen!",
             ]
 
+        # Negative cases: add garbage on some pages
         if quality == "garbage_chars" and secrets.randbelow(3) == 0:
             garbage = ''.join(secrets.choice("!@#$%^&*()_+{}[]|;:,.<>?/") for _ in range(30))
             page_text.insert(5, f"   {garbage}")
 
+        # Text overlapping simulation (add fake lines crossing text)
         if quality == "text_overlapping":
-            page_text.insert(8, "─" * 80)
+            page_text.insert(8, "─" * 80)  # fake line crossing
 
         pages.append(page_text)
 
@@ -228,9 +223,10 @@ def render_page(text_lines, page_num, total_pages, quality: str = "valid"):
 
     draw.text((2200, 3300), f"Seite {page_num} von {total_pages}", fill=(140, 140, 140), font=font_small)
 
+    # Low contrast simulation
     if quality == "low_contrast":
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(secrets.uniform(0.3, 0.6))
+        img = enhancer.enhance(secrets.uniform(0.3, 0.6))  # very pale
 
     return img
 
@@ -239,6 +235,7 @@ def create_invoice_tiff_bundle(bundle_index):
     doc_id = f"DOC-INV-2026-{suffix}"
     zip_filename = f"invoice_{suffix}.zip"
 
+    # Random quality type for this bundle
     quality = secrets.choice(INVOICE_QUALITY_TYPES)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -247,7 +244,7 @@ def create_invoice_tiff_bundle(bundle_index):
         tiff_files = []
         for i, page_text in enumerate(pages, 1):
             img = render_page(page_text, i, len(pages), quality=quality)
-            img = apply_random_transforms(img, quality=quality)
+            img = apply_random_transforms(img)
             img = add_realistic_noise(img, quality=quality)
 
             tiff_path = os.path.join(tmp_dir, f"{doc_id}_page{i:02d}.tiff")
@@ -273,7 +270,7 @@ def create_invoice_tiff_bundle(bundle_index):
         "pageCount": len(pages),
         "tags": ["rechnung", "2026", "finance", quality],
         "payloadUrl": f"/payloads/{zip_filename}",
-        "quality_type": quality
+        "quality_type": quality  # useful for later analysis
     }
 
     return metadata
