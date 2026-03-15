@@ -65,7 +65,7 @@
         <opentelemetry.version>1.60.1</opentelemetry.version>
         <opentelemetry-exporter-prometheus.version>1.60.1-alpha</opentelemetry-exporter-prometheus.version>
         <opentelemetry-logback-appender-1.0.version>2.25.0-alpha</opentelemetry-logback-appender-1.0.version>
-        <opentelemetry-logback-mdc-1.0.version>2.25.0-alpha</opentelemetry-logback-mdc-1.0.version>
+        <opentelemetry-logback-mdc-1.0.version>2.26.0-alpha</opentelemetry-logback-mdc-1.0.version>
     </properties>
     <dependencyManagement>
         <dependencies>
