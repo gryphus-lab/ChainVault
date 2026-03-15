@@ -234,6 +234,9 @@ class AuditEventServiceTest {
         verify(mockEventRepo).save(any(MigrationEvent.class));
     }
 
+    /**
+     * Test handle exception logs ocr exception details.
+     */
     @Test
     void testHandleException_LogsOCRExceptionDetails() {
         // Setup

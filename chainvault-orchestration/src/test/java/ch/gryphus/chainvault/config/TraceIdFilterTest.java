@@ -18,6 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+/**
+ * The type Trace id filter test.
+ */
 @ExtendWith(MockitoExtension.class)
 class TraceIdFilterTest {
 
@@ -28,12 +31,18 @@ class TraceIdFilterTest {
 
     private TraceIdFilter traceIdFilterUnderTest;
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         traceIdFilterUnderTest = new TraceIdFilter(mockTracer);
         when(mockTracer.currentTraceContext()).thenReturn(mockCurrentTraceContext);
     }
 
+    /**
+     * Test do filter internal when trace context exists.
+     */
     @Test
     void testDoFilterInternal_whenTraceContextExists() {
         // Setup
@@ -50,6 +59,9 @@ class TraceIdFilterTest {
                                         request, response, mockFilterChain));
     }
 
+    /**
+     * Test do filter internal when trace context is null.
+     */
     @Test
     void testDoFilterInternal_whenTraceContextIsNull() {
         // Setup

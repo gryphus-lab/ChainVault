@@ -22,6 +22,7 @@ import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -174,7 +175,7 @@ public class MigrationService {
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
     public List<TiffPage> signTiffPages(
-            byte[] payload, MigrationContext ctx, String workingDirectory)
+            byte[] payload, @NonNull MigrationContext ctx, String workingDirectory)
             throws IOException, NoSuchAlgorithmException {
         List<TiffPage> pages = new ArrayList<>();
 
@@ -269,7 +270,7 @@ public class MigrationService {
     public Path createChainZip(
             String docId,
             List<TiffPage> pages,
-            SourceMetadata sourceMetadata,
+            @NonNull SourceMetadata sourceMetadata,
             MigrationContext ctx,
             String workingDirectory)
             throws IOException, NoSuchAlgorithmException {
@@ -277,34 +278,36 @@ public class MigrationService {
         Path zipPath = new File("%s/%s_chain.zip".formatted(workingDirectory, docId)).toPath();
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
-            for (TiffPage page : pages) {
-                String entryName = "%s".formatted(page.name());
-
-                zos.putNextEntry(new ZipEntry(entryName));
-                zos.write(page.data());
-                zos.closeEntry();
-            }
-
             Map<String, Object> manifest = new LinkedHashMap<>();
             manifest.put(Constants.BPMN_PROC_VAR_DOC_ID, docId);
-            manifest.put("timestamp", Instant.now().toString());
-            manifest.put("pageCount", pages.size());
-            manifest.put("pageHashes", ctx.getPageHashes());
-            manifest.put("payloadHash", ctx.getPayloadHash());
 
-            if (sourceMetadata != null) {
-                manifest.put(
-                        "sourceMetadata",
-                        Map.of(
-                                Constants.BPMN_PROC_VAR_DOC_ID,
-                                sourceMetadata.getDocId(),
-                                "title",
-                                sourceMetadata.getTitle(),
-                                "creationDate",
-                                sourceMetadata.getCreationDate(),
-                                "clientId",
-                                sourceMetadata.getClientId()));
+            if (pages != null && !pages.isEmpty()) {
+                for (TiffPage page : pages) {
+                    String entryName = "%s".formatted(page.name());
+
+                    zos.putNextEntry(new ZipEntry(entryName));
+                    zos.write(page.data());
+                    zos.closeEntry();
+                }
+
+                manifest.put("pageCount", pages.size());
+                manifest.put("pageHashes", ctx.getPageHashes());
+                manifest.put("payloadHash", ctx.getPayloadHash());
             }
+
+            manifest.put("timestamp", Instant.now().toString());
+
+            manifest.put(
+                    "sourceMetadata",
+                    Map.of(
+                            Constants.BPMN_PROC_VAR_DOC_ID,
+                            sourceMetadata.getDocId(),
+                            "title",
+                            sourceMetadata.getTitle(),
+                            "creationDate",
+                            sourceMetadata.getCreationDate(),
+                            "clientId",
+                            sourceMetadata.getClientId()));
 
             String manifestJson =
                     objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(manifest);
@@ -331,7 +334,7 @@ public class MigrationService {
      * @param processInstanceId the process instance id
      */
     public void uploadToSftp(
-            MigrationContext ctx,
+            @NonNull MigrationContext ctx,
             String docId,
             String xml,
             Path zipPath,
@@ -346,9 +349,11 @@ public class MigrationService {
                     session.write(
                             Files.newInputStream(zipPath.toFile().toPath()),
                             "%s/%s_chain.zip".formatted(folder, docId));
-                    session.write(
-                            Files.newInputStream(pdfPath.toFile().toPath()),
-                            "%s/%s.pdf".formatted(folder, docId));
+                    if (pdfPath != null) { // when pdf was not generated
+                        session.write(
+                                Files.newInputStream(pdfPath.toFile().toPath()),
+                                "%s/%s.pdf".formatted(folder, docId));
+                    }
                     session.write(
                             new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)),
                             "%s/%s_meta.xml".formatted(folder, docId));
@@ -366,7 +371,7 @@ public class MigrationService {
      * @return the path
      * @throws IOException the io exception
      */
-    public Path mergeTiffToPdf(List<TiffPage> pages, String docId, String workingDirectory)
+    public static Path mergeTiffToPdf(List<TiffPage> pages, String docId, String workingDirectory)
             throws IOException {
         Path pdf = new File("%s/%s.pdf".formatted(workingDirectory, docId)).toPath();
         try (var doc = new PDDocument()) {
@@ -477,7 +482,7 @@ public class MigrationService {
      * @throws IOException        the io exception
      * @throws TesseractException the tesseract exception
      */
-    public List<String> performOcrOnTiffPages(List<TiffPage> pages)
+    public static List<String> performOcrOnTiffPages(List<TiffPage> pages)
             throws IOException, TesseractException {
         Tesseract tesseract = new Tesseract();
         tesseract.setLanguage("eng+deu");

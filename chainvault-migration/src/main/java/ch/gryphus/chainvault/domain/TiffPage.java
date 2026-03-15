@@ -5,9 +5,13 @@ package ch.gryphus.chainvault.domain;
 
 import java.util.Arrays;
 import java.util.Objects;
+import lombok.NonNull;
 
 /**
  * The type Tiff page.
+ *
+ * @param name
+ * @param data
  */
 public record TiffPage(String name, byte[] data) {
     @Override
@@ -26,6 +30,7 @@ public record TiffPage(String name, byte[] data) {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "TiffPage{name=%s}".formatted(name);
     }

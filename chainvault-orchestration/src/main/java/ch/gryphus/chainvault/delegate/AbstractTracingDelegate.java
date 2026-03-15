@@ -107,6 +107,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
      * @param docId     the doc id
      * @throws IOException              the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws TesseractException       the tesseract exception
      */
     protected abstract void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException, TesseractException;

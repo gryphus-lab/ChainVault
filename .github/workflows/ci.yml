@@ -20,6 +20,8 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-24.04
+    permissions:
+      actions: write
     steps:
       - uses: actions/checkout@v6
         with:
