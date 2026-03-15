@@ -782,7 +782,7 @@ class MigrationServiceTest {
     }
 
     @Test
-    void testPerformOcrOnTiffPagesThrowsException() throws Exception {
+    void testPerformOcrOnTiffPagesThrowsException() {
         // Setup
         List<TiffPage> pages =
                 List.of(
