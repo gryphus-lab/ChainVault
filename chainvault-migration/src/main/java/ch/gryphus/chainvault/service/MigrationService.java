@@ -277,20 +277,24 @@ public class MigrationService {
         Path zipPath = new File("%s/%s_chain.zip".formatted(workingDirectory, docId)).toPath();
 
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
-            for (TiffPage page : pages) {
-                String entryName = "%s".formatted(page.name());
-
-                zos.putNextEntry(new ZipEntry(entryName));
-                zos.write(page.data());
-                zos.closeEntry();
-            }
-
             Map<String, Object> manifest = new LinkedHashMap<>();
             manifest.put(Constants.BPMN_PROC_VAR_DOC_ID, docId);
+
+            if (pages != null && !pages.isEmpty()) {
+                for (TiffPage page : pages) {
+                    String entryName = "%s".formatted(page.name());
+
+                    zos.putNextEntry(new ZipEntry(entryName));
+                    zos.write(page.data());
+                    zos.closeEntry();
+                }
+
+                manifest.put("pageCount", pages.size());
+                manifest.put("pageHashes", ctx.getPageHashes());
+                manifest.put("payloadHash", ctx.getPayloadHash());
+            }
+
             manifest.put("timestamp", Instant.now().toString());
-            manifest.put("pageCount", pages.size());
-            manifest.put("pageHashes", ctx.getPageHashes());
-            manifest.put("payloadHash", ctx.getPayloadHash());
 
             if (sourceMetadata != null) {
                 manifest.put(
@@ -346,9 +350,11 @@ public class MigrationService {
                     session.write(
                             Files.newInputStream(zipPath.toFile().toPath()),
                             "%s/%s_chain.zip".formatted(folder, docId));
-                    session.write(
-                            Files.newInputStream(pdfPath.toFile().toPath()),
-                            "%s/%s.pdf".formatted(folder, docId));
+                    if (pdfPath != null) {
+                        session.write(
+                                Files.newInputStream(pdfPath.toFile().toPath()),
+                                "%s/%s.pdf".formatted(folder, docId));
+                    }
                     session.write(
                             new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)),
                             "%s/%s_meta.xml".formatted(folder, docId));

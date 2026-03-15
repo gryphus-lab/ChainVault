@@ -650,18 +650,6 @@ class MigrationServiceTest {
     }
 
     /**
-     * Create chain zip should fail on null pages.
-     */
-    @Test
-    void createChainZip_shouldFailOnNullPages() {
-        assertThatThrownBy(
-                        () ->
-                                migrationServiceUnderTest.createChainZip(
-                                        "DOC-001", null, meta, ctx, WORKING_DIRECTORY))
-                .isInstanceOf(NullPointerException.class);
-    }
-
-    /**
      * Build xml should fill all relevant fields.
      */
     // ────────────────────────────────────────────────
@@ -755,7 +743,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test perform ocr on tiff pages well formed returns expected content.
+     * Test perform ocr on tiff pages well-formed returns expected content.
      *
      * @throws Exception the exception
      */

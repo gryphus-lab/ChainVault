@@ -1,6 +1,6 @@
 {
   "documents": [
-    { // valid payload
+    {
       "id": "DOC-ARCH-2025-001",
       "docId": "DOC-ARCH-2025-001",
       "title": "Invoice #7836 - Stark Industries",
@@ -19,7 +19,7 @@
       ],
       "payloadUrl": "/payloads/invoice_001.zip"
     },
-    { // metadata only
+    {
       "id": "DOC-ARCH-2025-002",
       "docId": "DOC-ARCH-2025-002",
       "title": "Invoice #7923 - Stark Industries",

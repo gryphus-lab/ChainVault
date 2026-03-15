@@ -97,7 +97,8 @@ class OrchestrationServiceIT extends BaseServiceIT {
      * @throws InterruptedException the interrupted exception
      */
     @Test
-    void migrateDocument_shouldUploadToRealSftp() throws IOException, InterruptedException {
+    void migrateDocument_withMetadataAndPayloadShouldUploadToRealSftp()
+            throws IOException, InterruptedException {
         String docId = "DOC-ARCH-2025-001";
         Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, docId);
 
@@ -108,6 +109,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
         // Wait for upload to appear in SFTP (poll the container)
         String expectedDir = "/home/testuser/upload/%s-%s".formatted(processInstanceId, docId);
 
+        // Check if uploaded contents are chain zip file, merged pdf and xml
         await().atMost(Duration.ofSeconds(30))
                 .pollInterval(Duration.ofSeconds(1))
                 .untilAsserted(
@@ -124,13 +126,51 @@ class OrchestrationServiceIT extends BaseServiceIT {
                                     .contains("_meta.xml");
                         });
 
-        // Optional: check file count
+        // check if exactly 3 files were uploaded
         String fileCount =
                 sftpContainer
                         .execInContainer("sh", "-c", "ls %s | wc -l".formatted(expectedDir))
                         .getStdout()
                         .trim();
         assertThat(Integer.parseInt(fileCount.trim())).isEqualTo(3);
+    }
+
+    @Test
+    void migrateDocument_withMetadataNoPayloadShouldUploadToRealSftp()
+            throws IOException, InterruptedException {
+        String docId = "DOC-ARCH-2025-002";
+        Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, docId);
+
+        // Check if process workflow is started
+        String processInstanceId = orchestrationService.startProcess(variables);
+        assertThat(processInstanceId).isNotNull();
+
+        // Wait for upload to appear in SFTP (poll the container)
+        String expectedDir = "/home/testuser/upload/%s-%s".formatted(processInstanceId, docId);
+
+        // Check if uploaded contents are chain zip file and xml
+        await().atMost(Duration.ofSeconds(30))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(
+                        () -> {
+                            String lsResult =
+                                    sftpContainer
+                                            .execInContainer("ls", "-l", expectedDir)
+                                            .getStdout();
+
+                            assertThat(lsResult)
+                                    .as("SFTP directory should contain uploaded files")
+                                    .contains("_chain.zip")
+                                    .contains("_meta.xml");
+                        });
+
+        // check if exactly 2 files were uploaded
+        String fileCount =
+                sftpContainer
+                        .execInContainer("sh", "-c", "ls %s | wc -l".formatted(expectedDir))
+                        .getStdout()
+                        .trim();
+        assertThat(Integer.parseInt(fileCount.trim())).isEqualTo(2);
     }
 
     /**

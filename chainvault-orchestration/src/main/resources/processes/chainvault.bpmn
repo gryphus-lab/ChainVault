@@ -4,7 +4,7 @@
     <extensionElements>
       <design:stencilid><![CDATA[BPMNDiagram]]></design:stencilid>
       <design:creationdate><![CDATA[2026-02-25T12:07:07.166Z]]></design:creationdate>
-      <design:modificationdate><![CDATA[2026-03-15T20:06:50.127Z]]></design:modificationdate>
+      <design:modificationdate><![CDATA[2026-03-15T20:20:56.225Z]]></design:modificationdate>
     </extensionElements>
     <serviceTask id="Task_HandleError" name="Handle Error" flowable:delegateExpression="${handleError}">
       <documentation>Handle any errors thrown by process tasks and log exception details</documentation>
@@ -44,7 +44,7 @@
       </extensionElements>
     </serviceTask>
     <serviceTask id="Task_Merge" name="Merge to PDF" flowable:delegateExpression="${mergePdf}">
-      <documentation>Merge source files into a multipage PDF</documentation>
+      <documentation>Merge source files into a multipage PDF file</documentation>
       <extensionElements>
         <design:stencilid><![CDATA[ServiceTask]]></design:stencilid>
         <design:stencilsuperid><![CDATA[Task]]></design:stencilsuperid>
@@ -276,7 +276,7 @@
         <design:stencilid><![CDATA[SequenceFlow]]></design:stencilid>
         <design:display_ref_in_diagram><![CDATA[true]]></design:display_ref_in_diagram>
       </extensionElements>
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vars:vars:get("payload") != null}]]></conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vars:get("payload") != null}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="SequenceFlow_22" name="no" sourceRef="Exclusive_Databased_Gateway_18" targetRef="Task_Prepare">
       <extensionElements>
@@ -340,15 +340,15 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndEvent_Failed" id="BPMNShape_EndEvent_Failed">
-        <omgdc:Bounds height="28.0" width="28.0" x="849.0" y="552.0"></omgdc:Bounds>
+        <omgdc:Bounds height="28.0" width="28.0" x="849.0" y="529.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="85.0" x="794.0" y="599.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="85.0" x="820.0" y="582.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="BoundaryError_Send" id="BPMNShape_BoundaryError_Send">
-        <omgdc:Bounds height="30.0" width="30.0" x="1496.0" y="175.0"></omgdc:Bounds>
+        <omgdc:Bounds height="30.0" width="30.0" x="1514.0" y="175.0"></omgdc:Bounds>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="68.0" x="1445.0" y="216.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="68.0" x="1491.0" y="231.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="BoundaryError_Extract" id="BPMNShape_BoundaryError_Extract">
@@ -424,8 +424,8 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_22" id="BPMNEdge_SequenceFlow_22" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="455.0" y="130.0"></omgdi:waypoint>
-        <omgdi:waypoint x="455.0" y="72.81388549804683"></omgdi:waypoint>
-        <omgdi:waypoint x="748.0" y="72.81388549804683"></omgdi:waypoint>
+        <omgdi:waypoint x="455.0" y="58.3472175951357"></omgdi:waypoint>
+        <omgdi:waypoint x="748.0" y="58.3472175951357"></omgdi:waypoint>
         <omgdi:waypoint x="748.0" y="110.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="18.0" width="13.0" x="436.0" y="99.80000000000001"></omgdc:Bounds>
@@ -433,7 +433,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="Flow_ToFailedEnd" id="BPMNEdge_Flow_ToFailedEnd" flowable:sourceDockerX="70.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="14.0" flowable:targetDockerY="14.0">
         <omgdi:waypoint x="863.0" y="476.0"></omgdi:waypoint>
-        <omgdi:waypoint x="863.0" y="552.0"></omgdi:waypoint>
+        <omgdi:waypoint x="863.0" y="529.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_13" id="BPMNEdge_SequenceFlow_13" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="70.0" flowable:targetDockerY="40.0">
         <omgdi:waypoint x="1177.0" y="205.0"></omgdi:waypoint>
@@ -445,8 +445,8 @@
         <omgdi:waypoint x="268.43174570355967" y="150.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="Flow_ErrorSend" id="BPMNEdge_Flow_ErrorSend" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="70.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="1511.0" y="205.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1511.0" y="436.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1529.0" y="205.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1529.0" y="436.0"></omgdi:waypoint>
         <omgdi:waypoint x="933.0" y="436.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="SequenceFlow_14" id="BPMNEdge_SequenceFlow_14" flowable:sourceDockerX="15.0" flowable:sourceDockerY="15.0" flowable:targetDockerX="70.0" flowable:targetDockerY="40.0">
