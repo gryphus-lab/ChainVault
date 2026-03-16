@@ -3,6 +3,7 @@
  */
 package ch.gryphus.chainvault.config;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.when;
 
@@ -15,12 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * The type Trace id filter test.
  */
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class TraceIdFilterTest {
 
@@ -31,6 +35,9 @@ class TraceIdFilterTest {
 
     private TraceIdFilter traceIdFilterUnderTest;
 
+    private MockHttpServletRequest request;
+    private MockHttpServletResponse response;
+
     /**
      * Sets up.
      */
@@ -38,6 +45,8 @@ class TraceIdFilterTest {
     void setUp() {
         traceIdFilterUnderTest = new TraceIdFilter(mockTracer);
         when(mockTracer.currentTraceContext()).thenReturn(mockCurrentTraceContext);
+        request = new MockHttpServletRequest();
+        response = new MockHttpServletResponse();
     }
 
     /**
@@ -46,8 +55,6 @@ class TraceIdFilterTest {
     @Test
     void testDoFilterInternal_whenTraceContextExists() {
         // Setup
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
         when(mockCurrentTraceContext.context()).thenReturn(mockTraceContext);
         when(mockTraceContext.traceId()).thenReturn("traceId");
 
@@ -65,8 +72,6 @@ class TraceIdFilterTest {
     @Test
     void testDoFilterInternal_whenTraceContextIsNull() {
         // Setup
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
         when(mockCurrentTraceContext.context()).thenReturn(null);
 
         // Verify
@@ -75,5 +80,53 @@ class TraceIdFilterTest {
                         () ->
                                 traceIdFilterUnderTest.doFilterInternal(
                                         request, response, mockFilterChain));
+    }
+
+    /**
+     * Test do filter internal throws null pointer exception when request is null.
+     */
+    @Test
+    void testDoFilterInternalThrowsNullPointerException_whenRequestIsNull() {
+        // Setup
+        when(mockCurrentTraceContext.context()).thenReturn(mockTraceContext);
+        when(mockTraceContext.traceId()).thenReturn("traceId");
+
+        // Run the test
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(
+                        () ->
+                                traceIdFilterUnderTest.doFilterInternal(
+                                        null, response, mockFilterChain));
+    }
+
+    /**
+     * Test do filter internal throws null pointer exception when response is null.
+     */
+    @Test
+    void testDoFilterInternalThrowsNullPointerException_whenResponseIsNull() {
+        // Setup
+        when(mockCurrentTraceContext.context()).thenReturn(mockTraceContext);
+        when(mockTraceContext.traceId()).thenReturn("traceId");
+
+        // Run the test
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(
+                        () ->
+                                traceIdFilterUnderTest.doFilterInternal(
+                                        request, null, mockFilterChain));
+    }
+
+    /**
+     * Test do filter internal throws null pointer exception when filter chain is null.
+     */
+    @Test
+    void testDoFilterInternalThrowsNullPointerException_whenFilterChainIsNull() {
+        // Setup
+        when(mockCurrentTraceContext.context()).thenReturn(mockTraceContext);
+        when(mockTraceContext.traceId()).thenReturn("traceId");
+
+        // Run the test
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> traceIdFilterUnderTest.doFilterInternal(request, response, null));
     }
 }

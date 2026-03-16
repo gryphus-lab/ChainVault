@@ -25,7 +25,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * The type Docker services integration it.
+ * The type Docker services it.
  */
 @Testcontainers
 @DisplayName("Docker Services Integration Tests")

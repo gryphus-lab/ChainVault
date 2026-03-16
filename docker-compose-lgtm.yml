@@ -1,8 +1,7 @@
 # docker-compose-lgtm.yml for chainvault
 services:
-  grafana-lgtm:
+  otel-lgtm:
     image: 'grafana/otel-lgtm:latest'
-    container_name: 'otel-lgtm'
     environment:
       - ENABLE_OBI=true
       - OBI_TARGET=java
@@ -28,3 +27,6 @@ services:
     ports:
       - "12345:12345"
       - "4319:4317"
+    depends_on:
+      otel-lgtm:
+        condition: service_healthy
