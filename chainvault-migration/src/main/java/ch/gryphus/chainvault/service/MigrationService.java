@@ -97,18 +97,6 @@ public class MigrationService {
     }
 
     /**
-     * Log config.
-     */
-    @PostConstruct
-    public void logConfig() {
-        log.info(
-                "Migration config loaded: tempDir={},, tesseract:language={}, dpi={}",
-                props.tempDir(),
-                props.tesseractLanguage(),
-                props.tesseractDpi());
-    }
-
-    /**
      * Gets temp dir.
      *
      * @return the temp dir

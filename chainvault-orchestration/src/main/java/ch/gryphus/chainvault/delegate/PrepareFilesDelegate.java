@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
@@ -45,7 +44,7 @@ public class PrepareFilesDelegate extends AbstractTracingDelegate {
     }
 
     @Override
-    protected void doExecute(@NonNull DelegateExecution execution, Span span, String docId)
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
         var pages = (List<TiffPage>) execution.getTransientVariable("pages");
         SourceMetadata meta = (SourceMetadata) execution.getTransientVariable("meta");

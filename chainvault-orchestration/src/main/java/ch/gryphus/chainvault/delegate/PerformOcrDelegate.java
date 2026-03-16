@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -42,7 +41,7 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
     }
 
     @Override
-    protected void doExecute(@NonNull DelegateExecution execution, Span span, String docId)
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException, TesseractException {
 
         List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
