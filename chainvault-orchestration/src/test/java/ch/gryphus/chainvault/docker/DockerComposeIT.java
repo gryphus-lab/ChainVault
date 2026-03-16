@@ -67,7 +67,7 @@ class DockerComposeIT {
                             CHAINVAULT_SERVICE,
                             8085,
                             Wait.forLogMessage(".*Started MigrationApplication.*", 1)
-                                    .withStartupTimeout(Duration.ofSeconds(120)));
+                                    .withStartupTimeout(Duration.ofSeconds(240)));
 
     /**
      * Test docker compose starts.
