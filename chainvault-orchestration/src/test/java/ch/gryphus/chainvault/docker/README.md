@@ -4,7 +4,7 @@ This directory contains comprehensive integration tests for the Docker services 
 
 ## Test Files
 
-### 1. `DockerServicesIntegrationIT.java`
+### 1. `DockerServicesIT.java`
 
 #### Unit-level integration tests for individual Docker services
 
@@ -30,7 +30,7 @@ Tests the health, availability, and basic connectivity of each service in isolat
 
 ### 2. `DockerComposeIT.java`
 
-#### Docker Compose orchestration tests
+#### Docker Compose integration tests
 
 Tests the entire docker-compose stack to ensure services work together:
 
@@ -64,7 +64,6 @@ Tests realistic scenarios where all services work together in a unified system:
   - `testDataPersistence()`: Tests data persistence in SFTP
 - **Reliability Tests**
   - `testPostgresDatabaseInitialization()`: Confirms database schema initialization
-  - `testDynamicSftpPortAllocation()`: Validates dynamic port allocation works
   - `testApiTimeoutHandling()`: Tests graceful timeout handling for HTTP requests
 
 ## Running the Tests
@@ -79,9 +78,9 @@ mvn test -Dtest=Docker*
 
 ```bash
 # Individual service tests
-mvn test -Dtest=DockerServicesIntegrationIT
+mvn test -Dtest=DockerServicesIT
 
-# Docker Compose orchestration tests
+# Docker Compose integration tests
 mvn test -Dtest=DockerComposeIT
 
 # End-to-end tests
