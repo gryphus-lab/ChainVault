@@ -67,6 +67,7 @@ class DockerComposeIT {
                             CHAINVAULT_SERVICE,
                             8085,
                             Wait.forHttp("/actuator/health").forStatusCode(200))
+                    .withStartupTimeout(Duration.ofSeconds(120))
                     .withBuild(true);
 
     /**
