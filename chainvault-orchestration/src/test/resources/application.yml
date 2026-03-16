@@ -56,11 +56,13 @@ source:
     token: dummy-for-test
 
 migration:
+  temp-dir: /tmp/migration-${random.uuid}
+  # zip bomb checks
   zip-threshold-size: 1000000000
   zip-threshold-ratio: 10.0
   zip-threshold-entries: 10000
-  temp-dir: /tmp/migration-${random.uuid}
-  chunk-size-for-inventory: 500   # when fetching lists
+  tesseract-language: eng+deu
+  tesseract-dpi: 300
 
 # Flowable configuration
 flowable:

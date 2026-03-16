@@ -35,7 +35,6 @@ public class MergePdfDelegate extends AbstractTracingDelegate {
         super(openTelemetry, auditService, "merge-pdfs", "MERGE_FAILED");
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {

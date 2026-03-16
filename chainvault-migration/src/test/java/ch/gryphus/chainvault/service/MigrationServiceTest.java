@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import ch.gryphus.chainvault.config.Constants;
+import ch.gryphus.chainvault.config.MigrationProperties;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.ArchivalMetadata;
 import ch.gryphus.chainvault.domain.MigrationContext;
@@ -80,10 +81,6 @@ class MigrationServiceTest {
     private MigrationContext ctx;
     private SourceMetadata meta;
 
-    private int zipThresholdSize;
-    private double zipThresholdRatio;
-    private int zipThresholdEntries;
-
     /**
      * The Working directory.
      */
@@ -94,10 +91,6 @@ class MigrationServiceTest {
      */
     @BeforeEach
     void setUp() {
-        zipThresholdSize = 5000000; // 5MB for tests
-        zipThresholdRatio = 10.0;
-        zipThresholdEntries = 10000;
-
         migrationServiceUnderTest =
                 new MigrationService(
                         mockRestClient,
@@ -106,10 +99,7 @@ class MigrationServiceTest {
                         new XmlMapper(),
                         new ObjectMapper(),
                         new Tika(),
-                        WORKING_DIRECTORY,
-                        zipThresholdSize,
-                        zipThresholdRatio,
-                        zipThresholdEntries);
+                        new MigrationProperties("/tmp", 5000000, 10.0, 10000, "eng+deu", 300));
 
         String docId = "DOC-TEST-001";
         ctx = new MigrationContext();
@@ -566,7 +556,7 @@ class MigrationServiceTest {
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Total size of the archive is greater than the threshold %d bytes"
-                                .formatted(zipThresholdSize));
+                                .formatted(migrationServiceUnderTest.getZipThresholdSize()));
     }
 
     /**
@@ -593,7 +583,7 @@ class MigrationServiceTest {
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Ratio between compressed and uncompressed data is greater than %s"
-                                .formatted(zipThresholdRatio));
+                                .formatted(migrationServiceUnderTest.getZipThresholdRatio()));
     }
 
     /**
@@ -620,7 +610,7 @@ class MigrationServiceTest {
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
                         "Number of entries in the archive is greater than %d"
-                                .formatted(zipThresholdEntries));
+                                .formatted(migrationServiceUnderTest.getZipThresholdEntries()));
     }
 
     /**
@@ -853,7 +843,7 @@ class MigrationServiceTest {
                                         Path.of("src/test/resources/tiffs/test_ocr.tiff"))));
 
         // Run the test
-        List<String> result = MigrationService.performOcrOnTiffPages(pages);
+        List<String> result = migrationServiceUnderTest.performOcrOnTiffPages(pages);
 
         // Verify the results
         String expectedContent =
@@ -876,7 +866,8 @@ class MigrationServiceTest {
                                 "bad_sample.tiff", "contents".getBytes(StandardCharsets.UTF_8)));
 
         // Verify the results
-        assertThatException().isThrownBy(() -> MigrationService.performOcrOnTiffPages(pages));
+        assertThatException()
+                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
     }
 
     /**
@@ -885,11 +876,13 @@ class MigrationServiceTest {
     @Test
     void testPerformOcrOnTiffPagesDoesNotThrowExceptionWhenInputIsNullOrEmpty() {
         // check for null
-        assertThatNoException().isThrownBy(() -> MigrationService.performOcrOnTiffPages(null));
+        assertThatNoException()
+                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(null));
 
         // check for empty list
         List<TiffPage> pages = Collections.emptyList();
-        assertThatNoException().isThrownBy(() -> MigrationService.performOcrOnTiffPages(pages));
+        assertThatNoException()
+                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
     }
 
     // Helper to create small test ZIP

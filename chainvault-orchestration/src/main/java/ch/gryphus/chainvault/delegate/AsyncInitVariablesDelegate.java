@@ -28,7 +28,7 @@ public class AsyncInitVariablesDelegate extends AbstractTracingDelegate {
     }
 
     @Override
-    public void doExecute(DelegateExecution execution, Span span, String docId) {
+    protected void doExecute(DelegateExecution execution, Span span, String docId) {
         log.info("async-init-vars executed for docId {}", docId);
     }
 }

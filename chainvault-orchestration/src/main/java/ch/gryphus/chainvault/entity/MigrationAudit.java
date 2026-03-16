@@ -131,6 +131,7 @@ public class MigrationAudit {
     @Column(name = "trace_id", length = 64)
     private String traceId; // OpenTelemetry trace ID for correlation
 
+    @Builder.Default
     @Column(name = "ocr_attempted", nullable = false)
     private Boolean ocrAttempted = false;
 
