@@ -61,7 +61,7 @@ migration:
   zip-threshold-size: 1000000000
   zip-threshold-ratio: 10.0
   zip-threshold-entries: 10000
-  tesseract-datapath: /opt/homebrew/share/tessdata
+  tesseract-datapath: ${TESSDATA_PREFIX:/opt/homebrew/share/tessdata}
   tesseract-language: eng+deu
   tesseract-dpi: 300
 
