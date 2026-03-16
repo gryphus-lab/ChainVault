@@ -8,9 +8,12 @@ import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.ComposeContainer;
+import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -19,12 +22,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * The type Docker compose it.
  */
 @Testcontainers
-@DisplayName("Docker Compose Orchestration Tests")
+@DisplayName("Docker Compose Integration Tests")
 class DockerComposeIT {
 
     private static final String POSTGRES_SERVICE = "postgres";
     private static final String SFTP_SERVICE = "sftp-test";
     private static final String API_SERVICE = "fake-source-api";
+    private static final String CHAINVAULT_SERVICE = "chainvault-app";
 
     /**
      * The constant dockerCompose.
@@ -38,29 +42,32 @@ class DockerComposeIT {
                             5432,
                             Wait.forLogMessage(
                                             ".*database system is ready to accept connections.*", 2)
-                                    .withStartupTimeout(Duration.ofSeconds(120)))
+                                    .withStartupTimeout(Duration.ofSeconds(10)))
                     .withExposedService(
                             SFTP_SERVICE,
                             22,
                             Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1)
-                                    .withStartupTimeout(Duration.ofSeconds(120)))
+                                    .withStartupTimeout(Duration.ofSeconds(10)))
                     .withExposedService(
                             API_SERVICE,
                             9091,
-                            Wait.forHttp("/documents")
-                                    .forStatusCode(200)
+                            Wait.forLogMessage(".*JSON Server started on PORT :9091.*", 1)
                                     .withStartupTimeout(Duration.ofSeconds(120)));
 
     /**
      * Test docker compose starts.
      */
     @Test
-    @DisplayName("Docker compose container should start successfully")
-    void testDockerComposeStarts() {
+    @DisplayName("Test all services defined in docker-compose.yml start successfully")
+    void testAllServicesStart() {
         assertThat(dockerCompose).isNotNull();
         assertThat(dockerCompose.getContainerByServiceName(POSTGRES_SERVICE)).isNotNull();
         assertThat(dockerCompose.getContainerByServiceName(SFTP_SERVICE)).isNotNull();
         assertThat(dockerCompose.getContainerByServiceName(API_SERVICE)).isNotNull();
+
+        assertThat(dockerCompose.getServicePort(POSTGRES_SERVICE, 5432)).isPositive();
+        assertThat(dockerCompose.getServicePort(SFTP_SERVICE, 22)).isPositive();
+        assertThat(dockerCompose.getServicePort(API_SERVICE, 9091)).isPositive();
     }
 
     /**
@@ -123,15 +130,18 @@ class DockerComposeIT {
                         });
     }
 
-    /**
-     * Test services running.
-     */
     @Test
-    @DisplayName("All services should be running")
-    void testServicesRunning() {
-        assertThat(dockerCompose.getServicePort(POSTGRES_SERVICE, 5432)).isPositive();
-        assertThat(dockerCompose.getServicePort(SFTP_SERVICE, 22)).isPositive();
-        assertThat(dockerCompose.getServicePort(API_SERVICE, 9091)).isPositive();
+    @DisplayName("Test all expected services are defined")
+    void testServiceDefinitions() {
+        List<String> list =
+                List.of(POSTGRES_SERVICE, SFTP_SERVICE, API_SERVICE, CHAINVAULT_SERVICE);
+        list.forEach(
+                name -> {
+                    Optional<ContainerState> serviceName =
+                            dockerCompose.getContainerByServiceName(name);
+                    assertThat(serviceName).isNotNull();
+                    assertThat(serviceName).isPresent();
+                });
     }
 
     /**
@@ -144,11 +154,11 @@ class DockerComposeIT {
         Integer postgresPort = dockerCompose.getServicePort(POSTGRES_SERVICE, 5432);
         assertThat(postgresPort).isGreaterThan(5432);
 
-        // SFTP: 22 -> random local port (dynamic)
+        // SFTP: 22 -> random local port
         Integer sftpPort = dockerCompose.getServicePort(SFTP_SERVICE, 22);
         assertThat(sftpPort).isGreaterThan(22);
 
-        // API: 9091 -> 9091 (fixed)
+        // API: 9091 -> random local port
         Integer apiPort = dockerCompose.getServicePort(API_SERVICE, 9091);
         assertThat(apiPort).isGreaterThan(9091);
     }
