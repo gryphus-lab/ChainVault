@@ -42,7 +42,7 @@ public class ExtractAndHashDelegate extends AbstractTracingDelegate {
     }
 
     @Override
-    public void doExecute(DelegateExecution execution, Span span, String docId)
+    protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
         Path path =
                 Paths.get(
