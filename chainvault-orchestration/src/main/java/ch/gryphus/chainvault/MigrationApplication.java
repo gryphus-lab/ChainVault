@@ -5,11 +5,13 @@ package ch.gryphus.chainvault;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
  * The type Migration application.
  */
 @SpringBootApplication(proxyBeanMethods = false)
+@ConfigurationPropertiesScan
 public class MigrationApplication {
 
     /**

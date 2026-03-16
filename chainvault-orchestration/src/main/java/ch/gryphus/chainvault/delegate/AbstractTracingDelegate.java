@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -49,7 +50,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
     }
 
     @Override
-    public void execute(DelegateExecution execution) {
+    public void execute(@NonNull DelegateExecution execution) {
         // Use the utility to get the parent context
         String traceParent = (String) execution.getVariable("traceParent");
         Context parentContext = OTelUtils.extractContext(openTelemetry, traceParent);

@@ -11,37 +11,44 @@ import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
 
 /**
- * The type Extract and hash delegate.
+ * The type Perform ocr delegate.
  */
-@SuppressWarnings("unchecked")
 @Slf4j
 @Component("performOcr")
 public class PerformOcrDelegate extends AbstractTracingDelegate {
 
+    private final MigrationService migrationService;
+
     /**
-     * Instantiates a new Extract and hash delegate.
+     * Instantiates a new Perform ocr delegate.
      *
-     * @param openTelemetry the open telemetry
-     * @param auditService  the audit service
+     * @param openTelemetry    the open telemetry
+     * @param auditService     the audit service
+     * @param migrationService the migration service
      */
-    public PerformOcrDelegate(OpenTelemetry openTelemetry, AuditEventService auditService) {
+    public PerformOcrDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            MigrationService migrationService) {
         super(openTelemetry, auditService, "perform-ocr", "OCR_FAILED");
+        this.migrationService = migrationService;
     }
 
     @Override
-    public void doExecute(DelegateExecution execution, Span span, String docId)
+    protected void doExecute(@NonNull DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException, TesseractException {
 
         List<TiffPage> pages = (List<TiffPage>) execution.getTransientVariable("pages");
 
         if (pages != null && !pages.isEmpty()) {
-            List<String> ocrResults = MigrationService.performOcrOnTiffPages(pages);
+            List<String> ocrResults = migrationService.performOcrOnTiffPages(pages);
 
             execution.setTransientVariable("ocrResults", ocrResults);
             execution.setTransientVariable(
