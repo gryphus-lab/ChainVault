@@ -13,7 +13,6 @@ import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +39,7 @@ public class MergePdfDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
-        List<TiffPage> pages = getTransientVariableSafely(execution, "pages", ArrayList.class);
+        List<TiffPage> pages = getTransientVariableSafely(execution, "pages", List.class);
         if (pages != null && !pages.isEmpty()) {
             var migrationContext =
                     Objects.requireNonNull(

@@ -41,9 +41,8 @@ class DockerComposeIT {
     /**
      * The constant dockerCompose.
      */
-    @SuppressWarnings("resource")
     @Container
-    static final ComposeContainer dockerCompose =
+    private static final ComposeContainer dockerCompose =
             new ComposeContainer(FILE_LIST)
                     .withExposedService(OTEL_LGTM_SERVICE, 3000) // grafana port
                     .withExposedService(ALLOY_SERVICE, 12345) // allow port
@@ -52,17 +51,17 @@ class DockerComposeIT {
                             5432,
                             Wait.forLogMessage(
                                             ".*database system is ready to accept connections.*", 2)
-                                    .withStartupTimeout(Duration.ofSeconds(10)))
+                                    .withStartupTimeout(Duration.ofSeconds(10L)))
                     .withExposedService(
                             SFTP_SERVICE,
                             22,
                             Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1)
-                                    .withStartupTimeout(Duration.ofSeconds(10)))
+                                    .withStartupTimeout(Duration.ofSeconds(10L)))
                     .withExposedService(
                             API_SERVICE,
                             9091,
                             Wait.forLogMessage(".*JSON Server started on PORT :9091.*", 1)
-                                    .withStartupTimeout(Duration.ofSeconds(120)))
+                                    .withStartupTimeout(Duration.ofSeconds(120L)))
                     .withExposedService(CHAINVAULT_SERVICE, 8085)
                     .withBuild(true);
 
@@ -148,8 +147,8 @@ class DockerComposeIT {
     @Test
     @DisplayName("Services should have proper network connectivity")
     void testServiceNetworkConnectivity() {
-        await().atMost(Duration.ofSeconds(30))
-                .pollInterval(Duration.ofMillis(500))
+        await().atMost(Duration.ofSeconds(30L))
+                .pollInterval(Duration.ofMillis(500L))
                 .untilAsserted(
                         () -> {
                             String postgresHost =
@@ -185,8 +184,8 @@ class DockerComposeIT {
         assertThatNoException().isThrownBy(() -> DockerComposeFile.of(FILE_LIST));
 
         // check docker compose container if the services are started as expected
-        await().atMost(Duration.ofSeconds(30))
-                .pollInterval(Duration.ofMillis(500))
+        await().atMost(Duration.ofSeconds(30L))
+                .pollInterval(Duration.ofMillis(500L))
                 .untilAsserted(
                         () ->
                                 list.forEach(

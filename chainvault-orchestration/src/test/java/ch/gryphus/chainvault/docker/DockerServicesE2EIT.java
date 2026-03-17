@@ -40,19 +40,19 @@ class DockerServicesE2EIT extends BaseDockerIT {
      */
     @SuppressWarnings("resource")
     @Container
-    static final GenericContainer<?> sftp =
+    private static final GenericContainer<?> sftp =
             new GenericContainer<>(DockerImageName.parse("atmoz/sftp:latest"))
                     .withCommand("testuser:testpass123:::upload")
                     .withExposedPorts(22)
                     .waitingFor(Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1))
-                    .withStartupTimeout(Duration.ofSeconds(120));
+                    .withStartupTimeout(Duration.ofSeconds(120L));
 
     /**
      * The constant api.
      */
     @SuppressWarnings("resource")
     @Container
-    static final GenericContainer<?> api =
+    private static final GenericContainer<?> api =
             new GenericContainer<>(DockerImageName.parse("node:25-alpine"))
                     .withPrivilegedMode(true)
                     .withCommand(
@@ -64,7 +64,7 @@ class DockerServicesE2EIT extends BaseDockerIT {
                     .withClasspathResourceMapping("static", "/data/static", BindMode.READ_ONLY)
                     .withExposedPorts(9091)
                     .waitingFor(Wait.forHttp("/documents").forStatusCode(200))
-                    .withStartupTimeout(Duration.ofSeconds(120));
+                    .withStartupTimeout(Duration.ofSeconds(120L));
 
     /**
      * Test all services healthy.
@@ -109,8 +109,8 @@ class DockerServicesE2EIT extends BaseDockerIT {
         HttpClient client = HttpClient.newHttpClient();
         String apiUrl = "http://%s:%d/documents".formatted(api.getHost(), api.getMappedPort(9091));
 
-        await().atMost(Duration.ofSeconds(5))
-                .pollInterval(Duration.ofMillis(500))
+        await().atMost(Duration.ofSeconds(5L))
+                .pollInterval(Duration.ofMillis(500L))
                 .untilAsserted(
                         () -> {
                             HttpRequest request =
@@ -214,8 +214,8 @@ class DockerServicesE2EIT extends BaseDockerIT {
         HttpClient client = HttpClient.newHttpClient();
         String apiUrl = "http://%s:%d/documents".formatted(api.getHost(), api.getMappedPort(9091));
 
-        await().atMost(Duration.ofSeconds(15))
-                .pollInterval(Duration.ofMillis(500))
+        await().atMost(Duration.ofSeconds(15L))
+                .pollInterval(Duration.ofMillis(500L))
                 .untilAsserted(
                         () -> {
                             HttpRequest request =
@@ -243,7 +243,7 @@ class DockerServicesE2EIT extends BaseDockerIT {
     @DisplayName("Services should remain running for extended period")
     void testServiceStability() {
         // Verify services are still running after 5 seconds
-        await().atMost(Duration.ofSeconds(5))
+        await().atMost(Duration.ofSeconds(5L))
                 .then()
                 .untilAsserted(
                         () -> {
@@ -320,13 +320,13 @@ class DockerServicesE2EIT extends BaseDockerIT {
     @Test
     @DisplayName("Should handle API timeout gracefully")
     void testApiTimeoutHandling() {
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5L)).build();
 
         String apiUrl = "http://%s:%d/documents".formatted(api.getHost(), api.getMappedPort(9091));
         HttpRequest request =
                 HttpRequest.newBuilder()
                         .uri(URI.create(apiUrl))
-                        .timeout(Duration.ofSeconds(5))
+                        .timeout(Duration.ofSeconds(5L))
                         .GET()
                         .build();
 

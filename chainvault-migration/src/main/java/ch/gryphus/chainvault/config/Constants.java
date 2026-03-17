@@ -6,7 +6,7 @@ package ch.gryphus.chainvault.config;
 /**
  * The type Constants.
  */
-public class Constants {
+public final class Constants {
     private Constants() {
         // empty constructor
     }

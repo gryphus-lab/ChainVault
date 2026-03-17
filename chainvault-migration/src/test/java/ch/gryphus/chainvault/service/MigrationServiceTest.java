@@ -14,7 +14,10 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.SourceMetadata;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +33,6 @@ import org.apache.commons.io.input.BrokenInputStream;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.tika.Tika;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +58,7 @@ import tools.jackson.dataformat.xml.XmlMapper;
 /**
  * The type Migration service test.
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings("ALL")
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class MigrationServiceTest {
@@ -86,7 +88,7 @@ class MigrationServiceTest {
     /**
      * The Working directory.
      */
-    Path workingDirectory;
+    private Path workingDirectory;
 
     /**
      * Sets up.
@@ -100,7 +102,6 @@ class MigrationServiceTest {
                         mockSftpTargetConfig,
                         new XmlMapper(),
                         new ObjectMapper(),
-                        new Tika(),
                         new MigrationProperties("/tmp", 5000000, 10.0, 10000, "eng+deu", 300));
 
         workingDirectory = Path.of(migrationServiceUnderTest.getTempDir());

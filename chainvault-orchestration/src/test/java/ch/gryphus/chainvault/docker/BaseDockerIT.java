@@ -15,7 +15,7 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * The type Base docker it.
  */
-public abstract class BaseDockerIT {
+abstract class BaseDockerIT {
 
     // Test credentials - hardcoded for testing purposes only
     private static final String POSTGRES_DB_PASSWORD = "secret";
@@ -23,7 +23,6 @@ public abstract class BaseDockerIT {
     /**
      * The constant postgres.
      */
-    @SuppressWarnings("resource")
     @Container
     static final PostgreSQLContainer postgres =
             new PostgreSQLContainer(DockerImageName.parse("postgres:18-alpine"))
@@ -36,7 +35,7 @@ public abstract class BaseDockerIT {
                     .waitingFor(
                             Wait.forLogMessage(
                                     ".*database system is ready to accept connections.*\\s", 2))
-                    .withStartupTimeout(Duration.ofSeconds(120));
+                    .withStartupTimeout(Duration.ofSeconds(120L));
 
     /**
      * The constant sftpContainer.
@@ -48,7 +47,7 @@ public abstract class BaseDockerIT {
                     .withCommand("testuser:testpass123:::upload")
                     .withExposedPorts(22)
                     .waitingFor(Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1))
-                    .withStartupTimeout(Duration.ofSeconds(120));
+                    .withStartupTimeout(Duration.ofSeconds(120L));
 
     /**
      * The constant apiContainer.
@@ -67,5 +66,5 @@ public abstract class BaseDockerIT {
                     .withClasspathResourceMapping("static", "/data/static", BindMode.READ_ONLY)
                     .withExposedPorts(9091)
                     .waitingFor(Wait.forHttp("/").forStatusCode(200))
-                    .withStartupTimeout(Duration.ofSeconds(120));
+                    .withStartupTimeout(Duration.ofSeconds(120L));
 }

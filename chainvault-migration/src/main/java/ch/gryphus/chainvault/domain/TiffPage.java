@@ -8,7 +8,6 @@ import java.util.Objects;
 import lombok.NonNull;
 
 /**
- * The type Tiff page.
  * @param name
  * @param data
  */
