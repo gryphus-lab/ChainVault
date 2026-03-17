@@ -10,6 +10,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
@@ -43,7 +44,7 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException, TesseractException {
-        List<TiffPage> pages = getTransientVariableSafely(execution, "pages", List.class);
+        List<TiffPage> pages = getTransientVariableSafely(execution, "pages", ArrayList.class);
         if (pages != null && !pages.isEmpty()) {
             List<String> ocrResults = migrationService.performOcrOnTiffPages(pages);
 
