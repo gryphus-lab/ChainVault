@@ -13,6 +13,9 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
 import java.util.Map;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -32,6 +35,9 @@ import org.mockito.quality.Strictness;
 class AbstractTracingDelegateTest {
 
     @Mock private OpenTelemetry mockOpenTelemetry;
+    @Mock private ContextPropagators mockContextPropagators;
+    @Mock private TextMapPropagator mockTextMapPropagator;
+    @Mock private Context mockContext;
     @Mock private AuditEventService mockAuditService;
     @Mock private DelegateExecution mockExecution;
     @Mock private Tracer mockTracer;
@@ -54,18 +60,33 @@ class AbstractTracingDelegateTest {
                         //
                     }
                 };
+
+        when(mockOpenTelemetry.getTracer(anyString())).thenReturn(mockTracer);
+        when(mockOpenTelemetry.getPropagators()).thenReturn(mockContextPropagators);
+        when(mockContextPropagators.getTextMapPropagator()).thenReturn(mockTextMapPropagator);
+        when(mockTextMapPropagator.extract(any(), any(), any())).thenReturn(mockContext);
+        when(mockTracer.spanBuilder(anyString())).thenReturn(mockSpanBuilder);
+        when(mockSpanBuilder.setParent(any())).thenReturn(mockSpanBuilder);
+        when(mockSpanBuilder.startSpan()).thenReturn(mockSpan);
     }
 
     /**
      * Test execute.
      */
     @Test
-    void testExecuteDoesNotThrowException() {
+    void testExecuteDoesNotThrowExceptionForValidExecutionVariables() {
         // Setup
-        when(mockOpenTelemetry.getTracer(anyString())).thenReturn(mockTracer);
-        when(mockTracer.spanBuilder(anyString())).thenReturn(mockSpanBuilder);
-        when(mockSpanBuilder.setParent(any())).thenReturn(mockSpanBuilder);
-        when(mockSpanBuilder.startSpan()).thenReturn(mockSpan);
+        when(mockExecution.getVariable(anyString())).thenReturn("test");
+
+        // Run and verify
+        assertThatNoException()
+                .isThrownBy(() -> abstractTracingDelegateUnderTest.execute(mockExecution));
+    }
+
+    @Test
+    void testExecuteDoesNotThrowExceptionForNullExecutionVariables() {
+        // Setup
+        when(mockExecution.getVariable(anyString())).thenReturn(null);
 
         // Run and verify
         assertThatNoException()
@@ -75,10 +96,6 @@ class AbstractTracingDelegateTest {
     @Test
     void testExecuteThrowsException() {
         // Setup
-        when(mockOpenTelemetry.getTracer(anyString())).thenReturn(mockTracer);
-        when(mockTracer.spanBuilder(anyString())).thenReturn(mockSpanBuilder);
-        when(mockSpanBuilder.setParent(any())).thenReturn(mockSpanBuilder);
-        when(mockSpanBuilder.startSpan()).thenReturn(mockSpan);
         when(mockExecution.getVariable(anyString())).thenReturn(Map.of("key", "value"));
 
         // Run and verify
