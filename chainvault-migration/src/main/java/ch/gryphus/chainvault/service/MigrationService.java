@@ -484,8 +484,8 @@ public class MigrationService {
      * @return the string
      */
     public String transformMetadataToXml(
-            SourceMetadata sourceMetadata,
-            MigrationContext migrationContext,
+            @NonNull SourceMetadata sourceMetadata,
+            @NonNull MigrationContext migrationContext,
             Map<String, Object> map) {
         return xmlMapper
                 .rebuild()

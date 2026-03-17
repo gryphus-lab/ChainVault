@@ -5,7 +5,6 @@ package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.utils.HashUtils;
@@ -47,18 +46,15 @@ public class PrepareFilesDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
-        var pages = (List<TiffPage>) getTransientVariableSafely(execution, "pages", List.class);
-        var meta =
-                (SourceMetadata)
-                        getTransientVariableSafely(execution, "meta", SourceMetadata.class);
+        var pages = getTransientVariableSafely(execution, "pages", List.class);
+        var meta = getTransientVariableSafely(execution, "meta", SourceMetadata.class);
         var migrationContext =
                 Objects.requireNonNull(
-                        (MigrationContext)
-                                getTransientVariableSafely(
-                                        execution, "migrationContext", MigrationContext.class));
+                        getTransientVariableSafely(
+                                execution, "migrationContext", MigrationContext.class));
 
         var workingDirectory =
-                (Path) getTransientVariableSafely(execution, "workingDirectory", Path.class);
+                getTransientVariableSafely(execution, "workingDirectory", Path.class);
 
         Path zipPath =
                 migrationService.createChainZip(

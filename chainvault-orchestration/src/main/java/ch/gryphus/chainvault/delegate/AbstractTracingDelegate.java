@@ -52,7 +52,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
     @Override
     public void execute(DelegateExecution execution) {
         // Use the utility to get the parent context
-        String traceParent = (String) getVariableSafely(execution, "traceParent", String.class);
+        String traceParent = getVariableSafely(execution, "traceParent", String.class);
         Context parentContext = OTelUtils.extractContext(openTelemetry, traceParent);
 
         // Start Child Span
@@ -66,9 +66,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
         try (var _ = span.makeCurrent()) {
             log.info("{} started", taskType);
             String docId =
-                    (String)
-                            getVariableSafely(
-                                    execution, Constants.BPMN_PROC_VAR_DOC_ID, String.class);
+                    getVariableSafely(execution, Constants.BPMN_PROC_VAR_DOC_ID, String.class);
             auditService.updateAuditEventStart(
                     execution.getProcessInstanceId(), docId, taskType, span);
 
@@ -125,7 +123,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
      * @param castToClass  the cast to class
      * @return the transient variable safely
      */
-    public static <T> @Nullable Object getTransientVariableSafely(
+    public static <T> @Nullable T getTransientVariableSafely(
             DelegateExecution execution, String variableName, Class<T> castToClass) {
         Object obj = execution.getTransientVariable(variableName);
         if (obj == null) {
@@ -147,7 +145,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
      * @param castToClass  the cast to class
      * @return the variable safely
      */
-    public static <T> @Nullable Object getVariableSafely(
+    public static <T> @Nullable T getVariableSafely(
             DelegateExecution execution, String variableName, Class<T> castToClass) {
         Object obj = execution.getVariable(variableName);
         if (obj == null) {

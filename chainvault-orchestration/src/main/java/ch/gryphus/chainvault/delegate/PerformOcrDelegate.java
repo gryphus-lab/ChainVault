@@ -3,7 +3,6 @@
  */
 package ch.gryphus.chainvault.delegate;
 
-import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import io.opentelemetry.api.OpenTelemetry;
@@ -43,7 +42,7 @@ public class PerformOcrDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException, TesseractException {
-        var pages = (List<TiffPage>) getTransientVariableSafely(execution, "pages", List.class);
+        var pages = getTransientVariableSafely(execution, "pages", List.class);
         if (pages != null && !pages.isEmpty()) {
             List<String> ocrResults = migrationService.performOcrOnTiffPages(pages);
 

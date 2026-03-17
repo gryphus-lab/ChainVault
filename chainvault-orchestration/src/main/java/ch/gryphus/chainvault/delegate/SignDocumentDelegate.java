@@ -45,14 +45,13 @@ public class SignDocumentDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
-        var payload = (byte[]) getTransientVariableSafely(execution, "payload", byte[].class);
+        var payload = getTransientVariableSafely(execution, "payload", byte[].class);
         var migrationContext =
                 Objects.requireNonNull(
-                        (MigrationContext)
-                                getTransientVariableSafely(
-                                        execution, "migrationContext", MigrationContext.class));
+                        getTransientVariableSafely(
+                                execution, "migrationContext", MigrationContext.class));
         var workingDirectory =
-                (Path) getTransientVariableSafely(execution, "workingDirectory", Path.class);
+                getTransientVariableSafely(execution, "workingDirectory", Path.class);
 
         List<TiffPage> pages =
                 migrationService.signTiffPages(payload, migrationContext, workingDirectory);
