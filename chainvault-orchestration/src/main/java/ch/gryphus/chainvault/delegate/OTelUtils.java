@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * The type O tel utils.
  */
-public class OTelUtils {
+final class OTelUtils {
     private OTelUtils() {
         /* This utility class should not be instantiated */
     }
@@ -27,7 +27,7 @@ public class OTelUtils {
      * @param traceParent   the trace parent
      * @return the context
      */
-    public static Context extractContext(OpenTelemetry openTelemetry, String traceParent) {
+    static Context extractContext(OpenTelemetry openTelemetry, String traceParent) {
         if (traceParent == null || traceParent.isEmpty()) {
             return Context.root();
         }

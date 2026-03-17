@@ -23,11 +23,7 @@ import org.junit.jupiter.api.Test;
 class OTelUtilsTest {
 
     private OpenTelemetry otel;
-
-    /**
-     * The Parent span.
-     */
-    Span parentSpan;
+    private Span parentSpan;
 
     /**
      * Sets up.

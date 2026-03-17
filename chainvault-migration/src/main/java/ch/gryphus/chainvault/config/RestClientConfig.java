@@ -15,7 +15,7 @@ import org.springframework.web.client.RestClient;
 public class RestClientConfig {
 
     /**
-     * Rest client rest client.
+     * Rest client.
      *
      * @param baseUrl the base url
      * @param token   the token

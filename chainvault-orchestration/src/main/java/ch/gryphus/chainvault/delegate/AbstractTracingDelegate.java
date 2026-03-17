@@ -117,59 +117,65 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
     /**
      * Gets transient variable safely.
      *
-     * @param <T>          the type parameter
-     * @param execution    the execution
-     * @param variableName the variable name
-     * @param castToClass  the cast to class
+     * @param <T>             the type parameter
+     * @param execution       the execution
+     * @param variableName    the variable name
+     * @param expectedRawType the expected raw type
      * @return the transient variable safely
      */
-    public static <T> @Nullable T getTransientVariableSafely(
-            DelegateExecution execution, String variableName, Class<T> castToClass) {
-        Object obj = execution.getTransientVariable(variableName);
-        if (obj == null) {
+    @SuppressWarnings("unchecked")
+    static <T> @Nullable T getTransientVariableSafely(
+            DelegateExecution execution, String variableName, Class<T> expectedRawType) {
+        Object value = execution.getTransientVariable(variableName);
+
+        if (value == null) {
             return null;
-        } else if (isInstanceOf(execution, variableName, castToClass)) {
-            return castToClass.cast(obj);
-        } else {
-            throw new IllegalArgumentException(
-                    "Variable " + variableName + " is not instance of " + castToClass.getName());
         }
+
+        // Verify the raw class
+        if (!expectedRawType.isInstance(value)) {
+            throw new IllegalArgumentException(
+                    ("Variable '%s' = '%s' is of type %s, expected %s")
+                            .formatted(
+                                    variableName,
+                                    value,
+                                    value.getClass().getName(),
+                                    expectedRawType.getName()));
+        }
+
+        // The warning is suppressed here, centralizing the risk
+        return (T) value;
     }
 
     /**
      * Gets variable safely.
      *
-     * @param <T>          the type parameter
-     * @param execution    the execution
-     * @param variableName the variable name
-     * @param castToClass  the cast to class
+     * @param <T>             the type parameter
+     * @param execution       the execution
+     * @param variableName    the variable name
+     * @param expectedRawType the expected raw type
      * @return the variable safely
      */
-    public static <T> @Nullable T getVariableSafely(
-            DelegateExecution execution, String variableName, Class<T> castToClass) {
-        Object obj = execution.getVariable(variableName);
-        if (obj == null) {
+    @SuppressWarnings("unchecked")
+    private static <T> @Nullable T getVariableSafely(
+            DelegateExecution execution, String variableName, Class<T> expectedRawType) {
+        Object value = execution.getVariable(variableName);
+        if (value == null) {
             return null;
         }
-        if (isInstanceOf(execution, variableName, castToClass)) {
-            return castToClass.cast(obj);
-        } else {
-            throw new IllegalArgumentException(
-                    "Variable " + variableName + " is not instance of " + castToClass.getName());
-        }
-    }
 
-    /**
-     * Is instance of boolean.
-     *
-     * @param <T>          the type parameter
-     * @param execution    the execution
-     * @param variableName the variable name
-     * @param expectedType the expected type
-     * @return the boolean
-     */
-    static <T> boolean isInstanceOf(
-            DelegateExecution execution, String variableName, Class<T> expectedType) {
-        return expectedType.isInstance(execution.getVariable(variableName));
+        // Verify the raw class
+        if (!expectedRawType.isInstance(value)) {
+            throw new IllegalArgumentException(
+                    ("Variable '%s' = '%s' is of type %s, expected %s")
+                            .formatted(
+                                    variableName,
+                                    value,
+                                    value.getClass().getName(),
+                                    expectedRawType.getName()));
+        }
+
+        // The warning is suppressed here, centralizing the risk
+        return (T) value;
     }
 }

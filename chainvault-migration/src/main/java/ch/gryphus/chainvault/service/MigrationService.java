@@ -6,16 +6,33 @@ package ch.gryphus.chainvault.service;
 import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.config.MigrationProperties;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
-import ch.gryphus.chainvault.domain.*;
+import ch.gryphus.chainvault.domain.ArchivalMetadata;
+import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.domain.MigrationProvenance;
+import ch.gryphus.chainvault.domain.SourceMetadata;
+import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -69,7 +86,6 @@ public class MigrationService {
      * @param sftpTargetConfig   the sftp target config
      * @param xmlMapper          the xml mapper
      * @param objectMapper       the object mapper
-     * @param tika               the tika
      * @param props              the props
      */
     public MigrationService(
@@ -78,17 +94,16 @@ public class MigrationService {
             SftpTargetConfig sftpTargetConfig,
             XmlMapper xmlMapper,
             ObjectMapper objectMapper,
-            Tika tika,
             MigrationProperties props) {
         this.restClient = restClient;
         this.remoteFileTemplate = remoteFileTemplate;
         this.sftpTargetConfig = sftpTargetConfig;
         this.xmlMapper = xmlMapper;
         this.objectMapper = objectMapper;
-        this.tika = tika;
         this.props = props;
 
         migrationContext = new MigrationContext();
+        tika = new Tika();
 
         // Initialize Tesseract from properties
         tesseract = new Tesseract();
@@ -112,7 +127,7 @@ public class MigrationService {
      *
      * @return the zip threshold ratio
      */
-    public double getZipThresholdRatio() {
+    double getZipThresholdRatio() {
         return props.zipThresholdRatio();
     }
 
@@ -121,7 +136,7 @@ public class MigrationService {
      *
      * @return the zip threshold size
      */
-    public long getZipThresholdSize() {
+    long getZipThresholdSize() {
         return props.zipThresholdSize();
     }
 
@@ -130,7 +145,7 @@ public class MigrationService {
      *
      * @return the zip threshold entries
      */
-    public int getZipThresholdEntries() {
+    int getZipThresholdEntries() {
         return props.zipThresholdEntries();
     }
 
@@ -272,8 +287,8 @@ public class MigrationService {
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                if (entry.getName().toLowerCase().endsWith(".tif")
-                        || entry.getName().toLowerCase().endsWith(".tiff")) {
+                if (entry.getName().toLowerCase(Locale.ROOT).endsWith(".tif")
+                        || entry.getName().toLowerCase(Locale.ROOT).endsWith(".tiff")) {
                     byte[] data = zis.readAllBytes();
 
                     String pageHash = HashUtils.sha256(data);
@@ -410,7 +425,7 @@ public class MigrationService {
      * @return the path
      * @throws IOException the io exception
      */
-    public static Path mergeTiffToPdf(List<TiffPage> pages, String docId, Path workingDirectory)
+    public static Path mergeTiffToPdf(Iterable<TiffPage> pages, String docId, Path workingDirectory)
             throws IOException {
         Path pdf = Path.of("%s/%s.pdf".formatted(workingDirectory, docId));
         try (var doc = new PDDocument()) {
@@ -437,7 +452,7 @@ public class MigrationService {
      * @param inputMap         the input map
      * @return the archival metadata
      */
-    public static ArchivalMetadata buildXml(
+    static ArchivalMetadata buildXml(
             SourceMetadata sourceMetadata,
             MigrationContext migrationContext,
             Map<String, Object> inputMap) {
@@ -501,7 +516,7 @@ public class MigrationService {
      * @return the detected mime type
      * @throws IOException the io exception
      */
-    public String getDetectedMimeType(InputStream in) throws IOException {
+    String getDetectedMimeType(InputStream in) throws IOException {
         return tika.detect(in);
     }
 
@@ -511,7 +526,7 @@ public class MigrationService {
      * @param bytes the bytes
      * @return the detected mime type
      */
-    public String getDetectedMimeType(byte[] bytes) {
+    String getDetectedMimeType(byte[] bytes) {
         return tika.detect(bytes);
     }
 

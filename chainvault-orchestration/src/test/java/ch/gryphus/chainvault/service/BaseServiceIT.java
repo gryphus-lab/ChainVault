@@ -23,7 +23,6 @@ public abstract class BaseServiceIT {
     /**
      * The constant postgres.
      */
-    @SuppressWarnings("resource")
     static final PostgreSQLContainer postgres =
             new PostgreSQLContainer(DockerImageName.parse("postgres:18-alpine"))
                     .withDatabaseName(Constants.POSTGRES_DB_NAME)
