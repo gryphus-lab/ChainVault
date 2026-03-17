@@ -13,21 +13,22 @@ Used by Gryphus Lab to coordinate extraction, transformation, signing, merging a
 [![mise](https://img.shields.io/badge/managed%20with-mise-6f42c1)](https://mise.jdx.dev/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gryphus-lab_chainvault&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gryphus-lab_chainvault)
 [![GitHub Actions CI](https://github.com/gryphus-lab/chainvault/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gryphus-lab/chainvault/actions/workflows/ci.yml)
+[![Qodana](https://github.com/gryphus-lab/chainvault/actions/workflows/qodana_code_quality.yml/badge.svg)](https://github.com/gryphus-lab/chainvault/actions/workflows/qodana_code_quality.yml)
 
 ## At a Glance
 
-|      Aspect       |             Technology              |
-|-------------------|-------------------------------------|
-| Language          | Java 25                             |
-| Framework         | Spring Boot 4                       |
-| Orchestration     | Flowable (BPMN 2.0)                 |
-| Database          | PostgreSQL 18 (Docker)              |
-| Schema Migrations | Liquibase (YAML)                    |
-| Developer Tooling | mise                                |
-| Observability     | Prometheus + Loki + Grafana + Alloy |
-| CI / Quality      | GitHub Actions + SonarCloud         |
-| Testing           | JUnit 5 + Testcontainers            |
-| API Documentation | springdoc OpenAPI / Swagger UI      |
+|      Aspect       |              Technology              |
+|-------------------|--------------------------------------|
+| Language          | Java 25                              |
+| Framework         | Spring Boot 4                        |
+| Orchestration     | Flowable (BPMN 2.0)                  |
+| Database          | PostgreSQL 18 (Docker)               |
+| Schema Migrations | Liquibase (YAML)                     |
+| Developer Tooling | mise                                 |
+| Observability     | Prometheus + Loki + Grafana + Alloy  |
+| CI / Quality      | GitHub Actions + SonarCloud + Qodana |
+| Testing           | JUnit 5 + Testcontainers             |
+| API Documentation | springdoc OpenAPI / Swagger UI       |
 
 ## Overview
 
@@ -35,6 +36,7 @@ Chainvault is a **Spring Boot 4 + Java 25** orchestration service that executes 
 
 - extract & hash documents
 - transform metadata and prepare files
+- perform OCR on TIFF pages via Tesseract (Tess4J)
 - merge PDFs and apply cryptographic signatures
 - securely upload artifacts to SFTP targets
 - record full audit trails and migration events
@@ -51,9 +53,10 @@ provides observability via Micrometer + Prometheus/Loki.
 - Liquibase YAML changelogs (repeatable, rollback-capable)
 - Flowable BPMN 2.0 workflows with custom Java delegates
 - SFTP target integration (secure file delivery)
+- Tesseract OCR integration (via Tess4J) for text extraction from TIFF pages
 - Full observability stack (Prometheus metrics, Loki logs, Grafana dashboards)
 - Aggregated JaCoCo coverage across modules (including Docker integration tests)
-- GitHub Actions CI with enforced SonarCloud quality gates on new code
+- GitHub Actions CI with enforced SonarCloud quality gates and Qodana static analysis
 - Multi-stage Docker builds pushed to GHCR
 
 ## Project Structure
@@ -76,6 +79,8 @@ provides observability via Micrometer + Prometheus/Loki.
 - [mise](https://mise.jdx.dev/) — modern toolchain manager
 - Git
 - IDE with Spring Boot / Flowable support (IntelliJ Ultimate recommended)
+- Tesseract OCR (for local development with OCR enabled): `brew install tesseract tesseract-lang`
+  - Set `TESSDATA_PREFIX` to your tessdata path (e.g. `/opt/homebrew/share/tessdata`) — mise sets this automatically
 
 One-time mise setup:
 
@@ -108,11 +113,16 @@ After startup check:
 ### Common mise Commands
 
 ```bash
-mise dev                # Start postgres + app (local profile)
-mise test               # Unit + basic integration tests
-mise test-docker        # Full Docker integration tests (Testcontainers)
-mise verify             # Full build + tests + JaCoCo aggregate coverage
-mise docker-build       # Build & tag local Docker image
+mise dev                    # Start postgres + app (local profile)
+mise test                   # Unit + basic integration tests
+mise test-docker            # Full Docker integration tests (Testcontainers)
+mise verify                 # Full build + tests + JaCoCo aggregate coverage
+mise docker-build           # Build & tag local Docker image
+mise docker-build-versioned # Build & tag Docker image with version from POM
+mise smoke-test             # Run smoke test
+mise load-test              # Run load test (1000 iterations)
+mise fmt                    # Format source code via Spotless
+mise check                  # Check formatting via Spotless
 ```
 
 ### Observability Stack (optional but recommended)
@@ -150,11 +160,25 @@ mounted secrets — never commit them.
 # Quick unit & basic integration tests
 mise test
 
-# Full suite including Docker-based integration tests
+# Docker integration tests only (Testcontainers)
 mise test-docker
 
 # Build + tests + aggregated JaCoCo coverage (for SonarCloud / CI)
 mise verify
+```
+
+### Docker Integration Tests
+
+The `chainvault-orchestration` module contains three integration test classes under `src/test/java/.../docker/`:
+
+- `DockerServicesIT` — individual service health, connectivity, and port-mapping tests
+- `DockerComposeIT` — full compose-stack tests (service startup, inter-service networking)
+
+Run a specific class:
+
+```bash
+mvn failsafe:integration-test -Dtest=DockerServicesIT
+mvn failsafe:integration-test -Dtest=DockerComposeIT
 ```
 
 Coverage report location after ```mise verify```:
@@ -169,12 +193,32 @@ chainvault-report-aggregate/target/site/jacoco-aggregate/index.html
 # Build locally
 mise docker-build
 
+# Build with version from POM
+mise docker-build-versioned
+
 # Docker compose up - all services
 mise compose-up
 
 # Docker compose down - all services
-mise comoose-down
+mise compose-down
+
+# Docker compose down - all services and volumes
+mise compose-down-full
 ```
+
+## BPMN Workflow
+
+The `chainvault` BPMN process (`chainvault-orchestration/src/main/resources/processes/chainvault.bpmn`) follows this execution path:
+
+```
+Start → Async Init → Extract & Hash → [Payload Exists?]
+  ├─ yes → Sign Payload → Prepare Files → [Pages Exist?]
+  │           ├─ yes → Perform OCR → Merge to PDF → Transform Metadata → Upload to SFTP → End (Success)
+  │           └─ no  → Transform Metadata → Upload to SFTP → End (Success)
+  └─ no  → Prepare Files → [Pages Exist?] → ...
+```
+
+Each task has a boundary error event that routes failures to the Handle Error task, terminating with End (Failed).
 
 ## Contributing
 
