@@ -254,7 +254,7 @@ public class MigrationService {
     }
 
     /**
-     * Create chain zip path.
+     * Prepare files path.
      *
      * @param workingDirectory the working directory
      * @param sourceMetadata   the source metadata
@@ -283,7 +283,7 @@ public class MigrationService {
     }
 
     /**
-     * Upload to sftp.
+     * Prepare sftp session.
      *
      * @param docId             the doc id
      * @param xml               the xml

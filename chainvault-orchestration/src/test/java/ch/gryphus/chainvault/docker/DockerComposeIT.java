@@ -38,9 +38,6 @@ class DockerComposeIT {
     private static final List<File> FILE_LIST =
             List.of(new File("../docker-compose.yml"), new File("../docker-compose-lgtm.yml"));
 
-    /**
-     * The constant dockerCompose.
-     */
     @Container
     private static final ComposeContainer dockerCompose =
             new ComposeContainer(FILE_LIST)

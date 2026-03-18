@@ -71,7 +71,7 @@ class AbstractTracingDelegateTest {
     }
 
     /**
-     * Test execute.
+     * Test execute does not throw exception for valid execution variables.
      */
     @Test
     void testExecuteDoesNotThrowExceptionForValidExecutionVariables() {

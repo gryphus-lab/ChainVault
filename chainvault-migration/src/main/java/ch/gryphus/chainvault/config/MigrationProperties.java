@@ -11,13 +11,6 @@ import org.springframework.validation.annotation.Validated;
 
 /**
  * The type Migration properties.
- *
- * @param tempDir
- * @param zipThresholdSize
- * @param zipThresholdRatio
- * @param zipThresholdEntries
- * @param tesseractLanguage
- * @param tesseractDpi
  */
 @Validated
 @ConfigurationProperties(prefix = "migration")

@@ -34,7 +34,7 @@ import org.apache.tika.Tika;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * The type File utils.
+ * The type Migration utils.
  */
 public final class MigrationUtils {
     private MigrationUtils() {
@@ -42,7 +42,7 @@ public final class MigrationUtils {
     }
 
     private static final Tika tika = new Tika();
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Gets detected mime type.

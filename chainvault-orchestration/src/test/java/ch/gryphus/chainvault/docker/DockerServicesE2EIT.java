@@ -35,9 +35,6 @@ import org.testcontainers.utility.DockerImageName;
 @DisplayName("Docker Services End-to-End Integration Tests")
 class DockerServicesE2EIT extends BaseDockerIT {
 
-    /**
-     * The constant sftp.
-     */
     @SuppressWarnings("resource")
     @Container
     private static final GenericContainer<?> sftp =
@@ -47,9 +44,6 @@ class DockerServicesE2EIT extends BaseDockerIT {
                     .waitingFor(Wait.forLogMessage(".*Server listening on 0.0.0.0 port 22.*", 1))
                     .withStartupTimeout(Duration.ofSeconds(120L));
 
-    /**
-     * The constant api.
-     */
     @SuppressWarnings("resource")
     @Container
     private static final GenericContainer<?> api =

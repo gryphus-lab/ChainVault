@@ -21,7 +21,7 @@ public abstract class BaseServiceIT {
     private static final String POSTGRES_DB_PASSWORD = "secret";
 
     /**
-     * The constant postgres.
+     * The Postgres.
      */
     static final PostgreSQLContainer postgres =
             new PostgreSQLContainer(DockerImageName.parse("postgres:18-alpine"))

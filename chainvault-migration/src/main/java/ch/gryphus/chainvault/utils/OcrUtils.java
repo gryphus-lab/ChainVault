@@ -54,12 +54,6 @@ public final class OcrUtils {
         return results;
     }
 
-    /**
-     * Is image valid boolean.
-     *
-     * @param image the image
-     * @return the boolean
-     */
     private static boolean isImageValid(BufferedImage image) {
         if (image == null
                 || image.getWidth() <= 0
@@ -74,12 +68,6 @@ public final class OcrUtils {
         return true;
     }
 
-    /**
-     * Preprocess image buffered image.
-     *
-     * @param original the original
-     * @return the buffered image
-     */
     private static BufferedImage preprocessImage(BufferedImage original) {
         // Grayscale
         BufferedImage gray =

@@ -147,15 +147,6 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
         return (T) value;
     }
 
-    /**
-     * Gets variable safely.
-     *
-     * @param <T>             the type parameter
-     * @param execution       the execution
-     * @param variableName    the variable name
-     * @param expectedRawType the expected raw type
-     * @return the variable safely
-     */
     @SuppressWarnings("unchecked")
     private static <T> @Nullable T getVariableSafely(
             DelegateExecution execution, String variableName, Class<T> expectedRawType) {

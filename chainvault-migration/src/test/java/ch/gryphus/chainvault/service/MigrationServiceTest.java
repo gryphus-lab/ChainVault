@@ -298,7 +298,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test upload to sftp when valid metadata and payload exist.
+     * Test prepare sftp session when valid metadata and payload exist.
      *
      * @throws IOException the io exception
      */
@@ -339,7 +339,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test upload to sftp when only valid metadata exists.
+     * Test prepare sftp session when only valid metadata exists.
      *
      * @throws IOException the io exception
      */
@@ -378,7 +378,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test merge tiff to pdf happy path.
+     * Test merge tiff to pdf should generate expected result.
      *
      * @throws Exception the exception
      */
@@ -413,7 +413,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test transform metadata to xml.
+     * Test transform metadata to xml should generate expected result.
      */
     @Test
     void testTransformMetadataToXml_shouldGenerateExpectedResult() {
@@ -808,7 +808,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test perform ocr on tiff pages well formed returns expected content.
+     * Test perform ocr on tiff pages should return expected content.
      *
      * @throws Exception the exception
      */
@@ -834,7 +834,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test perform ocr on tiff pages does not throw exception for invalid content.
+     * Test perform ocr on tiff pages should not throw exception for invalid content.
      */
     @Test
     void testPerformOcrOnTiffPages_shouldNotThrowExceptionForInvalidContent() {
@@ -850,7 +850,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test perform ocr on tiff pages does not throw exception when input is null or empty.
+     * Test perform ocr on tiff pages should not throw exception when input is null or empty.
      */
     @Test
     void testPerformOcrOnTiffPages_shouldNotThrowExceptionWhenInputIsNullOrEmpty() {
@@ -865,7 +865,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test perform ocr on tiff pages does not throw exception when size is too small.
+     * Test perform ocr on tiff pages should not throw exception when size is too small.
      *
      * @throws Exception the exception
      */
