@@ -17,7 +17,7 @@ import org.apache.commons.codec.binary.Hex;
 public final class HashUtils {
 
     private HashUtils() {
-        throw new IllegalStateException("HashUtils is a utility class and cannot be instantiated");
+        // empty constructor
     }
 
     /**
