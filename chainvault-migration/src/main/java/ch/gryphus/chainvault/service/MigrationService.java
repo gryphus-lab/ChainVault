@@ -56,7 +56,6 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.dataformat.xml.XmlMapper;
-import tools.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
 
 /**
  * The type Migration service.
@@ -498,7 +497,6 @@ public class MigrationService {
             @NonNull SourceMetadata sourceMetadata,
             @NonNull MigrationContext migrationContext,
             Map<String, Object> map) {
-        DefaultXmlPrettyPrinter xmlPrettyPrinter = new DefaultXmlPrettyPrinter();
         return xmlMapper
                 .rebuild()
                 .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
