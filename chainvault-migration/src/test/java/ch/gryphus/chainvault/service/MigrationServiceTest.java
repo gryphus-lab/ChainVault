@@ -14,7 +14,6 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.SourceMetadata;
 import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
-
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -659,7 +658,7 @@ class MigrationServiceTest {
      *
      * @throws Exception the exception
      */
-// ────────────────────────────────────────────────
+    // ────────────────────────────────────────────────
     // createChainZip
     // ────────────────────────────────────────────────
     @Test
@@ -779,7 +778,7 @@ class MigrationServiceTest {
     /**
      * Build xml should fill all relevant fields.
      */
-// ────────────────────────────────────────────────
+    // ────────────────────────────────────────────────
     // buildXml
     // ────────────────────────────────────────────────
     @Test
@@ -827,7 +826,7 @@ class MigrationServiceTest {
      *
      * @throws Exception the exception
      */
-// ────────────────────────────────────────────────
+    // ────────────────────────────────────────────────
     // mergeTiffToPdf
     // ────────────────────────────────────────────────
     @Test
@@ -939,9 +938,11 @@ class MigrationServiceTest {
         List<TiffPage> pages =
                 List.of(
                         new TiffPage(
-                                "too_small_sizr.tiff", Files.readAllBytes(
-                                        Path.of("%s/tiffs/too_small_size.tiff".formatted(resourceDirectory)))
-                        ));
+                                "too_small_sizr.tiff",
+                                Files.readAllBytes(
+                                        Path.of(
+                                                "%s/tiffs/too_small_size.tiff"
+                                                        .formatted(resourceDirectory)))));
         assertThatNoException()
                 .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
     }
