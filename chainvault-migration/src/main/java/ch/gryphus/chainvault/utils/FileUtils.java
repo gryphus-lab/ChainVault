@@ -12,7 +12,7 @@ import org.apache.tika.Tika;
  */
 public final class FileUtils {
     private FileUtils() {
-        throw new IllegalStateException("FileUtils is a  utility class and cannot be instantiated");
+        throw new IllegalStateException("FileUtils is a utility class and cannot be instantiated");
     }
 
     private static final Tika tika = new Tika();

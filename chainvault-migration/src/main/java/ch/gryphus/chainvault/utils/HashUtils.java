@@ -16,7 +16,9 @@ import org.apache.commons.codec.binary.Hex;
  */
 public final class HashUtils {
 
-    private HashUtils() {}
+    private HashUtils() {
+        throw new IllegalStateException("HashUtils is a utility class and cannot be instantiated");
+    }
 
     /**
      * Sha 256 string.
