@@ -28,7 +28,7 @@ main() {
         echo "--- Generating Source Data ---"
         (
             cd "$DATA_DIR"
-            python3 create_source_data.py
+            python3 create_source_data.py --scale 0.25
         )
     else
         echo "Error: $DATA_DIR not found" >&2

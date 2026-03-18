@@ -1,3 +1,5 @@
+import argparse
+import glob
 import json
 import os
 import secrets
@@ -63,20 +65,18 @@ FONT_PATHS = [
     "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
 ]
 
-# ───────────────────────────────────────────────
-# New: Invoice quality types for negative testing
-# ───────────────────────────────────────────────
 INVOICE_QUALITY_TYPES = [
-    "valid",  # clean, good OCR
-    "noisy",  # heavy Gaussian + salt/pepper
-    "low_contrast",  # very pale text
-    "rotated_heavy",  # strong rotation ±8°
-    "text_overlapping",  # text crosses lines/borders
-    "garbage_chars",  # random symbols mixed in
+    "valid",
+    "noisy",
+    "low_contrast",
+    "rotated_heavy",
+    "text_overlapping",
+    "garbage_chars",
 ]
 
 
 def load_font(size, bold=False):
+    size = max(8, int(size))  # never go below 8pt
     for path in FONT_PATHS:
         try:
             if bold and ("Bold" in path or "bold" in path.lower()):
@@ -115,14 +115,12 @@ def add_realistic_noise(image: Image.Image, quality: str = "valid") -> Image.Ima
 
 
 def apply_random_transforms(image: Image.Image, quality: str = "valid") -> Image.Image:
-    # Random rotation
     angle_min, angle_max = (-1.5, 1.5) if quality != "rotated_heavy" else (-8.0, 8.0)
     angle = (
         secrets.randbelow(int((angle_max - angle_min) * 1000 + 1)) / 1000 + angle_min
     )
     rotated = image.rotate(angle, resample=Image.BICUBIC, expand=True)
 
-    # Random scale 98–102%
     scale = (
         0.92 + secrets.randbelow(1001) / 10000
         if quality == "rotated_heavy"
@@ -132,7 +130,6 @@ def apply_random_transforms(image: Image.Image, quality: str = "valid") -> Image
         (int(rotated.width * scale), int(rotated.height * scale)), Image.LANCZOS
     )
 
-    # Light perspective (page curl) – sometimes
     if secrets.randbelow(100) < 35:
         coeffs = [
             1.0,
@@ -203,7 +200,7 @@ def create_invoice_pages(quality: str = "valid"):
         page_text += [
             "",
             "Pos.  Beschreibung                                      Anz.   Einzelpreis     Betrag",
-            ("%s" % LINE_SEPARATOR),
+            LINE_SEPARATOR,
         ]
 
         start_pos = 1 + (page_idx - 1) * items_per_page
@@ -238,26 +235,41 @@ def create_invoice_pages(quality: str = "valid"):
             page_text.insert(5, f"   {garbage}")
 
         if quality == "text_overlapping":
-            page_text.insert(8, "─" * 80)
+            page_text.insert(8, LINE_SEPARATOR)
 
         pages.append(page_text)
 
     return pages, invoice_nr, sender, client
 
 
-def render_page(text_lines, page_num, total_pages, quality: str = "valid"):
-    img = Image.new("RGB", (2480, 3508), color=(250, 250, 245))
+def render_page(
+    text_lines, page_num, total_pages, quality: str = "valid", scale: float = 1.0
+):
+    # Scale all dimensions
+    base_width = int(2480 * scale)
+    base_height = int(3508 * scale)
+    margin = int(200 * scale)
+    header_y = int(180 * scale)
+    line_spacing = int(45 * scale)
+    table_y_offset = int(80 * scale)
+
+    img = Image.new("RGB", (base_width, base_height), color=(250, 250, 245))
     draw = ImageDraw.Draw(img)
 
-    font_header = load_font(72, bold=True)
-    font_subheader = load_font(48, bold=True)
-    font_body = load_font(32)
-    font_small = load_font(26)
+    font_header_size = int(72 * scale)
+    font_subheader_size = int(48 * scale)
+    font_body_size = int(32 * scale)
+    font_small_size = int(26 * scale)
 
-    y = 180
+    font_header = load_font(font_header_size, bold=True)
+    font_subheader = load_font(font_subheader_size, bold=True)
+    font_body = load_font(font_body_size)
+    font_small = load_font(font_small_size)
 
-    draw.text((200, y), "INVOICE", font=font_header, fill=(0, 51, 102))
-    y += 140
+    y = header_y
+
+    draw.text((margin, y), "INVOICE", font=font_header, fill=(0, 51, 102))
+    y += int(140 * scale)
 
     for line in text_lines:
         if "INVOICE" in line or "Rechnungs-Nr" in line:
@@ -273,27 +285,25 @@ def render_page(text_lines, page_num, total_pages, quality: str = "valid"):
             font = font_body
             fill = (40, 40, 40)
 
-        draw.text((220, y), line, fill=fill, font=font)
-        y += font.getbbox(line)[3] + 12
+        draw.text((margin, y), line, fill=fill, font=font)
+        y += font.getbbox(line)[3] + line_spacing
 
     draw.text(
-        (2200, 3300),
+        (base_width - margin - int(300 * scale), base_height - int(200 * scale)),
         f"Seite {page_num} von {total_pages}",
         fill=(140, 140, 140),
         font=font_small,
     )
 
-    # Low contrast simulation
     if quality == "low_contrast":
         enhancer = ImageEnhance.Contrast(img)
-        # Fixed: generate float in [0.3, 0.6] using secrets
         contrast_factor = 0.3 + (secrets.randbelow(3001) / 10000.0)
         img = enhancer.enhance(contrast_factor)
 
     return img
 
 
-def create_invoice_tiff_bundle(bundle_index):
+def create_invoice_tiff_bundle(bundle_index, scale: float = 1.0):
     suffix = f"{bundle_index:03d}"
     doc_id = f"DOC-INV-2026-{suffix}"
     zip_filename = f"invoice_{suffix}.zip"
@@ -305,7 +315,7 @@ def create_invoice_tiff_bundle(bundle_index):
 
         tiff_files = []
         for i, page_text in enumerate(pages, 1):
-            img = render_page(page_text, i, len(pages), quality=quality)
+            img = render_page(page_text, i, len(pages), quality=quality, scale=scale)
             img = apply_random_transforms(img, quality=quality)
             img = add_realistic_noise(img, quality=quality)
 
@@ -333,28 +343,51 @@ def create_invoice_tiff_bundle(bundle_index):
         "tags": ["rechnung", "2026", "finance", quality],
         "payloadUrl": f"/payloads/{zip_filename}",
         "quality_type": quality,
+        "scale": scale,
     }
 
     return metadata
 
 
+def create_bundle_with_scale(args):
+    """Wrapper function for ProcessPoolExecutor – must be picklable"""
+    bundle_index, scale = args
+    return create_invoice_tiff_bundle(bundle_index, scale=scale)
+
+
 def main():
+    parser = argparse.ArgumentParser(
+        description="Generate realistic invoice TIFF bundles"
+    )
+    parser.add_argument(
+        "--scale",
+        type=float,
+        default=1.0,
+        help="Scale factor for image size and font sizes (e.g. 0.5 = half size)",
+    )
+
+    args = parser.parse_args()
+
+    scale = max(0.1, args.scale)  # prevent tiny/zero values
+
     os.makedirs(DEST_DIR, exist_ok=True)
     all_metadata = []
 
     print(
-        f"Generating {TOTAL_BUNDLES} realistic invoice bundles (with negative cases)..."
+        f"Generating {TOTAL_BUNDLES} realistic invoice bundles "
+        f"(scale={scale:.2f}, negative cases included)..."
     )
 
     with ProcessPoolExecutor(max_workers=4) as executor:
-        results = list(
-            executor.map(create_invoice_tiff_bundle, range(1, TOTAL_BUNDLES + 1))
-        )
+        # Use a picklable function instead of lambda
+        tasks = [(i, scale) for i in range(1, TOTAL_BUNDLES + 1)]
+        results = list(executor.map(create_bundle_with_scale, tasks))
 
     for meta in results:
         all_metadata.append(meta)
         print(
-            f"Generated: {meta['payloadUrl']} ({meta['pageCount']} pages) - Quality: {meta['quality_type']}"
+            f"Generated: {meta['payloadUrl']} ({meta['pageCount']} pages) "
+            f"- Quality: {meta['quality_type']} - Scale: {meta['scale']}"
         )
 
     with open("db.json", "w", encoding="utf-8") as f:
@@ -362,7 +395,8 @@ def main():
 
     print("\nDone. Check ./static/payloads/ and db.json")
     print(
-        "Negative cases included: noisy, low_contrast, rotated_heavy, text_overlapping, garbage_chars"
+        "Negative cases included: noisy, low_contrast, rotated_heavy, "
+        "text_overlapping, garbage_chars"
     )
 
 

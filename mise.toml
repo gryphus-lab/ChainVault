@@ -16,7 +16,9 @@ _JAVA_OPTIONS = "-Xmx2048m -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=
 MAVEN_OPTS = "-Xmx1024m"
 
 # mise auto-creates .venv when you enter the directory (recommended!)
-_.python.venv = { path = ".venv", create = true }
+_.python.venv = { path = ".venv", create = true, uv_create_args = [
+  "--system-site-packages",
+] }
 UV_PROJECT_ENVIRONMENT = ".venv"
 
 # Spring Boot 4 common defaults
