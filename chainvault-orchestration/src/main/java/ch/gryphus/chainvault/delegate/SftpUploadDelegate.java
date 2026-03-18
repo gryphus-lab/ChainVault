@@ -3,7 +3,6 @@
  */
 package ch.gryphus.chainvault.delegate;
 
-import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import io.opentelemetry.api.OpenTelemetry;
