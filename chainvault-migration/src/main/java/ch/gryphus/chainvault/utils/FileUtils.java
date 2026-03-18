@@ -15,7 +15,7 @@ public final class FileUtils {
         throw new IllegalStateException("FileUtils is a  utility class and cannot be instantiated");
     }
 
-    private static Tika tika = new Tika();
+    private static final Tika tika = new Tika();
 
     /**
      * Gets detected mime type.
