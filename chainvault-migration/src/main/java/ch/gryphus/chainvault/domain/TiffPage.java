@@ -8,7 +8,10 @@ import java.util.Objects;
 import lombok.NonNull;
 
 /**
- * The type Tiff page.
+ * TiffPage
+ *
+ * @param name the name
+ * @param data the data
  */
 public record TiffPage(String name, byte[] data) {
     @Override

@@ -14,11 +14,23 @@
     <packaging>pom</packaging>
     <name>${project.groupId}::${project.artifactId}</name>
     
+    <url>https://github.com/gryphus-lab/chainvault</url>
     <modules>
         <module>chainvault-migration</module>
         <module>chainvault-orchestration</module>
         <module>chainvault-report-aggregate</module>
     </modules>
+    <scm>
+        <url>https://github.com/gryphus-lab/chainvault</url>
+    </scm>
+    
+    <distributionManagement>
+        <site>
+            <id>local-site</id>
+            <name>Chainvault Site Staging</name>
+            <url>file:///tmp/chainvault-site/</url>
+        </site>
+    </distributionManagement>
     
     <properties>
         <java.version>25</java.version>
@@ -57,6 +69,10 @@
         <liquibase-maven-plugin.version>5.0.2</liquibase-maven-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
+        <maven-site-plugin.version>4.0.0-M16</maven-site-plugin.version>
+        <doxia-site-renderer.version>2.0.0</doxia-site-renderer.version>
         <spotless.version>3.4.0</spotless.version>
         <spotbugs-maven-plugin.version>4.9.8.2</spotbugs-maven-plugin.version>
         <spotbugs.version>4.9.8</spotbugs.version>
@@ -70,6 +86,7 @@
         <opentelemetry-exporter-prometheus.version>1.60.1-alpha</opentelemetry-exporter-prometheus.version>
         <opentelemetry-logback-appender-1.0.version>2.26.0-alpha</opentelemetry-logback-appender-1.0.version>
         <opentelemetry-logback-mdc-1.0.version>2.26.0-alpha</opentelemetry-logback-mdc-1.0.version>
+        <maven-scm-publish-plugin.version>3.3.0</maven-scm-publish-plugin.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -225,175 +242,274 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>${spotless.version}</version>
+                    <configuration>
+                        <ratchetFrom>origin/main</ratchetFrom>
+                        <formats>
+                            <format>
+                                <includes>
+                                    <include>.gitattributes</include>
+                                    <include>.gitignore</include>
+                                </includes>
+                                <!-- define the steps to apply to those files -->
+                                <trimTrailingWhitespace/>
+                                <endWithNewline/>
+                                <indent>
+                                    <tabs>true</tabs>
+                                    <spacesPerTab>4</spacesPerTab>
+                                </indent>
+                            </format>
+                        </formats>
+                        <java>
+                            <googleJavaFormat>
+                                <version>1.34.1</version>
+                                <style>AOSP</style>
+                                <reflowLongStrings>true</reflowLongStrings>
+                                <formatJavadoc>false</formatJavadoc>
+                            </googleJavaFormat>
+                            
+                            <licenseHeader>
+                                <file>${maven.multiModuleProjectDirectory}/license-header</file>
+                            </licenseHeader>
+                        </java>
+                        <pom>
+                            <includes>
+                                <include>**/pom.xml</include>
+                            </includes>
+                            
+                            <sortPom>
+                                <encoding>UTF-8</encoding>
+                                <lineSeparator>${line.separator}</lineSeparator>
+                                <expandEmptyElements>false</expandEmptyElements>
+                                <spaceBeforeCloseEmptyElement>false</spaceBeforeCloseEmptyElement>
+                                <keepBlankLines>true</keepBlankLines>
+                                <endWithNewline>true</endWithNewline>
+                                <nrOfIndentSpace>4</nrOfIndentSpace>
+                                <indentBlankLines>true</indentBlankLines>
+                                <indentSchemaLocation>true</indentSchemaLocation>
+                                <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
+                                <sortDependencies>groupId,artifactId</sortDependencies>
+                                <sortDependencyManagement>groupId,artifactId</sortDependencyManagement>
+                                <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
+                                <sortPlugins>groupId,artifactId</sortPlugins>
+                                <sortProperties>false</sortProperties>
+                                <sortModules>true</sortModules>
+                                <sortExecutions>true</sortExecutions>
+                            </sortPom>
+                        </pom>
+                        <python>
+                            <includes>
+                                <include>**/*.py</include>
+                            </includes>
+                            
+                            <black>
+                                <version>26.3.1</version>
+                                <pathToExe>.venv/bin/black</pathToExe>
+                            </black>
+                        </python>
+                        <markdown>
+                            <includes>
+                                <include>**/*.md</include>
+                            </includes>
+                            
+                            <flexmark>
+                                <emulationProfile>COMMONMARK</emulationProfile>
+                                <pegdownExtensions>ALL,TOC</pegdownExtensions>
+                                <extensions>YamlFrontMatter,Emoji</extensions>
+                            </flexmark>
+                        </markdown>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs-maven-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.github.spotbugs</groupId>
+                            <artifactId>spotbugs</artifactId>
+                            <version>${spotbugs.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                    <configuration>
+                        <rules>
+                            <banDuplicatePomDependencyVersions/>
+                        </rules>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>enforce</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <configuration>
+                        <includes>
+                            <include>**/*IT.java</include>
+                        </includes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>${maven-project-info-reports-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${maven-site-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.doxia</groupId>
+                            <artifactId>doxia-site-renderer</artifactId>
+                            <version>${doxia-site-renderer.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <includes>
+                            <include>**/*Test.java</include>
+                        </includes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.basepom.maven</groupId>
+                    <artifactId>dependency-versions-check-maven-plugin</artifactId>
+                    <version>${dependency-versions-check-maven-plugin.version}</version>
+                    <configuration>
+                        <resolvers>
+                            <resolver>
+                                <strategy>apr</strategy>
+                                <includes>
+                                    <include>dependency:dependencyA</include>
+                                </includes>
+                            </resolver>
+                        </resolvers>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>${spotless.version}</version>
-                <configuration>
-                    <ratchetFrom>origin/main</ratchetFrom>
-                    <formats>
-                        <format>
-                            <includes>
-                                <include>.gitattributes</include>
-                                <include>.gitignore</include>
-                            </includes>
-                            <!-- define the steps to apply to those files -->
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
-                            <indent>
-                                <tabs>true</tabs>
-                                <spacesPerTab>4</spacesPerTab>
-                            </indent>
-                        </format>
-                    </formats>
-                    <java>
-                        <googleJavaFormat>
-                            <version>1.34.1</version>
-                            <style>AOSP</style>
-                            <reflowLongStrings>true</reflowLongStrings>
-                            <formatJavadoc>false</formatJavadoc>
-                        </googleJavaFormat>
-                        
-                        <licenseHeader>
-                            <file>${maven.multiModuleProjectDirectory}/license-header</file>
-                        </licenseHeader>
-                    </java>
-                    <pom>
-                        <includes>
-                            <include>**/pom.xml</include>
-                        </includes>
-                        
-                        <sortPom>
-                            <encoding>UTF-8</encoding>
-                            <lineSeparator>${line.separator}</lineSeparator>
-                            <expandEmptyElements>false</expandEmptyElements>
-                            <spaceBeforeCloseEmptyElement>false</spaceBeforeCloseEmptyElement>
-                            <keepBlankLines>true</keepBlankLines>
-                            <endWithNewline>true</endWithNewline>
-                            <nrOfIndentSpace>4</nrOfIndentSpace>
-                            <indentBlankLines>true</indentBlankLines>
-                            <indentSchemaLocation>true</indentSchemaLocation>
-                            <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
-                            <sortDependencies>groupId,artifactId</sortDependencies>
-                            <sortDependencyManagement>groupId,artifactId</sortDependencyManagement>
-                            <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
-                            <sortPlugins>groupId,artifactId</sortPlugins>
-                            <sortProperties>false</sortProperties>
-                            <sortModules>true</sortModules>
-                            <sortExecutions>true</sortExecutions>
-                        </sortPom>
-                    </pom>
-                    <python>
-                        <includes>
-                            <include>**/*.py</include>
-                        </includes>
-                        
-                        <black>
-                            <version>26.3.1</version>
-                            <pathToExe>.venv/bin/black</pathToExe>
-                        </black>
-                    </python>
-                    <markdown>
-                        <includes>
-                            <include>**/*.md</include>
-                        </includes>
-                        
-                        <flexmark>
-                            <emulationProfile>COMMONMARK</emulationProfile>
-                            <pegdownExtensions>ALL,TOC</pegdownExtensions>
-                            <extensions>YamlFrontMatter,Emoji</extensions>
-                        </flexmark>
-                    </markdown>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>${spotbugs-maven-plugin.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs</artifactId>
-                        <version>${spotbugs.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>${maven-enforcer-plugin.version}</version>
-                <configuration>
-                    <rules>
-                        <banDuplicatePomDependencyVersions/>
-                    </rules>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>enforce</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*IT.java</include>
-                    </includes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*Test.java</include>
-                    </includes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.basepom.maven</groupId>
                 <artifactId>dependency-versions-check-maven-plugin</artifactId>
-                <version>${dependency-versions-check-maven-plugin.version}</version>
-                <configuration>
-                    <resolvers>
-                        <resolver>
-                            <strategy>apr</strategy>
-                            <includes>
-                                <include>dependency:dependencyA</include>
-                            </includes>
-                        </resolver>
-                    </resolvers>
-                </configuration>
             </plugin>
         </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <reportSets>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>aggregate</id>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <skippedModules>chainvault-report-aggregate</skippedModules>
+                        </configuration>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-publish-plugin</artifactId>
+                <version>${maven-scm-publish-plugin.version}</version>
+                <configuration>
+                    <scmBranch>gh-pages</scmBranch>
+                    <pubScmUrl>scm:git:${project.url}t</pubScmUrl>
+                    <content>${project.build.directory}/staging</content>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
     <profiles>
         <profile>
             <id>coverage</id>

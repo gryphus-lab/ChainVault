@@ -10,7 +10,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * The type Migration properties.
+ * Migration Properties
+ *
+ * @param tempDir the temp dir
+ * @param zipThresholdSize the zip threshold size
+ * @param zipThresholdRatio the zip threshold ratio
+ * @param zipThresholdEntries the zip threshold entries
+ * @param tesseractLanguage the tesseract language
+ * @param tesseractDpi the tesseract dpi
  */
 @Validated
 @ConfigurationProperties(prefix = "migration")

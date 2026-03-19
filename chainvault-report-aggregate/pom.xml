@@ -8,13 +8,26 @@
     <version>1.0.0-SNAPSHOT</version>
     <name>${project.groupId}::${project.artifactId}</name>
     <description>Aggregate Coverage Report</description>
+    <url>https://github.com/gryphus-lab/chainvault</url>
+    <distributionManagement>
+        <site>
+            <id>local-site</id>
+            <name>Chainvault Site Staging</name>
+            <url>file:///tmp/chainvault-site/</url>
+        </site>
+    </distributionManagement>
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
         
-        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/report-aggregate/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/chainvault-report-aggregate/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
         <spotless.version>3.4.0</spotless.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-site-plugin.version>4.0.0-M16</maven-site-plugin.version>
+        <doxia-site-renderer.version>2.0.0</doxia-site-renderer.version>
+        
+        <maven.site.skip>true</maven.site.skip>
     </properties>
     <dependencies>
         <dependency>

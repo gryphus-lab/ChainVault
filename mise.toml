@@ -54,6 +54,11 @@ dev = { run = [
 
 package = { run = "mvn clean package -DskipTests -am", description = "Package the executable JAR" }
 
+site = { run = [
+  "mvn clean install -DskipTests",
+  "mvn site site:stage",
+], description = "Generate Maven Javadocs & Site" }
+
 ci = { run = [
   "mvn clean verify",
   "docker compose up -d postgres",
