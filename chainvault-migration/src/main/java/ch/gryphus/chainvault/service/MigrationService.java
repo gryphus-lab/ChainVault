@@ -171,7 +171,7 @@ public class MigrationService {
      * @throws IOException              the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
-    public List<TiffPage> signTiffPages(
+    public List<TiffPage> signSourcePayload(
             byte[] payload, @NonNull MigrationContext migrationContext, Path workingDirectory)
             throws IOException, NoSuchAlgorithmException {
         List<TiffPage> pages = new ArrayList<>();
@@ -301,7 +301,7 @@ public class MigrationService {
         inputMap.put("pdfPath", pdfPath);
         inputMap.put("processInstanceId", processInstanceId);
 
-        SftpUtils.upload(sftpTargetConfig.getRemoteDirectory(), remoteFileTemplate, inputMap);
+        SftpUtils.uploadToSftp(sftpTargetConfig.getRemoteDirectory(), remoteFileTemplate, inputMap);
         log.info(
                 "Done {} | zipHash={} | pdfHash={}",
                 docId,

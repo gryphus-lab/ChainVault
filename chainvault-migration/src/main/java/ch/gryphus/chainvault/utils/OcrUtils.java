@@ -39,7 +39,7 @@ public final class OcrUtils {
             for (TiffPage page : pages) {
                 try (ByteArrayInputStream bis = new ByteArrayInputStream(page.data())) {
                     BufferedImage image = ImageIO.read(bis);
-                    if (!isImageValid(image)) {
+                    if (!isValidImageSize(image)) {
                         results.add("");
                         continue;
                     }
@@ -54,7 +54,7 @@ public final class OcrUtils {
         return results;
     }
 
-    private static boolean isImageValid(BufferedImage image) {
+    private static boolean isValidImageSize(BufferedImage image) {
         if (image == null
                 || image.getWidth() <= 0
                 || image.getHeight() <= 0) { // check nulls and zero size
@@ -74,9 +74,6 @@ public final class OcrUtils {
                 new BufferedImage(
                         original.getWidth(), original.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         gray.getGraphics().drawImage(original, 0, 0, null);
-
-        // Optional: binarization / threshold (use OpenCV or JavaCV if needed)
-        // or simple contrast stretch
         return gray;
     }
 }

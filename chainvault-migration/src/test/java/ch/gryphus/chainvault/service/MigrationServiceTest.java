@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -279,7 +280,7 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignTiffPage_withValidPayloadZip() throws Exception {
+    void testSignSourcePayload_whenPayloadZipIsValid() throws Exception {
         // Setup
         byte[] payload =
                 Files.readAllBytes(
@@ -287,7 +288,7 @@ class MigrationServiceTest {
 
         // Run the test
         List<TiffPage> result =
-                migrationServiceUnderTest.signTiffPages(
+                migrationServiceUnderTest.signSourcePayload(
                         payload, migrationContext, workingDirectory);
 
         // Verify the results
@@ -450,14 +451,15 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignTiffPages_shouldExtractAndPreserveOrder() throws Exception {
+    void testSignSourcePayload_shouldExtractAndPreserveOrder() throws Exception {
         byte[] zip =
                 Files.readAllBytes(
                         Path.of("%s/zips/valid_archive.zip".formatted(resourceDirectory)));
         String docId = "DOC-ARCH-2025-001";
 
         List<TiffPage> pages =
-                migrationServiceUnderTest.signTiffPages(zip, migrationContext, workingDirectory);
+                migrationServiceUnderTest.signSourcePayload(
+                        zip, migrationContext, workingDirectory);
 
         assertThat(pages)
                 .hasSize(5)
@@ -474,7 +476,7 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignTiffPages_shouldIgnoreNonTiffFiles() throws Exception {
+    void testSignSourcePayload_shouldIgnoreNonTiffFiles() throws Exception {
         byte[] zip =
                 createZipWithTiffs(
                         List.of(
@@ -483,7 +485,8 @@ class MigrationServiceTest {
                                 "page-002.tif", "TIFF2"));
 
         List<TiffPage> pages =
-                migrationServiceUnderTest.signTiffPages(zip, migrationContext, workingDirectory);
+                migrationServiceUnderTest.signSourcePayload(
+                        zip, migrationContext, workingDirectory);
 
         assertThat(pages).hasSize(2);
         assertThat(pages.get(1).name()).isEqualTo("page-002.tif");
@@ -495,12 +498,12 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignTiffPages_shouldThrowWhenNoTiffs() throws Exception {
+    void testSignSourcePayload_shouldThrowWhenNoTiffs() throws Exception {
         byte[] zip = createZipWithTiffs(List.of("readme.txt", "no tiffs here"));
 
         assertThatThrownBy(
                         () ->
-                                migrationServiceUnderTest.signTiffPages(
+                                migrationServiceUnderTest.signSourcePayload(
                                         zip, migrationContext, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage("No TIFF pages found in ZIP");
@@ -512,7 +515,7 @@ class MigrationServiceTest {
      * @throws IOException the io exception
      */
     @Test
-    void testSignTiffPages_shouldThrowException_whenTotalSizeExceeded() throws IOException {
+    void testSignSourcePayload_shouldThrowException_whenTotalSizeExceeded() throws IOException {
         byte[] overLimitData =
                 Files.readAllBytes(Path.of("%s/zips/over_10mb.zip".formatted(resourceDirectory)));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -527,7 +530,7 @@ class MigrationServiceTest {
         // 3. Execution & Verification
         assertThatThrownBy(
                         () ->
-                                migrationServiceUnderTest.signTiffPages(
+                                migrationServiceUnderTest.signSourcePayload(
                                         payload, migrationContext, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
@@ -541,7 +544,8 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignTiffPages_shouldThrowException_whenCompressionRatioExceeded() throws Exception {
+    void testSignSourcePayload_shouldThrowException_whenCompressionRatioExceeded()
+            throws Exception {
         byte[] uncompressedData = new byte[2_000_000];
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -554,7 +558,7 @@ class MigrationServiceTest {
         byte[] payload = baos.toByteArray();
         assertThatThrownBy(
                         () ->
-                                migrationServiceUnderTest.signTiffPages(
+                                migrationServiceUnderTest.signSourcePayload(
                                         payload, migrationContext, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
@@ -568,7 +572,7 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignTiffPages_shouldThrowException_whenTooManyEntries() throws Exception {
+    void testSignSourcePayload_shouldThrowException_whenTooManyEntries() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             for (int i = 0; i < 10001; i++) {
@@ -581,7 +585,7 @@ class MigrationServiceTest {
 
         assertThatThrownBy(
                         () ->
-                                migrationServiceUnderTest.signTiffPages(
+                                migrationServiceUnderTest.signSourcePayload(
                                         payload, migrationContext, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
                 .hasMessage(
@@ -668,30 +672,23 @@ class MigrationServiceTest {
         assertThat(meta).isNotNull();
         assertThat(meta.getTitle()).isNotNull(); // fail fast if setup broken
 
-        List<TiffPage> pages = Collections.emptyList(); // empty list
+        // Add null and empty contents
+        List<List<TiffPage>> pagesList = new ArrayList<>();
+        pagesList.add(null);
+        pagesList.add(Collections.emptyList());
 
-        // Act
-        Path zip =
-                migrationServiceUnderTest.prepareFiles(
-                        workingDirectory, meta, migrationContext, pages);
+        for (var pages : pagesList) {
+            Path zipFile =
+                    migrationServiceUnderTest.prepareFiles(
+                            workingDirectory, meta, migrationContext, pages);
 
-        assertThat(Files.exists(zip)).isTrue();
-
-        // Verify ZIP content
-        validateContents(zip);
-
-        zip =
-                migrationServiceUnderTest.prepareFiles(
-                        workingDirectory, meta, migrationContext, null);
-
-        assertThat(Files.exists(zip)).isTrue();
-
-        // Verify ZIP content
-        validateContents(zip);
+            assertThat(Files.exists(zipFile)).isTrue();
+            validateZipFileContents(zipFile);
+        }
     }
 
-    private static void validateContents(Path zip) throws IOException, JSONException {
-        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zip))) {
+    private static void validateZipFileContents(Path zipFile) throws IOException, JSONException {
+        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipFile))) {
             ZipEntry entry;
             String actualResult = null;
 

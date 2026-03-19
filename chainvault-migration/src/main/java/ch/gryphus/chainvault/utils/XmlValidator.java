@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 /**
  * The type Xml validator.
  */
-public final class XmlValidator {
+final class XmlValidator {
     private XmlValidator() {
         /* This utility class should not be instantiated */
     }
@@ -45,7 +45,7 @@ public final class XmlValidator {
      * @param xmlString the xml string
      * @return the boolean
      */
-    public static boolean isValid(String xmlString) {
+    static boolean isValid(String xmlString) {
         try {
             Validator validator = initValidator(xsdPath);
             validator.validate(

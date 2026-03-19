@@ -102,8 +102,8 @@ public final class MigrationUtils {
      * @return the archival metadata
      */
     public static ArchivalMetadata buildXml(
-            SourceMetadata sourceMetadata,
-            MigrationContext migrationContext,
+            @NonNull SourceMetadata sourceMetadata,
+            @NonNull MigrationContext migrationContext,
             Map<String, Object> inputMap) {
         ArchivalMetadata metadata = new ArchivalMetadata();
 

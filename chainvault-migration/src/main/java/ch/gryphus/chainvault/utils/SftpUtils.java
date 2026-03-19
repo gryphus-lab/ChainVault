@@ -28,7 +28,7 @@ public final class SftpUtils {
      * @param remoteFileTemplate the remote file template
      * @param map                the map
      */
-    public static void upload(
+    public static void uploadToSftp(
             String remoteDirectory,
             @NonNull SftpRemoteFileTemplate remoteFileTemplate,
             @NonNull Map<String, Object> map) {
@@ -37,7 +37,6 @@ public final class SftpUtils {
 
         remoteFileTemplate.execute(
                 session -> {
-                    log.info("sftp upload started");
                     session.mkdir(folder);
                     session.write(
                             Files.newInputStream((Path) map.get("zipPath")),
@@ -52,7 +51,6 @@ public final class SftpUtils {
                             new ByteArrayInputStream(
                                     map.get("xml").toString().getBytes(StandardCharsets.UTF_8)),
                             "%s/%s_meta.xml".formatted(folder, docId));
-                    log.info("sftp upload completed");
                     return null;
                 });
     }

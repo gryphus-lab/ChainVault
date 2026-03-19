@@ -54,7 +54,7 @@ public class SignDocumentDelegate extends AbstractTracingDelegate {
                 getTransientVariableSafely(execution, "workingDirectory", Path.class);
 
         List<TiffPage> pages =
-                migrationService.signTiffPages(payload, migrationContext, workingDirectory);
+                migrationService.signSourcePayload(payload, migrationContext, workingDirectory);
 
         execution.setTransientVariable("pages", pages);
     }
