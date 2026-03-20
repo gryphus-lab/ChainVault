@@ -7,8 +7,8 @@ import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.domain.ArchivalMetadata;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.MigrationProvenance;
+import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -74,12 +74,12 @@ public final class MigrationUtils {
      * @return the path
      * @throws IOException the io exception
      */
-    public static Path mergePagesToPdf(List<TiffPage> pages, String docId, Path workingDirectory)
+    public static Path mergePagesToPdf(List<OcrPage> pages, String docId, Path workingDirectory)
             throws IOException {
         Path pdf = Path.of("%s/%s-merged.pdf".formatted(workingDirectory, docId));
         try (var doc = new PDDocument()) {
             for (var page : pages) {
-                BufferedImage img = ImageIO.read(new ByteArrayInputStream(page.data()));
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(page.getData()));
                 var pdImage = LosslessFactory.createFromImage(doc, img);
                 var pdPage = new PDPage(new PDRectangle(img.getWidth(), img.getHeight()));
                 doc.addPage(pdPage);
@@ -151,7 +151,7 @@ public final class MigrationUtils {
     public static void createChainZipFile(
             @NonNull SourceMetadata sourceMetadata,
             @NonNull MigrationContext migrationContext,
-            List<TiffPage> pages,
+            List<OcrPage> pages,
             Path zipPath)
             throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {
@@ -160,11 +160,11 @@ public final class MigrationUtils {
             manifest.put(Constants.BPMN_PROC_VAR_DOC_ID, docId);
 
             if (pages != null && !pages.isEmpty()) {
-                for (TiffPage page : pages) {
-                    String entryName = "%s".formatted(page.name());
+                for (OcrPage page : pages) {
+                    String entryName = "%s".formatted(page.getName());
 
                     zos.putNextEntry(new ZipEntry(entryName));
-                    zos.write(page.data());
+                    zos.write(page.getData());
                     zos.closeEntry();
                 }
 

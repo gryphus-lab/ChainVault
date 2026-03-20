@@ -4,8 +4,8 @@
 package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.utils.HashUtils;
@@ -48,7 +48,7 @@ public class PrepareFilesDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
-        List<TiffPage> pages = getTransientVariableSafely(execution, "pages", List.class);
+        List<OcrPage> pages = getTransientVariableSafely(execution, "pages", List.class);
         var meta = getTransientVariableSafely(execution, "meta", SourceMetadata.class);
         var migrationContext =
                 Objects.requireNonNull(

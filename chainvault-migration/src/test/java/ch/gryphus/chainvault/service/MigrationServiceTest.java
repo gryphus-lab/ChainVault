@@ -11,8 +11,8 @@ import ch.gryphus.chainvault.config.MigrationProperties;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.ArchivalMetadata;
 import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
 import ch.gryphus.chainvault.utils.MigrationUtils;
 import java.io.ByteArrayOutputStream;
@@ -288,14 +288,14 @@ class MigrationServiceTest {
                         Path.of("%s/zips/valid_archive.zip".formatted(resourceDirectory)));
 
         // Run the test
-        List<TiffPage> result =
+        List<OcrPage> result =
                 migrationServiceUnderTest.signSourcePayload(
                         payload, migrationContext, workingDirectory);
 
         // Verify the results
         assertThat(result).hasSize(5);
-        assertThat(result.getFirst().name()).isEqualTo(("DOC-ARCH-2025-001_001.tiff"));
-        assertThat(HashUtils.sha256(result.getFirst().data()))
+        assertThat(result.getFirst().getName()).isEqualTo(("DOC-ARCH-2025-001_001.tiff"));
+        assertThat(HashUtils.sha256(result.getFirst().getData()))
                 .isEqualTo("a7c2d26a6c721dd9dba9cd6aec405552217c6ede0c9cf7cd5bcccca2a3d4e705");
     }
 
@@ -429,7 +429,7 @@ class MigrationServiceTest {
                         Path.of("%s/zips/valid_archive.zip".formatted(resourceDirectory)));
         String docId = "DOC-ARCH-2025-001";
 
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 migrationServiceUnderTest.signSourcePayload(
                         zip, migrationContext, workingDirectory);
 
@@ -438,7 +438,8 @@ class MigrationServiceTest {
                 .allSatisfy(
                         page -> {
                             int i = pages.indexOf(page) + 1;
-                            assertThat(page.name()).isEqualTo("%s_%03d.tiff".formatted(docId, i));
+                            assertThat(page.getName())
+                                    .isEqualTo("%s_%03d.tiff".formatted(docId, i));
                         });
     }
 
@@ -456,12 +457,12 @@ class MigrationServiceTest {
                                 "readme.txt", "ignore me",
                                 "page-002.tif", "TIFF2"));
 
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 migrationServiceUnderTest.signSourcePayload(
                         zip, migrationContext, workingDirectory);
 
         assertThat(pages).hasSize(2);
-        assertThat(pages.get(1).name()).isEqualTo("page-002.tif");
+        assertThat(pages.get(1).getName()).isEqualTo("page-002.tif");
     }
 
     /**
@@ -478,7 +479,7 @@ class MigrationServiceTest {
                                 migrationServiceUnderTest.signSourcePayload(
                                         zip, migrationContext, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
-                .hasMessage("No TIFF pages found in ZIP");
+                .hasMessage("No supported image pages found in ZIP");
     }
 
     /**
@@ -578,15 +579,15 @@ class MigrationServiceTest {
         assertThat(meta.getTitle()).isNotNull(); // fail fast if setup broken
         migrationContext.setPayloadHash("payload-sha256-abc123");
 
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "sample1.tiff",
                                 Files.readAllBytes(
                                         Path.of(
                                                 "%s/tiffs/sample1.tiff"
                                                         .formatted(resourceDirectory)))),
-                        new TiffPage(
+                        new OcrPage(
                                 "sample2.tiff",
                                 Files.readAllBytes(
                                         Path.of(
@@ -623,7 +624,7 @@ class MigrationServiceTest {
         assertThat(meta.getTitle()).isNotNull(); // fail fast if setup broken
 
         // Add null and empty contents
-        List<List<TiffPage>> pagesList = new ArrayList<>();
+        List<List<OcrPage>> pagesList = new ArrayList<>();
         pagesList.add(null);
         pagesList.add(Collections.emptyList());
 
@@ -720,15 +721,15 @@ class MigrationServiceTest {
      */
     @Test
     void testMergePagesToPdf_shouldCreatePdfWithCorrectPageCount() throws Exception {
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "sample1.tif",
                                 Files.readAllBytes(
                                         Path.of(
                                                 "%s/tiffs/sample1.tiff"
                                                         .formatted(resourceDirectory)))),
-                        new TiffPage(
+                        new OcrPage(
                                 "sample2.tif",
                                 Files.readAllBytes(
                                         Path.of(
@@ -768,15 +769,15 @@ class MigrationServiceTest {
     @Test
     void testMergePagesToPdf_shouldGenerateExpectedResult() throws Exception {
         // Setup
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "sample1.tiff",
                                 Files.readAllBytes(
                                         Path.of(
                                                 "%s/tiffs/sample1.tiff"
                                                         .formatted(resourceDirectory)))),
-                        new TiffPage(
+                        new OcrPage(
                                 "sample2.tiff",
                                 Files.readAllBytes(
                                         Path.of(
@@ -805,7 +806,7 @@ class MigrationServiceTest {
         // Setup
         byte[] data =
                 Files.readAllBytes(Path.of("%s/tiffs/test_ocr.tiff".formatted(resourceDirectory)));
-        List<TiffPage> pages = List.of(new TiffPage("test_ocr.tiff", data));
+        List<OcrPage> pages = List.of(new OcrPage("test_ocr.tiff", data));
 
         // Run the test
         List<String> result = migrationServiceUnderTest.performOcr(pages);
@@ -827,9 +828,9 @@ class MigrationServiceTest {
     @Test
     void testPerformOcr_shouldNotThrowExceptionForInvalidContent() {
         // Setup
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "bad_sample.tiff", "contents".getBytes(StandardCharsets.UTF_8)));
 
         // Verify the results
@@ -845,7 +846,7 @@ class MigrationServiceTest {
         assertThatNoException().isThrownBy(() -> migrationServiceUnderTest.performOcr(null));
 
         // check for empty list
-        List<TiffPage> pages = Collections.emptyList();
+        List<OcrPage> pages = Collections.emptyList();
         assertThatNoException().isThrownBy(() -> migrationServiceUnderTest.performOcr(pages));
     }
 
@@ -856,9 +857,9 @@ class MigrationServiceTest {
      */
     @Test
     void testPerformOcr_shouldNotThrowExceptionWhenSizeIsTooSmall() throws Exception {
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "too_small_sizr.tiff",
                                 Files.readAllBytes(
                                         Path.of(

@@ -6,8 +6,8 @@ package ch.gryphus.chainvault.service;
 import ch.gryphus.chainvault.config.MigrationProperties;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
 import ch.gryphus.chainvault.utils.MigrationUtils;
 import ch.gryphus.chainvault.utils.OcrUtils;
@@ -173,10 +173,10 @@ public class MigrationService {
      * @throws IOException              the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
-    public List<TiffPage> signSourcePayload(
+    public List<OcrPage> signSourcePayload(
             byte[] payload, @NonNull MigrationContext migrationContext, Path workingDirectory)
             throws IOException, NoSuchAlgorithmException {
-        List<TiffPage> pages = new ArrayList<>();
+        List<OcrPage> pages = new ArrayList<>();
 
         // security hotspot fix against zip bombs
         File file =
@@ -238,19 +238,27 @@ public class MigrationService {
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                if (entry.getName().toLowerCase(Locale.ROOT).endsWith(".tif")
-                        || entry.getName().toLowerCase(Locale.ROOT).endsWith(".tiff")) {
+                String entryName = entry.getName().toLowerCase(Locale.ROOT);
+                if (entryName.endsWith(".tif")
+                        || entryName.endsWith(".tiff")
+                        || entryName.endsWith(".png")
+                        || entryName.endsWith(".jpg")
+                        || entryName.endsWith(".jpeg")
+                        || entryName.endsWith(".bmp")) {
+
                     byte[] data = zis.readAllBytes();
 
                     String pageHash = HashUtils.sha256(data);
                     migrationContext.addPageHash(entry.getName(), pageHash);
-                    pages.add(new TiffPage(entry.getName(), data));
+
+                    String mimeType = MigrationUtils.getDetectedMimeType(data);
+                    pages.add(new OcrPage(entry.getName(), data, mimeType, null));
                 }
             }
         }
 
         if (pages.isEmpty()) {
-            throw new MigrationServiceException("No TIFF pages found in ZIP");
+            throw new MigrationServiceException("No supported image pages found in ZIP");
         }
 
         return pages;
@@ -271,7 +279,7 @@ public class MigrationService {
             Path workingDirectory,
             @NonNull SourceMetadata sourceMetadata,
             @NonNull MigrationContext migrationContext,
-            List<TiffPage> pages)
+            List<OcrPage> pages)
             throws IOException, NoSuchAlgorithmException {
 
         String docId = sourceMetadata.getDocId();
@@ -293,7 +301,8 @@ public class MigrationService {
      * @throws IOException        the io exception
      * @throws TesseractException the tesseract exception
      */
-    public List<String> performOcr(List<TiffPage> pages) throws IOException, TesseractException {
+    public List<String> performOcr(List<? extends OcrPage> pages)
+            throws IOException, TesseractException {
         Tesseract tesseract = tesseractThreadLocal.get(); // per-thread singleton
         List<String> results = OcrUtils.getOcrResults(pages, tesseract);
         tesseractThreadLocal.remove();
@@ -309,7 +318,7 @@ public class MigrationService {
      * @return the path
      * @throws IOException the io exception
      */
-    public Path createMergedPdf(List<TiffPage> pages, String docId, Path workingDirectory)
+    public Path createMergedPdf(List<OcrPage> pages, String docId, Path workingDirectory)
             throws IOException {
         return MigrationUtils.mergePagesToPdf(pages, docId, workingDirectory);
     }
