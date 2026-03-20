@@ -257,7 +257,7 @@ public class MigrationService {
     }
 
     /**
-     * Prepare files path.
+     * Prepare chain zip path.
      *
      * @param workingDirectory the working directory
      * @param sourceMetadata   the source metadata
@@ -286,7 +286,7 @@ public class MigrationService {
     }
 
     /**
-     * Perform ocr on tiff pages list.
+     * Perform ocr list.
      *
      * @param pages the pages
      * @return the list

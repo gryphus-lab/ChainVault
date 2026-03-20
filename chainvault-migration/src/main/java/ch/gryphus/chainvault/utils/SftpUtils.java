@@ -22,7 +22,7 @@ public final class SftpUtils {
     }
 
     /**
-     * Upload.
+     * Execute sftp commands.
      *
      * @param remoteDirectory    the remote directory
      * @param remoteFileTemplate the remote file template

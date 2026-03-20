@@ -66,7 +66,7 @@ public final class MigrationUtils {
     }
 
     /**
-     * Merge tiff to pdf path.
+     * Merge pages to pdf path.
      *
      * @param pages            the pages
      * @param docId            the doc id
