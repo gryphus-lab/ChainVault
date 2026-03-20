@@ -4,7 +4,7 @@
 package ch.gryphus.chainvault.delegate;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
-import ch.gryphus.chainvault.domain.TiffPage;
+import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.service.AuditEventService;
 import ch.gryphus.chainvault.service.MigrationService;
 import io.opentelemetry.api.OpenTelemetry;
@@ -53,7 +53,7 @@ public class SignDocumentDelegate extends AbstractTracingDelegate {
         var workingDirectory =
                 getTransientVariableSafely(execution, "workingDirectory", Path.class);
 
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 migrationService.signSourcePayload(payload, migrationContext, workingDirectory);
 
         execution.setTransientVariable("pages", pages);

@@ -6,8 +6,8 @@ package ch.gryphus.chainvault.service;
 import ch.gryphus.chainvault.config.MigrationProperties;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
 import ch.gryphus.chainvault.utils.MigrationUtils;
 import ch.gryphus.chainvault.utils.OcrUtils;
@@ -62,7 +62,7 @@ public class MigrationService {
     private final MigrationContext migrationContext;
     private final MigrationProperties props;
 
-    private final ThreadLocal<Tesseract> tesseractLocal;
+    private final ThreadLocal<Tesseract> tesseractThreadLocal;
 
     /**
      * Instantiates a new Migration service.
@@ -86,7 +86,7 @@ public class MigrationService {
 
         migrationContext = new MigrationContext();
 
-        tesseractLocal =
+        tesseractThreadLocal =
                 ThreadLocal.withInitial(
                         () -> {
                             Tesseract t = new Tesseract();
@@ -148,10 +148,12 @@ public class MigrationService {
         migrationContext.setDocId(docId);
         map.put("migrationContext", migrationContext);
 
+        // get source metadata
         var meta = SourceApiUtils.getSourceMetadata(restClient, docId);
         migrationContext.setMetadataHash(HashUtils.sha256(objectMapper.writeValueAsBytes(meta)));
         map.put("meta", meta);
 
+        // get payload url
         if (meta.getPayloadUrl() != null) {
             payload = SourceApiUtils.getPayloadBytes(restClient, docId, meta);
             migrationContext.setPayloadHash(HashUtils.sha256(payload));
@@ -162,7 +164,7 @@ public class MigrationService {
     }
 
     /**
-     * Sign tiff pages list.
+     * Sign source payload list.
      *
      * @param payload          the payload
      * @param migrationContext the migration context
@@ -171,10 +173,10 @@ public class MigrationService {
      * @throws IOException              the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
-    public List<TiffPage> signSourcePayload(
+    public List<OcrPage> signSourcePayload(
             byte[] payload, @NonNull MigrationContext migrationContext, Path workingDirectory)
             throws IOException, NoSuchAlgorithmException {
-        List<TiffPage> pages = new ArrayList<>();
+        List<OcrPage> pages = new ArrayList<>();
 
         // security hotspot fix against zip bombs
         File file =
@@ -188,9 +190,9 @@ public class MigrationService {
             long totalEntryArchive = 0L;
 
             while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
+                ZipEntry entry1 = entries.nextElement();
 
-                try (InputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+                try (InputStream is = new BufferedInputStream(zipFile.getInputStream(entry1));
                         OutputStream os =
                                 new BufferedOutputStream(
                                         new FileOutputStream(
@@ -209,7 +211,7 @@ public class MigrationService {
                         totalSizeArchive = totalSizeArchive + nBytes;
 
                         double compressionRatio =
-                                (double) totalSizeEntry / entry.getCompressedSize();
+                                (double) totalSizeEntry / entry1.getCompressedSize();
                         if (compressionRatio > getZipThresholdRatio()) {
                             throw new MigrationServiceException(
                                     "Ratio between compressed and uncompressed data is greater than %s"
@@ -232,29 +234,38 @@ public class MigrationService {
             }
         }
 
+        // process the zip file post-zip bomb checks
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                if (entry.getName().toLowerCase(Locale.ROOT).endsWith(".tif")
-                        || entry.getName().toLowerCase(Locale.ROOT).endsWith(".tiff")) {
+                String entryName = entry.getName().toLowerCase(Locale.ROOT);
+                if (entryName.endsWith(".tif")
+                        || entryName.endsWith(".tiff")
+                        || entryName.endsWith(".png")
+                        || entryName.endsWith(".jpg")
+                        || entryName.endsWith(".jpeg")
+                        || entryName.endsWith(".bmp")) {
+
                     byte[] data = zis.readAllBytes();
 
                     String pageHash = HashUtils.sha256(data);
                     migrationContext.addPageHash(entry.getName(), pageHash);
-                    pages.add(new TiffPage(entry.getName(), data));
+
+                    String mimeType = MigrationUtils.getDetectedMimeType(data);
+                    pages.add(new OcrPage(entry.getName(), data, mimeType, null));
                 }
             }
         }
 
         if (pages.isEmpty()) {
-            throw new MigrationServiceException("No TIFF pages found in ZIP");
+            throw new MigrationServiceException("No supported image pages found in ZIP");
         }
 
         return pages;
     }
 
     /**
-     * Prepare files path.
+     * Prepare chain zip path.
      *
      * @param workingDirectory the working directory
      * @param sourceMetadata   the source metadata
@@ -264,11 +275,11 @@ public class MigrationService {
      * @throws IOException              the io exception
      * @throws NoSuchAlgorithmException the no such algorithm exception
      */
-    public Path prepareFiles(
+    public Path prepareChainZip(
             Path workingDirectory,
             @NonNull SourceMetadata sourceMetadata,
             @NonNull MigrationContext migrationContext,
-            List<TiffPage> pages)
+            List<OcrPage> pages)
             throws IOException, NoSuchAlgorithmException {
 
         String docId = sourceMetadata.getDocId();
@@ -283,30 +294,19 @@ public class MigrationService {
     }
 
     /**
-     * Prepare sftp session.
+     * Perform ocr list.
      *
-     * @param docId             the doc id
-     * @param xml               the xml
-     * @param zipPath           the zip path
-     * @param pdfPath           the pdf path
-     * @param processInstanceId the process instance id
+     * @param pages the pages
+     * @return the list
+     * @throws IOException        the io exception
+     * @throws TesseractException the tesseract exception
      */
-    public void prepareSftpSession(
-            String docId, String xml, Path zipPath, Path pdfPath, String processInstanceId) {
-
-        Map<String, Object> inputMap = new HashMap<>();
-        inputMap.put("docId", docId);
-        inputMap.put("xml", xml);
-        inputMap.put("zipPath", zipPath);
-        inputMap.put("pdfPath", pdfPath);
-        inputMap.put("processInstanceId", processInstanceId);
-
-        SftpUtils.uploadToSftp(sftpTargetConfig.getRemoteDirectory(), remoteFileTemplate, inputMap);
-        log.info(
-                "Done {} | zipHash={} | pdfHash={}",
-                docId,
-                migrationContext.getZipHash(),
-                migrationContext.getPdfHash());
+    public List<String> performOcr(List<? extends OcrPage> pages)
+            throws IOException, TesseractException {
+        Tesseract tesseract = tesseractThreadLocal.get(); // per-thread singleton
+        List<String> results = OcrUtils.getOcrResults(pages, tesseract);
+        tesseractThreadLocal.remove();
+        return results;
     }
 
     /**
@@ -318,9 +318,9 @@ public class MigrationService {
      * @return the path
      * @throws IOException the io exception
      */
-    public Path createMergedPdf(List<TiffPage> pages, String docId, Path workingDirectory)
+    public Path createMergedPdf(List<OcrPage> pages, String docId, Path workingDirectory)
             throws IOException {
-        return MigrationUtils.mergeTiffToPdf(pages, docId, workingDirectory);
+        return MigrationUtils.mergePagesToPdf(pages, docId, workingDirectory);
     }
 
     /**
@@ -335,26 +335,44 @@ public class MigrationService {
             @NonNull SourceMetadata sourceMetadata,
             @NonNull MigrationContext migrationContext,
             Map<String, Object> map) {
+
+        var archivalMetadata = MigrationUtils.buildXml(sourceMetadata, migrationContext, map);
         return xmlMapper
                 .rebuild()
                 .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
                 .build()
-                .writeValueAsString(MigrationUtils.buildXml(sourceMetadata, migrationContext, map));
+                .writeValueAsString(archivalMetadata);
     }
 
     /**
-     * Perform ocr on tiff pages list.
+     * Create sftp upload target string.
      *
-     * @param pages the pages
-     * @return the list
-     * @throws IOException        the io exception
-     * @throws TesseractException the tesseract exception
+     * @param docId             the doc id
+     * @param xml               the xml
+     * @param zipPath           the zip path
+     * @param pdfPath           the pdf path
+     * @param processInstanceId the process instance id
+     * @return the string
      */
-    public List<String> performOcrOnTiffPages(List<TiffPage> pages)
-            throws IOException, TesseractException {
-        Tesseract tesseract = tesseractLocal.get(); // per-thread singleton
-        List<String> results = OcrUtils.getOcrResults(pages, tesseract);
-        tesseractLocal.remove();
-        return results;
+    public String createSftpUploadTarget(
+            String docId, String xml, Path zipPath, Path pdfPath, String processInstanceId) {
+
+        Map<String, Object> inputMap = new HashMap<>();
+        inputMap.put("docId", docId);
+        inputMap.put("xml", xml);
+        inputMap.put("zipPath", zipPath);
+        inputMap.put("pdfPath", pdfPath);
+        inputMap.put("processInstanceId", processInstanceId);
+
+        SftpUtils.executeSftpCommands(
+                sftpTargetConfig.getRemoteDirectory(), remoteFileTemplate, inputMap);
+        log.info(
+                "Done {} | zipHash={} | pdfHash={}",
+                docId,
+                migrationContext.getZipHash(),
+                migrationContext.getPdfHash());
+
+        return "%s/%s-%s"
+                .formatted(sftpTargetConfig.getRemoteDirectory(), docId, processInstanceId);
     }
 }

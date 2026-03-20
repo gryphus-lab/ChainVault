@@ -3,7 +3,8 @@
  */
 package ch.gryphus.chainvault.utils;
 
-import ch.gryphus.chainvault.domain.TiffPage;
+import ch.gryphus.chainvault.domain.OcrPage;
+import ch.gryphus.chainvault.domain.OcrSettings;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,28 +30,47 @@ public final class OcrUtils {
      * @param pages     the pages
      * @param tesseract the tesseract
      * @return the ocr results
-     * @throws IOException        the io exception
      * @throws TesseractException the tesseract exception
+     * @throws IOException        the io exception
      */
-    public static List<String> getOcrResults(List<TiffPage> pages, Tesseract tesseract)
-            throws IOException, TesseractException {
+    public static List<String> getOcrResults(List<? extends OcrPage> pages, Tesseract tesseract)
+            throws TesseractException, IOException {
         List<String> results = new ArrayList<>();
-        if (pages != null && !pages.isEmpty()) {
-            for (TiffPage page : pages) {
-                try (ByteArrayInputStream bis = new ByteArrayInputStream(page.data())) {
-                    BufferedImage image = ImageIO.read(bis);
-                    if (!isValidImageSize(image)) {
-                        results.add("");
-                        continue;
-                    }
-                    // Pre-process (grayscale + contrast)
-                    BufferedImage processed = preprocessImage(image);
 
-                    String text = tesseract.doOCR(processed);
-                    results.add(text.trim());
+        if (pages != null) {
+            for (OcrPage page : pages) {
+                if (!page.isSupportedImage()) {
+                    log.warn(
+                            "Unsupported format for OCR: {} ({})",
+                            page.getName(),
+                            page.getMimeType());
+                    results.add("");
+                    continue;
+                }
+
+                try (ByteArrayInputStream bis = new ByteArrayInputStream(page.getData())) {
+                    BufferedImage image = ImageIO.read(bis);
+
+                    // Defensive checks
+                    if (isValidImageSize(image)) {
+                        OcrSettings settings = page.getSettings();
+                        tesseract.setLanguage(settings.getLanguage());
+                        tesseract.setPageSegMode(settings.getPageSegMode());
+                        tesseract.setOcrEngineMode(settings.getOcrEngineMode());
+                        tesseract.setVariable(
+                                "user_defined_dpi", String.valueOf(settings.getDpi()));
+
+                        // Pre-processing if enabled
+                        BufferedImage processed =
+                                settings.isPreprocessEnabled() ? preprocessImage(image) : image;
+
+                        String text = tesseract.doOCR(processed);
+                        results.add(text.trim());
+                    }
                 }
             }
         }
+
         return results;
     }
 
@@ -58,7 +78,7 @@ public final class OcrUtils {
         if (image == null
                 || image.getWidth() <= 0
                 || image.getHeight() <= 0) { // check nulls and zero size
-            log.warn("Skipping invalid TIFF page: zero size");
+            log.warn("Skipping invalid page: zero size");
             return false;
         }
         if (image.getWidth() < 10 || image.getHeight() < 10) { // check width and height < 10

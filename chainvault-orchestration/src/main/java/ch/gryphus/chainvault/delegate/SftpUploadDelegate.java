@@ -53,14 +53,10 @@ public class SftpUploadDelegate extends AbstractTracingDelegate {
                         getTransientVariableSafely(execution, "workingDirectory", Path.class));
 
         String processInstanceId = execution.getProcessInstanceId();
-        migrationService.prepareSftpSession(docId, xml, zipPath, pdfPath, processInstanceId);
-
         String outputFileKey =
-                "%s/%s-%s"
-                        .formatted(
-                                migrationService.getSftpTargetConfig().getRemoteDirectory(),
-                                docId,
-                                processInstanceId);
+                migrationService.createSftpUploadTarget(
+                        docId, xml, zipPath, pdfPath, processInstanceId);
+
         execution.setTransientVariable("outputFileKey", outputFileKey);
 
         String zipPathRef =

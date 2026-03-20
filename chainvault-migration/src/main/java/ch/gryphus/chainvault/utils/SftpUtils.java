@@ -22,13 +22,13 @@ public final class SftpUtils {
     }
 
     /**
-     * Upload.
+     * Execute sftp commands.
      *
      * @param remoteDirectory    the remote directory
      * @param remoteFileTemplate the remote file template
      * @param map                the map
      */
-    public static void uploadToSftp(
+    public static void executeSftpCommands(
             String remoteDirectory,
             @NonNull SftpRemoteFileTemplate remoteFileTemplate,
             @NonNull Map<String, Object> map) {

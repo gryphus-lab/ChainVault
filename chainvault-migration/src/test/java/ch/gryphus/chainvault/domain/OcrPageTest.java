@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test;
 /**
  * The type Tiff page test.
  */
-class TiffPageTest {
+class OcrPageTest {
 
-    private TiffPage tiffPageUnderTest;
+    private OcrPage ocrPageUnderTest;
 
     /**
      * Sets up.
@@ -25,8 +25,8 @@ class TiffPageTest {
      */
     @BeforeEach
     void setUp() throws Exception {
-        tiffPageUnderTest =
-                new TiffPage(
+        ocrPageUnderTest =
+                new OcrPage(
                         "sample1.tiff",
                         Files.readAllBytes(Paths.get("src/test/resources/tiffs/sample1.tiff")));
     }
@@ -37,8 +37,8 @@ class TiffPageTest {
     @Test
     void testEqualsReturnsFalseIfSameFilenameWithDifferentContent() {
         assertThat(
-                        tiffPageUnderTest.equals(
-                                new TiffPage(
+                        ocrPageUnderTest.equals(
+                                new OcrPage(
                                         "sample1.tiff", // filename same, different content
                                         "not_the_same_content".getBytes(StandardCharsets.UTF_8))))
                 .isFalse();
@@ -51,12 +51,12 @@ class TiffPageTest {
      */
     @Test
     void testEqualsReturnsFalseForSameContentWithDifferentFilename() throws Exception {
-        TiffPage anotherTiffPage =
-                new TiffPage(
+        OcrPage anotherOcrPage =
+                new OcrPage(
                         "not_sample1.tiff", // different filename, same content
                         Files.readAllBytes(Paths.get("src/test/resources/tiffs/not_sample1.tiff")));
 
-        assertThat(tiffPageUnderTest.equals(anotherTiffPage)).isFalse();
+        assertThat(ocrPageUnderTest.equals(anotherOcrPage)).isFalse();
     }
 
     /**
@@ -64,7 +64,7 @@ class TiffPageTest {
      */
     @Test
     void testHashCodeReturnsNonZeroValue() {
-        assertThat(tiffPageUnderTest.hashCode()).isNotZero();
+        assertThat(ocrPageUnderTest.hashCode()).isNotZero();
     }
 
     /**
@@ -72,7 +72,7 @@ class TiffPageTest {
      */
     @Test
     void testToStringReturnsExpectedString() {
-        assertThat(tiffPageUnderTest).hasToString("TiffPage{name=sample1.tiff}");
+        assertThat(ocrPageUnderTest).hasToString("OcrPage{name=sample1.tiff, mimeType=image/tiff}");
     }
 
     /**
@@ -80,6 +80,6 @@ class TiffPageTest {
      */
     @Test
     void testNameReturnsExpectedString() {
-        assertThat(tiffPageUnderTest.name()).isEqualTo("sample1.tiff");
+        assertThat(ocrPageUnderTest.getName()).isEqualTo("sample1.tiff");
     }
 }

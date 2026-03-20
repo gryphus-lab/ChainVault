@@ -11,8 +11,8 @@ import ch.gryphus.chainvault.config.MigrationProperties;
 import ch.gryphus.chainvault.config.SftpTargetConfig;
 import ch.gryphus.chainvault.domain.ArchivalMetadata;
 import ch.gryphus.chainvault.domain.MigrationContext;
+import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.domain.SourceMetadata;
-import ch.gryphus.chainvault.domain.TiffPage;
 import ch.gryphus.chainvault.utils.HashUtils;
 import ch.gryphus.chainvault.utils.MigrationUtils;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +36,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -275,7 +276,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test sign tiff page with valid payload zip.
+     * Test sign source payload when payload zip is valid.
      *
      * @throws Exception the exception
      */
@@ -287,24 +288,24 @@ class MigrationServiceTest {
                         Path.of("%s/zips/valid_archive.zip".formatted(resourceDirectory)));
 
         // Run the test
-        List<TiffPage> result =
+        List<OcrPage> result =
                 migrationServiceUnderTest.signSourcePayload(
                         payload, migrationContext, workingDirectory);
 
         // Verify the results
         assertThat(result).hasSize(5);
-        assertThat(result.getFirst().name()).isEqualTo(("DOC-ARCH-2025-001_001.tiff"));
-        assertThat(HashUtils.sha256(result.getFirst().data()))
+        assertThat(result.getFirst().getName()).isEqualTo(("DOC-ARCH-2025-001_001.tiff"));
+        assertThat(HashUtils.sha256(result.getFirst().getData()))
                 .isEqualTo("a7c2d26a6c721dd9dba9cd6aec405552217c6ede0c9cf7cd5bcccca2a3d4e705");
     }
 
     /**
-     * Test prepare sftp session when valid metadata and payload exist.
+     * Test create sftp upload target when valid metadata and payload exist.
      *
      * @throws IOException the io exception
      */
     @Test
-    void testPrepareSftp_Session_whenValidMetadataAndPayloadExist() throws IOException {
+    void testCreateSftpUploadTarget_whenValidMetadataAndPayloadExist() throws IOException {
         // Setup
         String docId = "DOC-TEST-001";
         migrationContext.setDocId(docId);
@@ -313,7 +314,7 @@ class MigrationServiceTest {
         migrationContext.setPdfHash("pdfHash");
         migrationContext.setPageHashes(Map.ofEntries(Map.entry("value", "value")));
 
-        when(mockSftpTargetConfig.getRemoteDirectory()).thenReturn("result");
+        when(mockSftpTargetConfig.getRemoteDirectory()).thenReturn("upload");
         when(mockSftpRemoteFileTemplate.execute(any(SessionCallback.class)))
                 .thenAnswer(
                         invocation -> {
@@ -328,31 +329,34 @@ class MigrationServiceTest {
                         });
 
         // Run the test
-        migrationServiceUnderTest.prepareSftpSession(
-                docId,
-                Files.readString(Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
-                Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
-                Path.of("%s/sftp/sample.pdf".formatted(resourceDirectory)),
-                "abcde");
+        String outputKey =
+                migrationServiceUnderTest.createSftpUploadTarget(
+                        docId,
+                        Files.readString(
+                                Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
+                        Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
+                        Path.of("%s/sftp/sample.pdf".formatted(resourceDirectory)),
+                        "abcde");
 
         // Verify the results
         verify(mockSftpRemoteFileTemplate).execute(any(SessionCallback.class));
+        assertThat(outputKey).isNotNull().isNotBlank().hasToString("upload/DOC-TEST-001-abcde");
     }
 
     /**
-     * Test prepare sftp session when only valid metadata exists.
+     * Test create sftp upload target when only valid metadata exists.
      *
      * @throws IOException the io exception
      */
     @Test
-    void testPrepareSftp_Session_whenOnlyValidMetadataExists() throws IOException {
+    void testCreateSftpUploadTarget_whenOnlyValidMetadataExists() throws IOException {
         // Setup
         String docId = "DOC-TEST-001";
         migrationContext.setDocId(docId);
         migrationContext.setZipHash("zipHash");
         migrationContext.setPageHashes(Map.ofEntries(Map.entry("value", "value")));
 
-        when(mockSftpTargetConfig.getRemoteDirectory()).thenReturn("result");
+        when(mockSftpTargetConfig.getRemoteDirectory()).thenReturn("upload");
         when(mockSftpRemoteFileTemplate.execute(any(SessionCallback.class)))
                 .thenAnswer(
                         invocation -> {
@@ -367,50 +371,18 @@ class MigrationServiceTest {
                         });
 
         // Run the test
-        migrationServiceUnderTest.prepareSftpSession(
-                docId,
-                Files.readString(Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
-                Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
-                null,
-                "abcde");
+        String outputKey =
+                migrationServiceUnderTest.createSftpUploadTarget(
+                        docId,
+                        Files.readString(
+                                Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
+                        Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
+                        null,
+                        "abcde");
 
         // Verify the results
         verify(mockSftpRemoteFileTemplate).execute(any(SessionCallback.class));
-    }
-
-    /**
-     * Test merge tiff to pdf should generate expected result.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    void testMergeTiffToPdf_shouldGenerateExpectedResult() throws Exception {
-        // Setup
-        List<TiffPage> pages =
-                List.of(
-                        new TiffPage(
-                                "sample1.tiff",
-                                Files.readAllBytes(
-                                        Path.of(
-                                                "%s/tiffs/sample1.tiff"
-                                                        .formatted(resourceDirectory)))),
-                        new TiffPage(
-                                "sample2.tiff",
-                                Files.readAllBytes(
-                                        Path.of(
-                                                "%s/tiffs/sample2.tiff"
-                                                        .formatted(resourceDirectory)))));
-
-        // Run the test
-        Path result =
-                MigrationUtils.mergeTiffToPdf(
-                        pages, Constants.BPMN_PROC_VAR_DOC_ID, workingDirectory);
-
-        // Verify the results
-        assertThat(result.toFile()).exists();
-        byte[] resultBytes = Files.readAllBytes(result);
-        assertThat(MigrationUtils.getDetectedMimeType(resultBytes))
-                .isEqualTo(MediaType.APPLICATION_PDF_VALUE);
+        assertThat(outputKey).isNotNull().isNotBlank().hasToString("upload/DOC-TEST-001-abcde");
     }
 
     /**
@@ -446,7 +418,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test sign tiff pages should extract and preserve order.
+     * Test sign source payload should extract and preserve order.
      *
      * @throws Exception the exception
      */
@@ -457,7 +429,7 @@ class MigrationServiceTest {
                         Path.of("%s/zips/valid_archive.zip".formatted(resourceDirectory)));
         String docId = "DOC-ARCH-2025-001";
 
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 migrationServiceUnderTest.signSourcePayload(
                         zip, migrationContext, workingDirectory);
 
@@ -466,51 +438,52 @@ class MigrationServiceTest {
                 .allSatisfy(
                         page -> {
                             int i = pages.indexOf(page) + 1;
-                            assertThat(page.name()).isEqualTo("%s_%03d.tiff".formatted(docId, i));
+                            assertThat(page.getName())
+                                    .isEqualTo("%s_%03d.tiff".formatted(docId, i));
                         });
     }
 
     /**
-     * Test sign tiff pages should ignore non tiff files.
+     * Test sign source payload should ignore non tiff files.
      *
      * @throws Exception the exception
      */
     @Test
     void testSignSourcePayload_shouldIgnoreNonTiffFiles() throws Exception {
         byte[] zip =
-                createZipWithTiffs(
+                createZipWithEntries(
                         List.of(
                                 "page-001.tif", "TIFF1",
                                 "readme.txt", "ignore me",
                                 "page-002.tif", "TIFF2"));
 
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 migrationServiceUnderTest.signSourcePayload(
                         zip, migrationContext, workingDirectory);
 
         assertThat(pages).hasSize(2);
-        assertThat(pages.get(1).name()).isEqualTo("page-002.tif");
+        assertThat(pages.get(1).getName()).isEqualTo("page-002.tif");
     }
 
     /**
-     * Test sign tiff pages should throw when no tiffs.
+     * Test sign source payload should throw exception when no tiffs exist.
      *
      * @throws Exception the exception
      */
     @Test
-    void testSignSourcePayload_shouldThrowWhenNoTiffs() throws Exception {
-        byte[] zip = createZipWithTiffs(List.of("readme.txt", "no tiffs here"));
+    void testSignSourcePayload_shouldThrowExceptionWhenNoTiffsExist() throws Exception {
+        byte[] zip = createZipWithEntries(List.of("readme.txt", "no tiffs here"));
 
         assertThatThrownBy(
                         () ->
                                 migrationServiceUnderTest.signSourcePayload(
                                         zip, migrationContext, workingDirectory))
                 .isInstanceOf(MigrationServiceException.class)
-                .hasMessage("No TIFF pages found in ZIP");
+                .hasMessage("No supported image pages found in ZIP");
     }
 
     /**
-     * Test sign tiff pages should throw exception when total size exceeded.
+     * Test sign source payload should throw exception when total size exceeded.
      *
      * @throws IOException the io exception
      */
@@ -539,7 +512,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test sign tiff pages should throw exception when compression ratio exceeded.
+     * Test sign source payload should throw exception when compression ratio exceeded.
      *
      * @throws Exception the exception
      */
@@ -567,7 +540,7 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test sign tiff pages should throw exception when too many entries.
+     * Test sign source payload should throw exception when too many entries.
      *
      * @throws Exception the exception
      */
@@ -594,30 +567,27 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test create chain zip should produce valid zip with manifest when metadata and payload exists.
+     * Test prepare chain zip should produce valid zip with manifest when metadata and payload exists.
      *
      * @throws Exception the exception
      */
-    // ────────────────────────────────────────────────
-    // createChainZip
-    // ────────────────────────────────────────────────
     @Test
-    void testCreateChainZip_shouldProduceValidZipWithManifestWhenMetadataAndPayloadExists()
+    void testPrepareChainZip_shouldProduceValidZipWithManifestWhenMetadataAndPayloadExists()
             throws Exception {
         // Arrange - ensure meta is non-null and has values
         assertThat(meta).isNotNull();
         assertThat(meta.getTitle()).isNotNull(); // fail fast if setup broken
         migrationContext.setPayloadHash("payload-sha256-abc123");
 
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "sample1.tiff",
                                 Files.readAllBytes(
                                         Path.of(
                                                 "%s/tiffs/sample1.tiff"
                                                         .formatted(resourceDirectory)))),
-                        new TiffPage(
+                        new OcrPage(
                                 "sample2.tiff",
                                 Files.readAllBytes(
                                         Path.of(
@@ -627,84 +597,74 @@ class MigrationServiceTest {
         migrationContext.addPageHash("sample2.tiff", "hash-page2");
 
         // Act
-        Path zip =
-                migrationServiceUnderTest.prepareFiles(
+        Path zipFile =
+                migrationServiceUnderTest.prepareChainZip(
                         workingDirectory, meta, migrationContext, pages);
 
-        assertThat(Files.exists(zip)).isTrue();
-
-        // Verify ZIP content
-        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zip))) {
-            ZipEntry entry;
-            int tiffCount = 0;
-            String actualResult = null;
-
-            while ((entry = zis.getNextEntry()) != null) {
-                if ("manifest.json".equals(entry.getName())) {
-                    actualResult = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
-                } else if (entry.getName().endsWith(".tiff") || entry.getName().endsWith(".tif")) {
-                    tiffCount++;
-                    assertThat(zis.readAllBytes()).hasSizeGreaterThan(5);
-                }
-            }
-
-            assertThat(tiffCount).isEqualTo(2);
-            assertThat(actualResult).isNotNull();
-            String expectedResult =
-                    """
-                    {"docId":"DOC-TEST-001","pageCount":2,"pageHashes":{"sample1.tiff"\
-                    :"hash-page1"},"payloadHash":"payload-sha256-abc123","sourceMetadata":\
-                    {"docId":"DOC-TEST-001","title":"Test Invoice 2026","clientId":"CHE-123.456.789"}}\
-                    """;
-            JSONAssert.assertEquals(expectedResult, actualResult, JSONCompareMode.LENIENT);
-        }
+        assertThat(Files.exists(zipFile)).isTrue();
+        validateZipFileContents(
+                zipFile,
+                """
+                {"docId":"DOC-TEST-001","pageCount":2,"pageHashes":{"sample2.tiff":"hash-page2","sample1.tiff":"hash-page1"},
+                "payloadHash":"payload-sha256-abc123","sourceMetadata":{"docId":"DOC-TEST-001",
+                "clientId":"CHE-123.456.789","title":"Test Invoice 2026"}}
+                """);
     }
 
     /**
-     * Test create chain zip should produce valid zip with manifest when only metadata exists.
+     * Test prepare chain zip should produce valid zip with manifest when only metadata exists.
      *
      * @throws Exception the exception
      */
     @Test
-    void testCreateChainZip_shouldProduceValidZipWithManifestWhenOnlyMetadataExists()
+    void testPrepareChainZip_shouldProduceValidZipWithManifestWhenOnlyMetadataExists()
             throws Exception {
         // Arrange - ensure meta is non-null and has values
         assertThat(meta).isNotNull();
         assertThat(meta.getTitle()).isNotNull(); // fail fast if setup broken
 
         // Add null and empty contents
-        List<List<TiffPage>> pagesList = new ArrayList<>();
+        List<List<OcrPage>> pagesList = new ArrayList<>();
         pagesList.add(null);
         pagesList.add(Collections.emptyList());
 
         for (var pages : pagesList) {
             Path zipFile =
-                    migrationServiceUnderTest.prepareFiles(
+                    migrationServiceUnderTest.prepareChainZip(
                             workingDirectory, meta, migrationContext, pages);
 
             assertThat(Files.exists(zipFile)).isTrue();
-            validateZipFileContents(zipFile);
+            validateZipFileContents(
+                    zipFile,
+                    """
+                    {"docId":"DOC-TEST-001","sourceMetadata":{"docId":"DOC-TEST-001",
+                    "title":"Test Invoice 2026","clientId":"CHE-123.456.789"}}
+                    """);
         }
     }
 
-    private static void validateZipFileContents(Path zipFile) throws IOException, JSONException {
+    private static void validateZipFileContents(Path zipFile, String expectedResult)
+            throws IOException, JSONException {
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipFile))) {
             ZipEntry entry;
             String actualResult = null;
-
+            int pageCount = 0;
             while ((entry = zis.getNextEntry()) != null) {
                 if ("manifest.json".equals(entry.getName())) {
                     actualResult = new String(zis.readAllBytes(), StandardCharsets.UTF_8);
+                } else if (entry.getName().endsWith(".tiff") || entry.getName().endsWith(".tif")) {
+                    pageCount++;
+                    assertThat(zis.readAllBytes()).hasSizeGreaterThan(5);
                 }
             }
 
             assertThat(actualResult).isNotNull();
-            String expectedResult =
-                    """
-                    {"docId":"DOC-TEST-001","sourceMetadata":\
-                    {"docId":"DOC-TEST-001","title":"Test Invoice 2026","clientId":"CHE-123.456.789"}}\
-                    """;
             JSONAssert.assertEquals(expectedResult, actualResult, JSONCompareMode.LENIENT);
+
+            JSONObject manifest = new JSONObject(actualResult);
+            if (manifest.has("pageCount")) {
+                assertThat(manifest.get("pageCount")).isEqualTo(pageCount);
+            }
         }
     }
 
@@ -755,30 +715,27 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test merge tiff to pdf should create pdf with correct page count.
+     * Test merge pages to pdf should create pdf with correct page count.
      *
      * @throws Exception the exception
      */
-    // ────────────────────────────────────────────────
-    // mergeTiffToPdf
-    // ────────────────────────────────────────────────
     @Test
-    void testMergeTiffToPdf_shouldCreatePdfWithCorrectPageCount() throws Exception {
-        List<TiffPage> pages =
+    void testMergePagesToPdf_shouldCreatePdfWithCorrectPageCount() throws Exception {
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "sample1.tif",
                                 Files.readAllBytes(
                                         Path.of(
                                                 "%s/tiffs/sample1.tiff"
                                                         .formatted(resourceDirectory)))),
-                        new TiffPage(
+                        new OcrPage(
                                 "sample2.tif",
                                 Files.readAllBytes(
                                         Path.of(
                                                 "%s/tiffs/sample2.tiff"
                                                         .formatted(resourceDirectory)))));
-        Path pdfPath = MigrationUtils.mergeTiffToPdf(pages, "DOC-TEST-PDF", workingDirectory);
+        Path pdfPath = MigrationUtils.mergePagesToPdf(pages, "DOC-TEST-PDF", workingDirectory);
 
         assertThat(Files.exists(pdfPath)).isTrue();
 
@@ -791,13 +748,13 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test merge tiff to pdf should handle empty list.
+     * Test merge pages to pdf should handle empty list.
      *
      * @throws Exception the exception
      */
     @Test
-    void testMergeTiffToPdf_shouldHandleEmptyList() throws Exception {
-        Path pdf = MigrationUtils.mergeTiffToPdf(List.of(), "DOC-EMPTY", workingDirectory);
+    void testMergePagesToPdf_shouldHandleEmptyList() throws Exception {
+        Path pdf = MigrationUtils.mergePagesToPdf(List.of(), "DOC-EMPTY", workingDirectory);
 
         try (PDDocument doc = Loader.loadPDF(pdf.toFile())) {
             assertThat(doc.getNumberOfPages()).isZero();
@@ -805,19 +762,54 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test perform ocr on tiff pages should return expected content.
+     * Test merge pages to pdf should generate expected result.
      *
      * @throws Exception the exception
      */
     @Test
-    void testPerformOcrOnTiffPages_shouldReturnExpectedContent() throws Exception {
+    void testMergePagesToPdf_shouldGenerateExpectedResult() throws Exception {
+        // Setup
+        List<OcrPage> pages =
+                List.of(
+                        new OcrPage(
+                                "sample1.tiff",
+                                Files.readAllBytes(
+                                        Path.of(
+                                                "%s/tiffs/sample1.tiff"
+                                                        .formatted(resourceDirectory)))),
+                        new OcrPage(
+                                "sample2.tiff",
+                                Files.readAllBytes(
+                                        Path.of(
+                                                "%s/tiffs/sample2.tiff"
+                                                        .formatted(resourceDirectory)))));
+
+        // Run the test
+        Path result =
+                MigrationUtils.mergePagesToPdf(
+                        pages, Constants.BPMN_PROC_VAR_DOC_ID, workingDirectory);
+
+        // Verify the results
+        assertThat(result.toFile()).exists();
+        byte[] resultBytes = Files.readAllBytes(result);
+        assertThat(MigrationUtils.getDetectedMimeType(resultBytes))
+                .isEqualTo(MediaType.APPLICATION_PDF_VALUE);
+    }
+
+    /**
+     * Test perform ocr should return expected content.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    void testPerformOcr_shouldReturnExpectedContent() throws Exception {
         // Setup
         byte[] data =
                 Files.readAllBytes(Path.of("%s/tiffs/test_ocr.tiff".formatted(resourceDirectory)));
-        List<TiffPage> pages = List.of(new TiffPage("test_ocr.tiff", data));
+        List<OcrPage> pages = List.of(new OcrPage("test_ocr.tiff", data));
 
         // Run the test
-        List<String> result = migrationServiceUnderTest.performOcrOnTiffPages(pages);
+        List<String> result = migrationServiceUnderTest.performOcr(pages);
 
         // Verify the results
         String expectedContent =
@@ -831,57 +823,53 @@ class MigrationServiceTest {
     }
 
     /**
-     * Test perform ocr on tiff pages should not throw exception for invalid content.
+     * Test perform ocr should not throw exception for invalid content.
      */
     @Test
-    void testPerformOcrOnTiffPages_shouldNotThrowExceptionForInvalidContent() {
+    void testPerformOcr_shouldNotThrowExceptionForInvalidContent() {
         // Setup
-        List<TiffPage> pages =
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "bad_sample.tiff", "contents".getBytes(StandardCharsets.UTF_8)));
 
         // Verify the results
-        assertThatNoException()
-                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
+        assertThatNoException().isThrownBy(() -> migrationServiceUnderTest.performOcr(pages));
     }
 
     /**
-     * Test perform ocr on tiff pages should not throw exception when input is null or empty.
+     * Test perform ocr should not throw exception when input is null or empty.
      */
     @Test
-    void testPerformOcrOnTiffPages_shouldNotThrowExceptionWhenInputIsNullOrEmpty() {
+    void testPerformOcr_shouldNotThrowExceptionWhenInputIsNullOrEmpty() {
         // check for null
-        assertThatNoException()
-                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(null));
+        assertThatNoException().isThrownBy(() -> migrationServiceUnderTest.performOcr(null));
 
         // check for empty list
-        List<TiffPage> pages = Collections.emptyList();
-        assertThatNoException()
-                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
+        List<OcrPage> pages = Collections.emptyList();
+        assertThatNoException().isThrownBy(() -> migrationServiceUnderTest.performOcr(pages));
     }
 
     /**
-     * Test perform ocr on tiff pages should not throw exception when size is too small.
+     * Test perform ocr should not throw exception when size is too small.
      *
      * @throws Exception the exception
      */
     @Test
-    void testPerformOcrOnTiffPages_shouldNotThrowExceptionWhenSizeIsTooSmall() throws Exception {
-        List<TiffPage> pages =
+    void testPerformOcr_shouldNotThrowExceptionWhenSizeIsTooSmall() throws Exception {
+        List<OcrPage> pages =
                 List.of(
-                        new TiffPage(
+                        new OcrPage(
                                 "too_small_sizr.tiff",
                                 Files.readAllBytes(
                                         Path.of(
                                                 "%s/tiffs/too_small_size.tiff"
                                                         .formatted(resourceDirectory)))));
-        assertThatNoException()
-                .isThrownBy(() -> migrationServiceUnderTest.performOcrOnTiffPages(pages));
+        assertThatNoException().isThrownBy(() -> migrationServiceUnderTest.performOcr(pages));
     }
 
     // Helper to create small test ZIP
-    private static byte[] createZipWithTiffs(List<String> entries) throws Exception {
+    private static byte[] createZipWithEntries(List<String> entries) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             for (int i = 0; i < entries.size(); i += 2) {
