@@ -82,4 +82,29 @@ class OcrPageTest {
     void testNameReturnsExpectedString() {
         assertThat(ocrPageUnderTest.getName()).isEqualTo("sample1.tiff");
     }
+
+    @Test
+    void testIsSupportedImage_ReturnsTrueForSupportedFormats() {
+        // Run the test
+        boolean result = ocrPageUnderTest.isSupportedImage();
+
+        // Verify the results
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void testIsSupportedImage_ReturnsFalseForUnsupportedFormats() {
+        OcrPage anotherOcrPage =
+                new OcrPage(
+                        "another_file.xyz",
+                        "content".getBytes(StandardCharsets.UTF_8),
+                        "application/text",
+                        null);
+
+        // Run the test
+        boolean result = anotherOcrPage.isSupportedImage();
+
+        // Verify the results
+        assertThat(result).isFalse();
+    }
 }

@@ -53,8 +53,7 @@ public class OcrPage {
      * @return the boolean
      */
     public boolean isSupportedImage() {
-        return mimeType != null
-                && (mimeType.startsWith("image/") || "application/pdf".equals(mimeType));
+        return (mimeType.startsWith("image/") || "application/pdf".equals(mimeType));
     }
 
     public String toString() {

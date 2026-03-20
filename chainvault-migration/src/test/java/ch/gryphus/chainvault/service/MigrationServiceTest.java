@@ -449,7 +449,7 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignSourcePayload_shouldIgnoreNonTiffFiles() throws Exception {
+    void testSignSourcePayload_shouldIgnoreNonOcrFiles() throws Exception {
         byte[] zip =
                 createZipWithEntries(
                         List.of(
@@ -471,7 +471,7 @@ class MigrationServiceTest {
      * @throws Exception the exception
      */
     @Test
-    void testSignSourcePayload_shouldThrowExceptionWhenNoTiffsExist() throws Exception {
+    void testSignSourcePayload_shouldThrowExceptionWhenNoImagesExist() throws Exception {
         byte[] zip = createZipWithEntries(List.of("readme.txt", "no tiffs here"));
 
         assertThatThrownBy(

@@ -9,13 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 
 /**
  * The type Sftp utils.
  */
-@Slf4j
 public final class SftpUtils {
     private SftpUtils() {
         /* This utility class should not be instantiated */
