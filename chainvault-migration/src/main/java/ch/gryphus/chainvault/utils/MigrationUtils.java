@@ -9,14 +9,17 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.MigrationProvenance;
 import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.domain.SourceMetadata;
+import ch.gryphus.chainvault.service.MigrationServiceException;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,11 +28,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 import lombok.NonNull;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.tika.Tika;
 import tools.jackson.databind.ObjectMapper;
 
@@ -63,6 +69,51 @@ public final class MigrationUtils {
      */
     public static String getDetectedMimeType(byte[] bytes) {
         return tika.detect(bytes);
+    }
+
+    /**
+     * Extract pdf pages list.
+     *
+     * @param pdfBytes     the pdf bytes
+     * @param originalName the original name
+     * @return the list
+     */
+    public static List<OcrPage> extractPdfPages(byte[] pdfBytes, String originalName) {
+        List<OcrPage> pdfPages = new ArrayList<>();
+
+        try (PDDocument doc = Loader.loadPDF(pdfBytes)) {
+            PDFRenderer renderer = new PDFRenderer(doc);
+
+            for (int pageNum = 0; pageNum < doc.getNumberOfPages(); pageNum++) {
+                BufferedImage image = renderer.renderImageWithDPI(pageNum, 300, ImageType.RGB);
+
+                // Convert rendered page to PNG bytes (Tesseract-friendly)
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(image, "png", baos);
+                byte[] pngData = baos.toByteArray();
+
+                String pageName = "%s_page%03d.png".formatted(originalName, pageNum + 1);
+                pdfPages.add(createOcrPage(pageName, pngData, "image/png"));
+            }
+        } catch (IOException e) {
+            throw new MigrationServiceException(
+                    "Error extracting pages from PDF file: %s, caused by: %s"
+                            .formatted(originalName, e));
+        }
+
+        return pdfPages;
+    }
+
+    /**
+     * Create ocr page ocr page.
+     *
+     * @param entryName the entry name
+     * @param data      the data
+     * @param mimeType  the mime type
+     * @return the ocr page
+     */
+    public static @NonNull OcrPage createOcrPage(String entryName, byte[] data, String mimeType) {
+        return new OcrPage(entryName, data, mimeType, null);
     }
 
     /**

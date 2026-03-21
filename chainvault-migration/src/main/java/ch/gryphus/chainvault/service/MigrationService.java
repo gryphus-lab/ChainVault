@@ -13,11 +13,9 @@ import ch.gryphus.chainvault.utils.MigrationUtils;
 import ch.gryphus.chainvault.utils.OcrUtils;
 import ch.gryphus.chainvault.utils.SftpUtils;
 import ch.gryphus.chainvault.utils.SourceApiUtils;
-import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,17 +31,12 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import javax.imageio.ImageIO;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -252,17 +245,20 @@ public class MigrationService {
                 switch (mimeType) {
                     case "application/pdf" -> {
                         // Extract PDF pages as individual PNG images
-                        List<OcrPage> pdfPages = extractPdfPages(data, entryName);
+                        List<OcrPage> pdfPages = MigrationUtils.extractPdfPages(data, entryName);
                         pages.addAll(pdfPages);
+
+                        String pdfHash = HashUtils.sha256(data);
+                        migrationContext.addPageHash(entryName, pdfHash);
                     }
                     case "image/tiff", "image/png", "image/jpeg", "image/bmp" -> {
+                        pages.add(MigrationUtils.createOcrPage(entryName, data, mimeType));
+
                         String pageHash = HashUtils.sha256(data);
                         migrationContext.addPageHash(entryName, pageHash);
-
-                        pages.add(new OcrPage(entryName, data, mimeType, null));
                     }
                     case null, default -> {
-                        //
+                        // do nothing
                     }
                 }
             }
@@ -273,52 +269,6 @@ public class MigrationService {
         }
 
         return pages;
-    }
-
-    private List<OcrPage> extractPdfPages(byte[] pdfBytes, String originalName) {
-        List<OcrPage> pdfPages = new ArrayList<>();
-
-        try (PDDocument doc = Loader.loadPDF(pdfBytes)) {
-            PDFRenderer renderer = new PDFRenderer(doc);
-
-            for (int pageNum = 0; pageNum < doc.getNumberOfPages(); pageNum++) {
-                BufferedImage image = getRenderedImage(renderer, pageNum, doc);
-                if (image != null) {
-                    // Convert rendered page to PNG bytes (Tesseract-friendly)
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(image, "png", baos);
-                    byte[] pngData = baos.toByteArray();
-
-                    String pageName = "%s_page%03d.png".formatted(originalName, pageNum + 1);
-                    pdfPages.add(new OcrPage(pageName, pngData, "image/png", null));
-                }
-            }
-        } catch (IOException e) {
-            throw new MigrationServiceException(
-                    "Error extracting pages from PDF file: %s, caused by: %s"
-                            .formatted(originalName, e));
-        }
-
-        return pdfPages;
-    }
-
-    private static BufferedImage getRenderedImage(
-            PDFRenderer renderer, int pageNum, PDDocument doc) {
-        BufferedImage image;
-        try {
-            image = renderer.renderImageWithDPI(pageNum, 300, ImageType.RGB);
-        } catch (IOException e) {
-            log.error(
-                    "Failed to render PDF page {} of {}: {}",
-                    pageNum + 1,
-                    doc.getNumberOfPages(),
-                    e.getMessage(),
-                    e);
-            throw new MigrationServiceException(
-                    "Failed to render PDF page %d of %d, caused by: %s"
-                            .formatted(pageNum + 1, doc.getNumberOfPages(), e));
-        }
-        return image;
     }
 
     /**
