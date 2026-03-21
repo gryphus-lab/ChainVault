@@ -57,11 +57,10 @@ public class MigrationService {
     @Getter private final SftpTargetConfig sftpTargetConfig;
     private final XmlMapper xmlMapper;
     private final ObjectMapper objectMapper;
-
-    private final MigrationContext migrationContext;
     private final MigrationProperties props;
-
     private final ThreadLocal<Tesseract> tesseractThreadLocal;
+
+    private MigrationContext migrationContext;
 
     /**
      * Instantiates a new Migration service.
@@ -95,6 +94,7 @@ public class MigrationService {
                             t.setOcrEngineMode(3);
                             return t;
                         });
+
     }
 
     /**

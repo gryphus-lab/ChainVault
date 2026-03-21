@@ -359,6 +359,7 @@ class MigrationServiceTest {
         String docId = "DOC-TEST-001";
         migrationContext.setDocId(docId);
         migrationContext.setZipHash("zipHash");
+        migrationContext.setPdfHash("pdfHash");
         migrationContext.setPageHashes(Map.ofEntries(Map.entry("value", "value")));
 
         when(mockSftpTargetConfig.getRemoteDirectory()).thenReturn("upload");
