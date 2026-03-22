@@ -341,7 +341,8 @@ class MigrationServiceTest {
                                 Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
                         Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
                         Path.of("%s/sftp/sample.pdf".formatted(resourceDirectory)),
-                        "abcde");
+                        "abcde",
+                        migrationContext);
 
         // Verify the results
         verify(mockSftpRemoteFileTemplate).execute(any(SessionCallback.class));
@@ -384,7 +385,8 @@ class MigrationServiceTest {
                                 Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
                         Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
                         null,
-                        "abcde");
+                        "abcde",
+                        migrationContext);
 
         // Verify the results
         verify(mockSftpRemoteFileTemplate).execute(any(SessionCallback.class));
