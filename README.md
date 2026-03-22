@@ -210,13 +210,7 @@ mise compose-down-full
 
 The `chainvault` BPMN process (`chainvault-orchestration/src/main/resources/processes/chainvault.bpmn`) follows this execution path:
 
-```
-Start → Async Init → Extract & Hash → [Payload Exists?]
-  ├─ yes → Sign Payload → Prepare Files → [Pages Exist?]
-  │           ├─ yes → Perform OCR → Merge to PDF → Transform Metadata → Upload to SFTP → End (Success)
-  │           └─ no  → Transform Metadata → Upload to SFTP → End (Success)
-  └─ no  → Prepare Files → [Pages Exist?] → ...
-```
+![](img/bpmn_process.png "Chainvault BPMN Process")
 
 Each task has a boundary error event that routes failures to the Handle Error task, terminating with End (Failed).
 
