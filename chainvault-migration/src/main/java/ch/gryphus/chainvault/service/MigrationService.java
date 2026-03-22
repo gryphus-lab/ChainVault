@@ -57,10 +57,7 @@ public class MigrationService {
     @Getter private final SftpTargetConfig sftpTargetConfig;
     private final XmlMapper xmlMapper;
     private final ObjectMapper objectMapper;
-
-    private final MigrationContext migrationContext;
     private final MigrationProperties props;
-
     private final ThreadLocal<Tesseract> tesseractThreadLocal;
 
     /**
@@ -82,8 +79,6 @@ public class MigrationService {
         this.props = props;
         xmlMapper = new XmlMapper();
         objectMapper = new ObjectMapper();
-
-        migrationContext = new MigrationContext();
 
         tesseractThreadLocal =
                 ThreadLocal.withInitial(
@@ -144,6 +139,7 @@ public class MigrationService {
         Map<String, Object> map = new HashMap<>();
         byte[] payload;
 
+        MigrationContext migrationContext = new MigrationContext();
         migrationContext.setDocId(docId);
         map.put("migrationContext", migrationContext);
 
@@ -286,7 +282,7 @@ public class MigrationService {
             Path workingDirectory,
             @NonNull SourceMetadata sourceMetadata,
             @NonNull MigrationContext migrationContext,
-            List<OcrPage> pages)
+            List<? extends OcrPage> pages)
             throws IOException, NoSuchAlgorithmException {
 
         String docId = sourceMetadata.getDocId();
@@ -325,7 +321,7 @@ public class MigrationService {
      * @return the path
      * @throws IOException the io exception
      */
-    public Path createMergedPdf(List<OcrPage> pages, String docId, Path workingDirectory)
+    public Path createMergedPdf(List<? extends OcrPage> pages, String docId, Path workingDirectory)
             throws IOException {
         return MigrationUtils.mergePagesToPdf(pages, docId, workingDirectory);
     }
@@ -359,10 +355,16 @@ public class MigrationService {
      * @param zipPath           the zip path
      * @param pdfPath           the pdf path
      * @param processInstanceId the process instance id
+     * @param migrationContext  the migration context
      * @return the string
      */
     public String createSftpUploadTarget(
-            String docId, String xml, Path zipPath, Path pdfPath, String processInstanceId) {
+            String docId,
+            String xml,
+            Path zipPath,
+            Path pdfPath,
+            String processInstanceId,
+            MigrationContext migrationContext) {
 
         Map<String, Object> inputMap = new HashMap<>();
         inputMap.put("docId", docId);

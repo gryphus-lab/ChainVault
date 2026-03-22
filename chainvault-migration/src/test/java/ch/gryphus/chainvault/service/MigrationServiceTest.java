@@ -341,7 +341,8 @@ class MigrationServiceTest {
                                 Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
                         Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
                         Path.of("%s/sftp/sample.pdf".formatted(resourceDirectory)),
-                        "abcde");
+                        "abcde",
+                        migrationContext);
 
         // Verify the results
         verify(mockSftpRemoteFileTemplate).execute(any(SessionCallback.class));
@@ -359,6 +360,7 @@ class MigrationServiceTest {
         String docId = "DOC-TEST-001";
         migrationContext.setDocId(docId);
         migrationContext.setZipHash("zipHash");
+        migrationContext.setPdfHash("pdfHash");
         migrationContext.setPageHashes(Map.ofEntries(Map.entry("value", "value")));
 
         when(mockSftpTargetConfig.getRemoteDirectory()).thenReturn("upload");
@@ -383,7 +385,8 @@ class MigrationServiceTest {
                                 Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
                         Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
                         null,
-                        "abcde");
+                        "abcde",
+                        migrationContext);
 
         // Verify the results
         verify(mockSftpRemoteFileTemplate).execute(any(SessionCallback.class));
@@ -914,5 +917,34 @@ class MigrationServiceTest {
             }
         }
         return baos.toByteArray();
+    }
+
+    @Test
+    void testCreateMergedPdf_shouldReturnExpectedResults() throws Exception {
+        List<OcrPage> pages =
+                List.of(
+                        new OcrPage(
+                                "sample1.tiff",
+                                Files.readAllBytes(
+                                        Path.of(
+                                                "%s/tiffs/sample1.tiff"
+                                                        .formatted(resourceDirectory)))),
+                        new OcrPage(
+                                "sample2.tiff",
+                                Files.readAllBytes(
+                                        Path.of(
+                                                "%s/tiffs/sample2.tiff"
+                                                        .formatted(resourceDirectory)))));
+        // Run
+        Path mergedPdfPath =
+                migrationServiceUnderTest.createMergedPdf(
+                        pages, migrationContext.getDocId(), workingDirectory);
+
+        // Verify
+        assertThat(mergedPdfPath.toFile()).exists();
+        assertThat(mergedPdfPath.toFile()).hasFileName(migrationContext.getDocId() + "-merged.pdf");
+        byte[] mergedPdfBytes = Files.readAllBytes(mergedPdfPath);
+        assertThat(MigrationUtils.getDetectedMimeType(mergedPdfBytes))
+                .isEqualTo(MediaType.APPLICATION_PDF_VALUE);
     }
 }

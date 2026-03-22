@@ -36,7 +36,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
     @SuppressWarnings("resource")
     // Fake REST API (json-server with db.json)
     @Container
-    static final GenericContainer<?> jsonServer =
+    private static final GenericContainer<?> jsonServer =
             new GenericContainer<>(DockerImageName.parse("node:25-alpine"))
                     .withPrivilegedMode(true)
                     .withCommand(
@@ -54,7 +54,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
      */
     @SuppressWarnings("resource")
     @Container
-    static final GenericContainer<?> sftpContainer =
+    private static final GenericContainer<?> sftpContainer =
             new GenericContainer<>(DockerImageName.parse("atmoz/sftp:latest"))
                     .withCommand("testuser:testpass123:::upload")
                     .withExposedPorts(22)
@@ -97,7 +97,7 @@ class OrchestrationServiceIT extends BaseServiceIT {
      * @throws InterruptedException the interrupted exception
      */
     @Test
-    void migrateDocument_withMetadataAndPayloadShouldUploadToRealSftp()
+    void migrateDocument_withMetadataAndTiffPayloadShouldUploadToRealSftp()
             throws IOException, InterruptedException {
         String docId = "DOC-ARCH-2025-001";
         Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, docId);
@@ -209,5 +209,60 @@ class OrchestrationServiceIT extends BaseServiceIT {
 
         // exception is handled as an on the BPM layer
         assertThatNoException().isThrownBy(() -> orchestrationService.startProcess(variables));
+    }
+
+    /**
+     * Migrate document with metadata and payload should upload to real sftp.
+     *
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
+     */
+    @Test
+    void migrateDocument_withMetadataAndPdfPayloadShouldUploadToRealSftp()
+            throws IOException, InterruptedException {
+        String docId = "DOC-ARCH-2025-003";
+        Map<String, Object> variables = Map.of(Constants.BPMN_PROC_VAR_DOC_ID, docId);
+
+        // Check if process workflow is started
+        String processInstanceId = orchestrationService.startProcess(variables);
+        assertThat(processInstanceId).isNotNull();
+
+        // Wait for upload to appear in SFTP (poll the container)
+        String expectedDir = "/home/testuser/upload/%s-%s".formatted(docId, processInstanceId);
+
+        // Check if uploaded contents are chain zip file, merged pdf and xml
+        await().atMost(Duration.ofSeconds(30))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(
+                        () -> {
+                            String checkDirResult =
+                                    sftpContainer
+                                            .execInContainer(
+                                                    "[ -d %s ] && echo exists || echo 'not found'"
+                                                            .formatted(expectedDir))
+                                            .getStdout();
+                            assertThat(checkDirResult)
+                                    .as("SFTP check directory should exist")
+                                    .contains("exists");
+
+                            String lsResult =
+                                    sftpContainer
+                                            .execInContainer("ls", "-l", expectedDir)
+                                            .getStdout();
+
+                            assertThat(lsResult)
+                                    .as("SFTP directory should contain 3 uploaded files")
+                                    .contains("_chain.zip")
+                                    .contains(".pdf")
+                                    .contains("_meta.xml");
+                        });
+
+        // check if exactly 3 files were uploaded
+        String fileCount =
+                sftpContainer
+                        .execInContainer("sh", "-c", "ls %s | wc -l".formatted(expectedDir))
+                        .getStdout()
+                        .trim();
+        assertThat(Integer.parseInt(fileCount.trim())).isEqualTo(3);
     }
 }

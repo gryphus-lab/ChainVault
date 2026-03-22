@@ -6,32 +6,31 @@ package ch.gryphus.chainvault.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
  * The type Xml validator test.
  */
-class XmlValidatorTest {
+class XmlValidationUtilsTest {
     /**
      * Sets up.
      */
     @BeforeEach
     void setUp() {
-        XmlValidator.setXsdPath("src/test/resources/xmls/ArchivalMetadata.xsd");
+        XmlValidationUtils.setXsdPath("src/test/resources/xmls/ArchivalMetadata.xsd");
     }
 
     /**
      * Test valid xml.
      */
-    @SneakyThrows
     @Test
-    void testValidXML() {
+    void testValidXML() throws IOException {
         assertThat(
-                        XmlValidator.isValid(
+                        XmlValidationUtils.isValid(
                                 Files.readString(
                                         Path.of("src/test/resources/xmls/valid-test.xml"))))
                 .isTrue();
@@ -40,11 +39,10 @@ class XmlValidatorTest {
     /**
      * Test invalid xml.
      */
-    @SneakyThrows
     @Test
-    void testInvalidXML() {
+    void testInvalidXML() throws IOException {
         assertThat(
-                        XmlValidator.isValid(
+                        XmlValidationUtils.isValid(
                                 Files.readString(
                                         Path.of("src/test/resources/xmls/invalid-test.xml"))))
                 .isFalse();
@@ -59,7 +57,7 @@ class XmlValidatorTest {
         assertThatNoException()
                 .isThrownBy(
                         () ->
-                                XmlValidator.setXsdPath(
+                                XmlValidationUtils.setXsdPath(
                                         "src/test/resources/xmls/ArchivalMetadata.xsd"));
     }
 }

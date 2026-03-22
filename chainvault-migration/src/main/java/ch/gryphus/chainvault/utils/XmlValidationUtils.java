@@ -20,8 +20,8 @@ import org.xml.sax.SAXException;
 /**
  * The type Xml validator.
  */
-final class XmlValidator {
-    private XmlValidator() {
+final class XmlValidationUtils {
+    private XmlValidationUtils() {
         /* This utility class should not be instantiated */
     }
 

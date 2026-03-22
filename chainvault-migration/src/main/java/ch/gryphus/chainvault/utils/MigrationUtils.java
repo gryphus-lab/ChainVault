@@ -105,7 +105,7 @@ public final class MigrationUtils {
     }
 
     /**
-     * Create ocr page ocr page.
+     * Create ocr page.
      *
      * @param entryName the entry name
      * @param data      the data
@@ -125,8 +125,8 @@ public final class MigrationUtils {
      * @return the path
      * @throws IOException the io exception
      */
-    public static Path mergePagesToPdf(List<OcrPage> pages, String docId, Path workingDirectory)
-            throws IOException {
+    public static Path mergePagesToPdf(
+            List<? extends OcrPage> pages, String docId, Path workingDirectory) throws IOException {
         Path pdf = Path.of("%s/%s-merged.pdf".formatted(workingDirectory, docId));
         try (var doc = new PDDocument()) {
             for (var page : pages) {
@@ -202,7 +202,7 @@ public final class MigrationUtils {
     public static void createChainZipFile(
             @NonNull SourceMetadata sourceMetadata,
             @NonNull MigrationContext migrationContext,
-            List<OcrPage> pages,
+            List<? extends OcrPage> pages,
             Path zipPath)
             throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipPath))) {

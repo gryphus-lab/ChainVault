@@ -99,7 +99,7 @@ public final class OcrUtils {
         op.filter(original, gray);
 
         // Contrast enhancement
-        RescaleOp rescale = new RescaleOp(1.8f, -40f, null);
+        RescaleOp rescale = new RescaleOp(1.8f, -40.0f, null);
         rescale.filter(gray, gray);
 
         return gray;

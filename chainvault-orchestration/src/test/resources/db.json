@@ -34,6 +34,23 @@
         "2025",
         "batch"
       ]
+    },
+    {
+      "id": "DOC-ARCH-2025-003",
+      "docId": "DOC-ARCH-2025-002",
+      "title": "Invoice #7923 - Stark Industries",
+      "creationDate": "2025-01-31T20:53:05Z",
+      "clientId": "CHE-738.760.530",
+      "accountNo": "CH6900762067743211524",
+      "documentType": "INVOICE",
+      "department": "Accounts Payable",
+      "status": "ARCHIVED",
+      "tags": [
+        "finance",
+        "2025",
+        "batch"
+      ],
+      "payloadUrl": "/payloads/invoice_001.zip"
     }
   ]
 }
