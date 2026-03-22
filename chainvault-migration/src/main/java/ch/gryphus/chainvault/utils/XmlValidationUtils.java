@@ -18,7 +18,7 @@ import org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 
 /**
- * The type Xml validator.
+ * The type Xml validation utils.
  */
 final class XmlValidationUtils {
     private XmlValidationUtils() {

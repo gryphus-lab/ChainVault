@@ -13,30 +13,18 @@ import ch.gryphus.chainvault.utils.MigrationUtils;
 import ch.gryphus.chainvault.utils.OcrUtils;
 import ch.gryphus.chainvault.utils.SftpUtils;
 import ch.gryphus.chainvault.utils.SourceApiUtils;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
-import org.apache.commons.io.FileUtils;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -171,94 +159,9 @@ public class MigrationService {
     public List<OcrPage> signSourcePayload(
             byte[] payload, @NonNull MigrationContext migrationContext, Path workingDirectory)
             throws IOException, NoSuchAlgorithmException {
-        List<OcrPage> pages = new ArrayList<>();
-
-        // security hotspot fix against zip bombs
-        File file =
-                new File("%s/temp_%s.zip".formatted(workingDirectory, migrationContext.getDocId()));
-        FileUtils.writeByteArrayToFile(file, payload);
-
-        try (ZipFile zipFile = new ZipFile(file)) {
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-
-            long totalSizeArchive = 0L;
-            long totalEntryArchive = 0L;
-
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-
-                try (InputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
-                        OutputStream os =
-                                new BufferedOutputStream(
-                                        new FileOutputStream(
-                                                "%s/output_onlyfortesting.txt"
-                                                        .formatted(workingDirectory)))) {
-
-                    totalEntryArchive++;
-
-                    int nBytes;
-                    byte[] buffer = new byte[2048];
-                    long totalSizeEntry = 0L;
-
-                    while ((nBytes = is.read(buffer)) > 0) {
-                        os.write(buffer, 0, nBytes);
-                        totalSizeEntry += nBytes;
-                        totalSizeArchive = totalSizeArchive + nBytes;
-
-                        double compressionRatio =
-                                (double) totalSizeEntry / entry.getCompressedSize();
-                        if (compressionRatio > getZipThresholdRatio()) {
-                            throw new MigrationServiceException(
-                                    "Ratio between compressed and uncompressed data is greater than %s"
-                                            .formatted(getZipThresholdRatio()));
-                        }
-                    }
-                }
-
-                if (totalSizeArchive > getZipThresholdSize()) {
-                    throw new MigrationServiceException(
-                            "Total size of the archive is greater than the threshold %d bytes"
-                                    .formatted(getZipThresholdSize()));
-                }
-
-                if (totalEntryArchive > getZipThresholdEntries()) {
-                    throw new MigrationServiceException(
-                            "Number of entries in the archive is greater than %d"
-                                    .formatted(getZipThresholdEntries()));
-                }
-            }
-        }
-
-        // process the zip file post-zip bomb checks
-        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                String entryName = entry.getName();
-
-                byte[] data = zis.readAllBytes();
-                String mimeType = MigrationUtils.getDetectedMimeType(data);
-
-                switch (mimeType) {
-                    case "application/pdf" -> {
-                        // Extract PDF pages as individual PNG images
-                        List<OcrPage> pdfPages = MigrationUtils.extractPdfPages(data, entryName);
-                        pages.addAll(pdfPages);
-
-                        String pdfHash = HashUtils.sha256(data);
-                        migrationContext.addPageHash(entryName, pdfHash);
-                    }
-                    case "image/tiff", "image/png", "image/jpeg", "image/bmp" -> {
-                        pages.add(MigrationUtils.createOcrPage(entryName, data, mimeType));
-
-                        String pageHash = HashUtils.sha256(data);
-                        migrationContext.addPageHash(entryName, pageHash);
-                    }
-                    case null, default -> {
-                        // do nothing
-                    }
-                }
-            }
-        }
+        List<OcrPage> pages =
+                MigrationUtils.generateSignedPayload(
+                        payload, migrationContext, workingDirectory, props);
 
         if (pages.isEmpty()) {
             throw new MigrationServiceException("No supported image pages found in ZIP");
@@ -350,7 +253,6 @@ public class MigrationService {
     /**
      * Create sftp upload target string.
      *
-     * @param docId             the doc id
      * @param xml               the xml
      * @param zipPath           the zip path
      * @param pdfPath           the pdf path
@@ -359,7 +261,6 @@ public class MigrationService {
      * @return the string
      */
     public String createSftpUploadTarget(
-            String docId,
             String xml,
             Path zipPath,
             Path pdfPath,
@@ -367,6 +268,7 @@ public class MigrationService {
             MigrationContext migrationContext) {
 
         Map<String, Object> inputMap = new HashMap<>();
+        String docId = migrationContext.getDocId();
         inputMap.put("docId", docId);
         inputMap.put("xml", xml);
         inputMap.put("zipPath", zipPath);

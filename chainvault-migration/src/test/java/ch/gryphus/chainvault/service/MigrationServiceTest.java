@@ -336,7 +336,6 @@ class MigrationServiceTest {
         // Run the test
         String outputKey =
                 migrationServiceUnderTest.createSftpUploadTarget(
-                        docId,
                         Files.readString(
                                 Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
                         Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),
@@ -380,7 +379,6 @@ class MigrationServiceTest {
         // Run the test
         String outputKey =
                 migrationServiceUnderTest.createSftpUploadTarget(
-                        docId,
                         Files.readString(
                                 Path.of("%s/sftp/sample_meta.xml".formatted(resourceDirectory))),
                         Path.of("%s/sftp/sample.zip".formatted(resourceDirectory)),

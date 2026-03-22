@@ -60,7 +60,7 @@ public class SftpUploadDelegate extends AbstractTracingDelegate {
         String processInstanceId = execution.getProcessInstanceId();
         String outputFileKey =
                 migrationService.createSftpUploadTarget(
-                        docId, xml, zipPath, pdfPath, processInstanceId, migrationContext);
+                        xml, zipPath, pdfPath, processInstanceId, migrationContext);
 
         execution.setTransientVariable("outputFileKey", outputFileKey);
 
