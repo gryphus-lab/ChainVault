@@ -6,6 +6,7 @@ COPY pom.xml .
 COPY chainvault-migration ./chainvault-migration
 COPY chainvault-orchestration ./chainvault-orchestration
 COPY chainvault-report-aggregate ./chainvault-report-aggregate
+COPY chainvault-archrules ./chainvault-archrules
 COPY docker-resources/chainvault-app/init-scripts/setup.sh ./
 RUN mvn -DskipTests -q package
 

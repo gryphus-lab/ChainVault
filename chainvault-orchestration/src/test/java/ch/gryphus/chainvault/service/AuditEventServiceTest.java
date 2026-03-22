@@ -9,10 +9,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
-import ch.gryphus.chainvault.entity.MigrationAudit;
-import ch.gryphus.chainvault.entity.MigrationEvent;
+import ch.gryphus.chainvault.model.entity.MigrationAudit;
+import ch.gryphus.chainvault.model.entity.MigrationEvent;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.repository.MigrationEventRepository;
+import ch.gryphus.chainvault.workflow.service.AuditEventService;
 import io.opentelemetry.api.trace.Span;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

@@ -3,7 +3,7 @@
  */
 package ch.gryphus.chainvault.repository;
 
-import ch.gryphus.chainvault.entity.MigrationEvent;
+import ch.gryphus.chainvault.model.entity.MigrationEvent;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

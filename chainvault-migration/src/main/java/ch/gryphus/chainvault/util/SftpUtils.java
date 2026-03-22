@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
+package ch.gryphus.chainvault.util;
+
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+import lombok.NonNull;
+import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
+
+/**
+ * The type Sftp utils.
+ */
+public final class SftpUtils {
+    private SftpUtils() {
+        /* This utility class should not be instantiated */
+    }
+
+    /**
+     * Execute sftp commands.
+     *
+     * @param remoteDirectory    the remote directory
+     * @param remoteFileTemplate the remote file template
+     * @param map                the map
+     */
+    public static void executeSftpCommands(
+            String remoteDirectory,
+            @NonNull SftpRemoteFileTemplate remoteFileTemplate,
+            @NonNull Map<String, Object> map) {
+        Object docId = map.get("docId");
+        String folder = "%s/%s-%s".formatted(remoteDirectory, docId, map.get("processInstanceId"));
+
+        remoteFileTemplate.execute(
+                session -> {
+                    session.mkdir(folder);
+                    session.write(
+                            Files.newInputStream((Path) map.get("zipPath")),
+                            "%s/%s_chain.zip".formatted(folder, docId));
+                    var pdfPath = map.get("pdfPath");
+                    if (pdfPath != null) { // when PDF was not generated
+                        session.write(
+                                Files.newInputStream((Path) pdfPath),
+                                "%s/%s.pdf".formatted(folder, docId));
+                    }
+                    session.write(
+                            new ByteArrayInputStream(
+                                    map.get("xml").toString().getBytes(StandardCharsets.UTF_8)),
+                            "%s/%s_meta.xml".formatted(folder, docId));
+                    return null;
+                });
+    }
+}

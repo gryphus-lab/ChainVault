@@ -19,6 +19,7 @@
         <module>chainvault-migration</module>
         <module>chainvault-orchestration</module>
         <module>chainvault-report-aggregate</module>
+        <module>chainvault-archrules</module>
     </modules>
     <scm>
         <url>https://github.com/gryphus-lab/chainvault</url>
@@ -61,6 +62,7 @@
         <testcontainers.version>2.0.3</testcontainers.version>
         <tika-core.version>3.2.3</tika-core.version>
         <xmlunit.version>2.11.0</xmlunit.version>
+        <archunit-junit5.version>1.4.1</archunit-junit5.version>
         
         <!-- plugins -->
         <dependency-versions-check-maven-plugin.version>4.0.1</dependency-versions-check-maven-plugin.version>
@@ -104,6 +106,11 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson-2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit-junit5</artifactId>
+                <version>${archunit-junit5.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -298,7 +305,7 @@
                                 <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
                                 <sortPlugins>groupId,artifactId</sortPlugins>
                                 <sortProperties>false</sortProperties>
-                                <sortModules>true</sortModules>
+                                <sortModules>false</sortModules>
                                 <sortExecutions>true</sortExecutions>
                             </sortPom>
                         </pom>
