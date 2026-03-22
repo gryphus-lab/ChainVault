@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.config.TraceIdFilter;
-import ch.gryphus.chainvault.service.OrchestrationService;
+import ch.gryphus.chainvault.workflow.service.OrchestrationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

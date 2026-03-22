@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.awaitility.Awaitility.await;
 
 import ch.gryphus.chainvault.config.Constants;
+import ch.gryphus.chainvault.workflow.service.OrchestrationService;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;

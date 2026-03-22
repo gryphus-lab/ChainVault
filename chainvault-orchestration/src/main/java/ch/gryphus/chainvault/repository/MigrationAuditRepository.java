@@ -3,7 +3,7 @@
  */
 package ch.gryphus.chainvault.repository;
 
-import ch.gryphus.chainvault.entity.MigrationAudit;
+import ch.gryphus.chainvault.model.entity.MigrationAudit;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

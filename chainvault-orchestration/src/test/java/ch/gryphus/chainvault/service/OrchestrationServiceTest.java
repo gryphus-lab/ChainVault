@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import ch.gryphus.chainvault.config.Constants;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
+import ch.gryphus.chainvault.workflow.service.OrchestrationService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
