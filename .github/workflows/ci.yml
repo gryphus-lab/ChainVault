@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       actions: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -78,10 +79,37 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build
 
-      - name: Build and Analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Build and Verify
         run: |
           mise set TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
           mise run github-build
+
+      - name: Publish Test Report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: '**/target/surefire-reports/*.xml'
+          pull-request-report: true
+          integrations-config: |
+            {
+              "junit-to-ctrf": {
+                "enabled": true,
+                "action": "convert",
+                "options": {
+                  "output": "./ctrf-reports/ctrf-report.json",
+                  "toolname": "junit-to-ctrf",
+                  "useSuiteName": false,
+                  "env": {
+                    "appName": "my-app"
+                  }
+                }
+              }
+            }
+        if: always()
+
+      - name: Run Sonar scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
