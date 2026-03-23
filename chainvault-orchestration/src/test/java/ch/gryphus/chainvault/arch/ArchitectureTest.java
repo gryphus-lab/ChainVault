@@ -3,12 +3,14 @@
  */
 package ch.gryphus.chainvault.arch;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import com.tngtech.archunit.lang.syntax.ArchRuleDefinition;
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition;
 
 @AnalyzeClasses(
@@ -24,7 +26,7 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule no_direct_persistence_access_from_controller =
-            ArchRuleDefinition.noClasses()
+            noClasses()
                     .that()
                     .resideInAPackage("..controller..")
                     .should()
@@ -33,7 +35,7 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule internal_modules_should_not_use_web_dependencies =
-            ArchRuleDefinition.noClasses()
+            noClasses()
                     .that()
                     .resideInAPackage("..service..")
                     .should()
@@ -42,13 +44,13 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule no_field_injection =
-            ArchRuleDefinition.noClasses()
+            noClasses()
                     .should()
                     .beAnnotatedWith("org.springframework.beans.factory.annotation.Autowired");
 
     @ArchTest
     static final ArchRule naming_conventions =
-            ArchRuleDefinition.classes()
+            classes()
                     .that()
                     .resideInAPackage("..service..")
                     .should()
@@ -58,7 +60,7 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule repo_naming =
-            ArchRuleDefinition.classes()
+            classes()
                     .that()
                     .resideInAPackage("..repository..")
                     .should()
@@ -73,7 +75,7 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule flowable_services_only_in_workflow_layer =
-            ArchRuleDefinition.classes()
+            classes()
                     .that()
                     .haveSimpleNameEndingWith("Service")
                     .and()
@@ -84,7 +86,7 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule delegates_naming_and_location =
-            ArchRuleDefinition.classes()
+            classes()
                     .that()
                     .implement(org.flowable.engine.delegate.JavaDelegate.class)
                     .should()
@@ -94,7 +96,7 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule no_flowable_entities_in_controllers =
-            ArchRuleDefinition.noClasses()
+            noClasses()
                     .that()
                     .resideInAPackage("..controller..")
                     .should()
@@ -106,7 +108,7 @@ class ArchitectureTest {
 
     @ArchTest
     static final ArchRule workflow_logic_must_be_transactional =
-            ArchRuleDefinition.classes()
+            classes()
                     .that()
                     .resideInAPackage("..workflow..")
                     .and()
