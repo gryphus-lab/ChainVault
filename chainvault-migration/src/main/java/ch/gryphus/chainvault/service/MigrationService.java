@@ -83,58 +83,6 @@ public class MigrationService {
     }
 
     /**
-     * Gets source metadata.
-     *
-     * @param restClient the rest client
-     * @param docId      the doc id
-     * @return the source metadata
-     */
-    public static SourceMetadata getSourceMetadata(RestClient restClient, String docId) {
-        return restClient
-                .get()
-                .uri("/documents/{id}", docId)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange(
-                        (_, response) -> {
-                            if (response.getStatusCode().is4xxClientError()) {
-                                throw new MigrationServiceException(
-                                        "Unable to find document with id: %s".formatted(docId),
-                                        response.getStatusCode(),
-                                        response.getHeaders());
-                            } else {
-                                return response.bodyTo(SourceMetadata.class);
-                            }
-                        });
-    }
-
-    /**
-     * Get payload bytes byte [ ].
-     *
-     * @param restClient the rest client
-     * @param docId      the doc id
-     * @param meta       the meta
-     * @return the byte [ ]
-     */
-    public static byte[] getPayloadBytes(RestClient restClient, String docId, SourceMetadata meta) {
-        return restClient
-                .get()
-                .uri(meta.getPayloadUrl())
-                .accept(MediaType.APPLICATION_OCTET_STREAM)
-                .exchange(
-                        (_, response) -> {
-                            if (response.getStatusCode().is4xxClientError()) {
-                                throw new MigrationServiceException(
-                                        "Unable to find payload for document with id: %s"
-                                                .formatted(docId),
-                                        response.getStatusCode(),
-                                        response.getHeaders());
-                            } else {
-                                return response.bodyTo(byte[].class);
-                            }
-                        });
-    }
-
-    /**
      * Gets temp dir.
      *
      * @return the temp dir
@@ -168,6 +116,43 @@ public class MigrationService {
      */
     int getZipThresholdEntries() {
         return props.zipThresholdEntries();
+    }
+
+    private SourceMetadata getSourceMetadata(RestClient restClient, String docId) {
+        return restClient
+                .get()
+                .uri("/documents/{id}", docId)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange(
+                        (_, response) -> {
+                            if (response.getStatusCode().is4xxClientError()) {
+                                throw new MigrationServiceException(
+                                        "Unable to find document with id: %s".formatted(docId),
+                                        response.getStatusCode(),
+                                        response.getHeaders());
+                            } else {
+                                return response.bodyTo(SourceMetadata.class);
+                            }
+                        });
+    }
+
+    private byte[] getPayloadBytes(RestClient restClient, String docId, SourceMetadata meta) {
+        return restClient
+                .get()
+                .uri(meta.getPayloadUrl())
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .exchange(
+                        (_, response) -> {
+                            if (response.getStatusCode().is4xxClientError()) {
+                                throw new MigrationServiceException(
+                                        "Unable to find payload for document with id: %s"
+                                                .formatted(docId),
+                                        response.getStatusCode(),
+                                        response.getHeaders());
+                            } else {
+                                return response.bodyTo(byte[].class);
+                            }
+                        });
     }
 
     /**
@@ -249,24 +234,24 @@ public class MigrationService {
 
                         double compressionRatio =
                                 (double) totalSizeEntry / entry.getCompressedSize();
-                        if (compressionRatio > props.zipThresholdRatio()) {
+                        if (compressionRatio > getZipThresholdRatio()) {
                             throw new MigrationServiceException(
                                     "Ratio between compressed and uncompressed data is greater than %s"
-                                            .formatted(props.zipThresholdRatio()));
+                                            .formatted(getZipThresholdRatio()));
                         }
                     }
                 }
 
-                if (totalSizeArchive > props.zipThresholdSize()) {
+                if (totalSizeArchive > getZipThresholdSize()) {
                     throw new MigrationServiceException(
                             "Total size of the archive is greater than the threshold %d bytes"
-                                    .formatted(props.zipThresholdSize()));
+                                    .formatted(getZipThresholdSize()));
                 }
 
-                if (totalEntryArchive > props.zipThresholdEntries()) {
+                if (totalEntryArchive > getZipThresholdEntries()) {
                     throw new MigrationServiceException(
                             "Number of entries in the archive is greater than %d"
-                                    .formatted(props.zipThresholdEntries()));
+                                    .formatted(getZipThresholdEntries()));
                 }
             }
         }
