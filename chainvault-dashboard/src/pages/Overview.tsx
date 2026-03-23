@@ -2,8 +2,19 @@ import { Link } from "react-router-dom";
 import { useMigrationStats, useMigrations } from "../hooks/useMigration";
 import { format } from "date-fns";
 import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
+import type { Migration } from "../types";
 
-export default function Overview() {
+function getBgTextColors(m: Migration) {
+  if (m.status === "FAILED") {
+    return "bg-red-100 text-red-800";
+  } else if (m.status === "SUCCESS") {
+    return "bg-green-100 text-green-800";
+  } else {
+    return "bg-blue-100 text-blue-800";
+  }
+}
+
+export function Overview() {
   const { data: stats, isLoading: statsLoading } = useMigrationStats();
   const { data: migrations = [], isLoading: migrationsLoading } =
     useMigrations();
@@ -103,15 +114,9 @@ export default function Overview() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        m.status === "SUCCESS"
-                          ? "bg-green-100 text-green-800"
-                          : m.status === "FAILED"
-                            ? "bg-red-100 text-red-800"
-                            : m.status === "COMPENSATED"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-blue-100 text-blue-800"
-                      }`}
+                      className={`px-2 py-1 text-xs rounded-full ${getBgTextColors(
+                        m,
+                      )}`}
                     >
                       {m.status}
                     </span>

@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prettier": "prettier . --check"
+    "prettier": "prettier . --write",
+    "prettier-check": "prettier . --check"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.95.2",
