@@ -13,19 +13,20 @@ import ch.gryphus.chainvault.util.HashUtils;
 import ch.gryphus.chainvault.util.MigrationUtils;
 import ch.gryphus.chainvault.util.OcrUtils;
 import ch.gryphus.chainvault.util.SftpUtils;
-import ch.gryphus.chainvault.util.SourceApiUtils;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import org.apache.commons.io.FileUtils;
+import org.springframework.http.MediaType;
 import org.springframework.integration.sftp.session.SftpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -82,6 +83,58 @@ public class MigrationService {
     }
 
     /**
+     * Gets source metadata.
+     *
+     * @param restClient the rest client
+     * @param docId      the doc id
+     * @return the source metadata
+     */
+    public static SourceMetadata getSourceMetadata(RestClient restClient, String docId) {
+        return restClient
+                .get()
+                .uri("/documents/{id}", docId)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange(
+                        (_, response) -> {
+                            if (response.getStatusCode().is4xxClientError()) {
+                                throw new MigrationServiceException(
+                                        "Unable to find document with id: %s".formatted(docId),
+                                        response.getStatusCode(),
+                                        response.getHeaders());
+                            } else {
+                                return response.bodyTo(SourceMetadata.class);
+                            }
+                        });
+    }
+
+    /**
+     * Get payload bytes byte [ ].
+     *
+     * @param restClient the rest client
+     * @param docId      the doc id
+     * @param meta       the meta
+     * @return the byte [ ]
+     */
+    public static byte[] getPayloadBytes(RestClient restClient, String docId, SourceMetadata meta) {
+        return restClient
+                .get()
+                .uri(meta.getPayloadUrl())
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .exchange(
+                        (_, response) -> {
+                            if (response.getStatusCode().is4xxClientError()) {
+                                throw new MigrationServiceException(
+                                        "Unable to find payload for document with id: %s"
+                                                .formatted(docId),
+                                        response.getStatusCode(),
+                                        response.getHeaders());
+                            } else {
+                                return response.bodyTo(byte[].class);
+                            }
+                        });
+    }
+
+    /**
      * Gets temp dir.
      *
      * @return the temp dir
@@ -133,13 +186,13 @@ public class MigrationService {
         map.put("migrationContext", migrationContext);
 
         // get source metadata
-        var meta = SourceApiUtils.getSourceMetadata(restClient, docId);
+        var meta = getSourceMetadata(restClient, docId);
         migrationContext.setMetadataHash(HashUtils.sha256(objectMapper.writeValueAsBytes(meta)));
         map.put("meta", meta);
 
         // get payload url
         if (meta.getPayloadUrl() != null) {
-            payload = SourceApiUtils.getPayloadBytes(restClient, docId, meta);
+            payload = getPayloadBytes(restClient, docId, meta);
             migrationContext.setPayloadHash(HashUtils.sha256(payload));
             map.put("payload", payload);
         }
@@ -160,9 +213,94 @@ public class MigrationService {
     public List<OcrPage> signSourcePayload(
             byte[] payload, @NonNull MigrationContext migrationContext, Path workingDirectory)
             throws IOException, NoSuchAlgorithmException {
-        List<OcrPage> pages =
-                MigrationUtils.generateSignedPayload(
-                        payload, migrationContext, workingDirectory, props);
+        List<OcrPage> pages = new ArrayList<>();
+
+        // security hotspot fix against zip bombs
+        File file =
+                new File("%s/temp_%s.zip".formatted(workingDirectory, migrationContext.getDocId()));
+        FileUtils.writeByteArrayToFile(file, payload);
+
+        try (ZipFile zipFile = new ZipFile(file)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+            long totalSizeArchive = 0L;
+            long totalEntryArchive = 0L;
+
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+
+                try (InputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+                        OutputStream os =
+                                new BufferedOutputStream(
+                                        new FileOutputStream(
+                                                "%s/output_onlyfortesting.txt"
+                                                        .formatted(workingDirectory)))) {
+
+                    totalEntryArchive++;
+
+                    int nBytes;
+                    byte[] buffer = new byte[2048];
+                    long totalSizeEntry = 0L;
+
+                    while ((nBytes = is.read(buffer)) > 0) {
+                        os.write(buffer, 0, nBytes);
+                        totalSizeEntry += nBytes;
+                        totalSizeArchive = totalSizeArchive + nBytes;
+
+                        double compressionRatio =
+                                (double) totalSizeEntry / entry.getCompressedSize();
+                        if (compressionRatio > props.zipThresholdRatio()) {
+                            throw new MigrationServiceException(
+                                    "Ratio between compressed and uncompressed data is greater than %s"
+                                            .formatted(props.zipThresholdRatio()));
+                        }
+                    }
+                }
+
+                if (totalSizeArchive > props.zipThresholdSize()) {
+                    throw new MigrationServiceException(
+                            "Total size of the archive is greater than the threshold %d bytes"
+                                    .formatted(props.zipThresholdSize()));
+                }
+
+                if (totalEntryArchive > props.zipThresholdEntries()) {
+                    throw new MigrationServiceException(
+                            "Number of entries in the archive is greater than %d"
+                                    .formatted(props.zipThresholdEntries()));
+                }
+            }
+        }
+
+        // process the zip file post-zip bomb checks
+        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(payload))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String entryName = entry.getName();
+
+                byte[] data = zis.readAllBytes();
+                String mimeType = MigrationUtils.getDetectedMimeType(data);
+
+                switch (mimeType) {
+                    case "application/pdf" -> {
+                        // Extract PDF pages as individual PNG images
+                        List<OcrPage> pdfPages = MigrationUtils.extractPdfPages(data, entryName);
+                        pages.addAll(pdfPages);
+
+                        String pdfHash = HashUtils.sha256(data);
+                        migrationContext.addPageHash(entryName, pdfHash);
+                    }
+                    case "image/tiff", "image/png", "image/jpeg", "image/bmp" -> {
+                        pages.add(new OcrPage(entryName, data, mimeType, null));
+
+                        String pageHash = HashUtils.sha256(data);
+                        migrationContext.addPageHash(entryName, pageHash);
+                    }
+                    case null, default -> {
+                        // do nothing
+                    }
+                }
+            }
+        }
 
         if (pages.isEmpty()) {
             throw new MigrationServiceException("No supported image pages found in ZIP");

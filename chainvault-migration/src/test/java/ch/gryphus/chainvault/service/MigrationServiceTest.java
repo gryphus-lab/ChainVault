@@ -497,9 +497,8 @@ class MigrationServiceTest {
                         () ->
                                 migrationServiceUnderTest.signSourcePayload(
                                         zip, migrationContext, workingDirectory))
-                .isInstanceOf(MigrationServiceException.class)
-                .hasMessageContaining("Error extracting pages from PDF file") // error message
-                .hasMessageContaining("caused by: " + IOException.class.getName()); // error cause
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("Error extracting pages from PDF file");
     }
 
     /**
