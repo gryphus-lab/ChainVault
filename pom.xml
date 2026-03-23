@@ -19,7 +19,6 @@
         <module>chainvault-migration</module>
         <module>chainvault-orchestration</module>
         <module>chainvault-report-aggregate</module>
-        <module>chainvault-archrules</module>
     </modules>
     <scm>
         <url>https://github.com/gryphus-lab/chainvault</url>
@@ -110,6 +109,11 @@
             <dependency>
                 <groupId>com.tngtech.archunit</groupId>
                 <artifactId>archunit-junit5</artifactId>
+                <version>${archunit-junit5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit-junit5-engine</artifactId>
                 <version>${archunit-junit5.version}</version>
             </dependency>
             <dependency>
