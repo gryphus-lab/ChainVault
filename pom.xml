@@ -59,7 +59,7 @@
         <swagger-core-jakarta.version>2.2.45</swagger-core-jakarta.version>
         <tess4j.version>5.18.0</tess4j.version>
         <testcontainers.version>2.0.3</testcontainers.version>
-        <tika-core.version>3.2.3</tika-core.version>
+        <tika-core.version>3.3.0</tika-core.version>
         <xmlunit.version>2.11.0</xmlunit.version>
         <archunit-junit5.version>1.4.1</archunit-junit5.version>
         
