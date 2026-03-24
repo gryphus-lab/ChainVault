@@ -2,10 +2,10 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import axios from "axios";
-import type { Migration, MigrationStats, MigrationDetail } from "../types";
+import type { Migration, MigrationStats, MigrationDetail } from "@/types";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api",
   timeout: 10000,
 });
 

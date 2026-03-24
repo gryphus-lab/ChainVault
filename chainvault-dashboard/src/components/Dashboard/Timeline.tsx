@@ -3,14 +3,17 @@
  */
 import { format, parseISO, differenceInMilliseconds } from "date-fns";
 import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
-import type { MigrationEvent } from "../../types";
+import type { MigrationEvent } from "@/types";
 
 interface TimelineProps {
   events: MigrationEvent[];
   isLoading?: boolean;
 }
 
-export default function Timeline({ events, isLoading = false }: TimelineProps) {
+export default function Timeline({
+  events,
+  isLoading = false,
+}: Readonly<TimelineProps>) {
   if (isLoading) {
     return (
       <div className="py-8 text-center text-gray-500">Loading timeline...</div>

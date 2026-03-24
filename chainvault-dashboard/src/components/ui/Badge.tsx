@@ -12,7 +12,7 @@ export function Badge({
   className,
   variant = "default",
   ...props
-}: BadgeProps) {
+}: Readonly<BadgeProps>) {
   const variants = {
     default: "bg-gray-100 text-gray-800",
     success: "bg-green-100 text-green-800",

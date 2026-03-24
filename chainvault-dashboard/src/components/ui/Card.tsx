@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils.ts";
 import * as React from "react";
 
 type CardProps = React.HTMLAttributes<HTMLDivElement>;
@@ -26,7 +26,7 @@ export function CardHeader({ className, ...props }: Readonly<CardProps>) {
 
 export function CardTitle({ className, ...props }: Readonly<CardProps>) {
   return (
-    <h3
+    <div
       className={cn("text-lg font-medium text-gray-900", className)}
       {...props}
     />

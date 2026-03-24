@@ -64,6 +64,17 @@
                             <arguments>build</arguments>
                         </configuration>
                     </execution>
+                    
+                    <!-- Run tests -->
+                    <execution>
+                        <id>yarn-react-tests</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>test:coverage</arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             

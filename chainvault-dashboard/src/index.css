@@ -2,7 +2,9 @@
 
 /* Optional: Add your custom styles here */
 @layer base {
-    html {
-        font-feature-settings: "rlig" 1, "calt" 1;
-    }
+  html {
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
 }

@@ -6,8 +6,8 @@ import {
   getMigrationDetail,
   getMigrations,
   getMigrationStats,
-} from "../lib/api";
-import type { Migration, MigrationStats, MigrationDetail } from "../types";
+} from "@/lib/api";
+import type { Migration, MigrationStats, MigrationDetail } from "@/types";
 
 export function useMigrationStats() {
   return useQuery<MigrationStats>({

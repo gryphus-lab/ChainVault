@@ -41,10 +41,10 @@ export function Skeleton({
 export function SkeletonText({
   lines = 1,
   className,
-}: {
+}: Readonly<{
   lines?: number;
   className?: string;
-}) {
+}>) {
   return (
     <div className={cn("space-y-2", className)}>
       {Array.from({ length: lines }).map((_, i) => (
@@ -54,7 +54,7 @@ export function SkeletonText({
   );
 }
 
-export function SkeletonCard({ className }: { className?: string }) {
+export function SkeletonCard({ className }: Readonly<{ className?: string }>) {
   return (
     <div className={cn("rounded-lg border bg-white p-6 shadow", className)}>
       <Skeleton height="h-6" width="w-3/4" className="mb-4" />
