@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import { Link } from "react-router-dom";
 import { useMigrationStats, useMigrations } from "../hooks/useMigration";
 import { format } from "date-fns";

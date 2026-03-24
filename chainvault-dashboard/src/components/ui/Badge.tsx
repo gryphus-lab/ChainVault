@@ -1,4 +1,7 @@
-import { Cn } from "../../lib/utils";
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
+import { cn } from "../../lib/utils";
 import * as React from "react";
 
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -19,7 +22,7 @@ export function Badge({
 
   return (
     <span
-      className={Cn(
+      className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
         variants[variant],
         className,

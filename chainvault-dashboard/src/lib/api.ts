@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import axios from "axios";
 import type { Migration, MigrationStats, MigrationDetail } from "../types";
 

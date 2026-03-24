@@ -1,11 +1,8 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import { format, parseISO, differenceInMilliseconds } from "date-fns";
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  AlertTriangle,
-  ArrowRight,
-} from "lucide-react";
+import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
 import type { MigrationEvent } from "../../types";
 
 interface TimelineProps {

@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 export interface Migration {
   id: string;
   docId: string;
