@@ -64,7 +64,7 @@
                             <arguments>build</arguments>
                         </configuration>
                     </execution>
-
+                    
                     <!-- Run tests -->
                     <execution>
                         <id>yarn-react-tests</id>
