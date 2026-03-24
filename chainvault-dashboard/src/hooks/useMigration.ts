@@ -2,7 +2,11 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import { useQuery } from "@tanstack/react-query";
-import { getMigrationDetail, getMigrations, getMigrationStats } from "../lib/api";
+import {
+  getMigrationDetail,
+  getMigrations,
+  getMigrationStats,
+} from "../lib/api";
 import type { Migration, MigrationStats, MigrationDetail } from "../types";
 
 export function useMigrationStats() {

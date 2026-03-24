@@ -2,7 +2,7 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Overview } from "./pages/Overview";
+import Overview from "./pages/Overview";
 import MigrationDetailPage from "./pages/MigrationDetailPage";
 
 function App() {

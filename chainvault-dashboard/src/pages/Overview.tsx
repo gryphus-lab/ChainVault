@@ -4,22 +4,22 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { format, subDays } from "date-fns";
+import { format, parseISO, subDays } from "date-fns";
 import { Search, X } from "lucide-react";
 
 import { getMigrations, getMigrationStats } from "../lib/api";
 import type { Migration, MigrationStats } from "../types";
 
 import { Badge } from "../components/ui/Badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
-import { SkeletonCard } from "../components/ui/Skeleton";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card";
+import { Skeleton, SkeletonCard } from "../components/ui/Skeleton";
 
-type StatusFilter =
-  | "ALL"
-  | "SUCCESS"
-  | "FAILED"
-  | "RUNNING"
-  | "PENDING";
+type StatusFilter = "ALL" | "SUCCESS" | "FAILED" | "RUNNING" | "PENDING";
 
 export default function Overview() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -277,9 +277,7 @@ export default function Overview() {
                               ? "success"
                               : migration.status === "FAILED"
                                 ? "danger"
-                                : migration.status === "COMPENSATED"
-                                  ? "warning"
-                                  : "default"
+                                : "default"
                           }
                         >
                           {migration.status}
