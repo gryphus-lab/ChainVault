@@ -43,17 +43,6 @@
                         </goals>
                     </execution>
                     
-                    <!-- Build React app -->
-                    <execution>
-                        <id>yarn-build</id>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>build</arguments>
-                        </configuration>
-                    </execution>
-                    
                     <!-- Install dependencies -->
                     <execution>
                         <id>yarn-install</id>
@@ -62,6 +51,17 @@
                         </goals>
                         <configuration>
                             <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <!-- Build React app -->
+                    <execution>
+                        <id>yarn-react-build</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>build</arguments>
                         </configuration>
                     </execution>
                 </executions>
