@@ -12,7 +12,10 @@ export default defineConfig({
   },
 
   test: {
-    reporters: ["default", ["junit", { outputFile: "./target/junit.xml" }]],
+    reporters: [
+      "default",
+      ["junit", { outputFile: "./target/surefire-reports/junit.xml" }],
+    ],
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",
