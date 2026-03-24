@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ch.gryphus</groupId>
@@ -11,17 +9,17 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
+    
     <artifactId>chainvault-dashboard</artifactId>
     <packaging>jar</packaging>
     <name>${project.groupId}::${project.artifactId}</name>
-
+    
     <properties>
         <node.version>v20.20.1</node.version>
         <yarn.version>v1.22.22</yarn.version>
         <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
     </properties>
-
+    
     <build>
         <plugins>
             <!-- Frontend Maven Plugin -->
@@ -44,18 +42,7 @@
                             <goal>install-node-and-yarn</goal>
                         </goals>
                     </execution>
-
-                    <!-- Install dependencies -->
-                    <execution>
-                        <id>yarn-install</id>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install --frozen-lockfile</arguments>
-                        </configuration>
-                    </execution>
-
+                    
                     <!-- Build React app -->
                     <execution>
                         <id>yarn-build</id>
@@ -66,9 +53,20 @@
                             <arguments>build</arguments>
                         </configuration>
                     </execution>
+                    
+                    <!-- Install dependencies -->
+                    <execution>
+                        <id>yarn-install</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install --frozen-lockfile</arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
-
+            
             <!-- Copy built files to target so Sonar can analyze them -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -76,10 +74,10 @@
                 <executions>
                     <execution>
                         <id>copy-react-build</id>
-                        <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
+                        <phase>prepare-package</phase>
                         <configuration>
                             <outputDirectory>${project.build.directory}/classes/static</outputDirectory>
                             <resources>
