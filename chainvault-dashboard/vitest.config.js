@@ -12,6 +12,7 @@ export default defineConfig({
   },
 
   test: {
+    reporters: ["default", ["junit", { outputFile: "./target/junit.xml" }]],
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",
@@ -19,7 +20,7 @@ export default defineConfig({
 
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html", "lcov"], // lcov = required by SonarQube
+      reporter: ["text", "json", "html", "lcov"],
       reportsDirectory: "./coverage",
       exclude: [
         "node_modules/**",
