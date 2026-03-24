@@ -5,6 +5,8 @@ maven = "3.9"
 python = "3.12"
 "aqua:astral-sh/uv" = "latest" # uv is blazing fast for venv + pip installs
 docker-slim = "latest"
+node = "20"
+yarn = "4.13.0"
 
 # ────────────────────────────────────────
 # Environment (activated repo-wide)
@@ -67,7 +69,9 @@ ci = { run = [
   "java -jar chainvault-orchestration/target/*.jar --spring.profiles.active=local",
 ], description = "Full CI-style checks" }
 
-github-build = { run = "mvn clean install -Pcoverage", description = "GitHub CI Build (used by .github/workflows/ci.yml)" }
+github-build = { run = [
+  "yarn install --immutable && yarn workspace chainvault-dashboard build",
+  "mvn clean install -Pcoverage"], description = "GitHub CI Build (used by .github/workflows/ci.yml)" }
 
 docker-build = { run = "docker build --no-cache -t gryphus-lab/chainvault:latest -f Dockerfile .", description = "Docker build" }
 

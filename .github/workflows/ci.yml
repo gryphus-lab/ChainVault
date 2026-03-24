@@ -109,7 +109,8 @@ jobs:
         if: always()
 
       - name: Run Sonar Scan
+        uses: SonarSource/sonarqube-scan-action@v7.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
+        with:
+          projectBaseDir: .

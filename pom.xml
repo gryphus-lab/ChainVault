@@ -288,6 +288,17 @@
                                 <file>${maven.multiModuleProjectDirectory}/license-header</file>
                             </licenseHeader>
                         </java>
+                        <typescript>
+                            <includes>
+                                <include>chainvault-dashboard/src/**/*.ts</include>
+                                <include>chainvault-dashboard/src/**/*.tsx</include>
+                            </includes>
+                            
+                            <licenseHeader>
+                                <file>${maven.multiModuleProjectDirectory}/license-header</file>
+                                <delimiter>(import|const|declare|export|var)</delimiter>
+                            </licenseHeader>
+                        </typescript>
                         <pom>
                             <includes>
                                 <include>**/pom.xml</include>
