@@ -10,14 +10,9 @@ import { Search, X } from "lucide-react";
 import { getMigrations, getMigrationStats } from "@/lib/api";
 import type { Migration, MigrationStats } from "@/types";
 
-import { Badge } from "../components/ui/Badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/Card";
-import { Skeleton, SkeletonCard } from "../components/ui/Skeleton";
+import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 
 type StatusFilter = "ALL" | "SUCCESS" | "FAILED" | "RUNNING" | "PENDING";
 

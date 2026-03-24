@@ -4,7 +4,7 @@
 import { render } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactElement } from "react";
+import { ReactElement, ReactNode } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
+const AllTheProviders = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>{children}</BrowserRouter>
