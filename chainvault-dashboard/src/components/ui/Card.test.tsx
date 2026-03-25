@@ -52,12 +52,12 @@ describe("Card Components", () => {
         <CardContent>
           <p>Successful: 10</p>
         </CardContent>
-      </Card>
+      </Card>,
     );
 
     expect(screen.getByText("Migration Stats")).toBeInTheDocument();
     expect(screen.getByText("Successful: 10")).toBeInTheDocument();
-    
+
     // Verify nesting structure
     const card = screen.getByTestId("full-card");
     expect(card.querySelector(".border-b")).toBeInTheDocument(); // Header check
@@ -65,7 +65,11 @@ describe("Card Components", () => {
   });
 
   it("forwards attributes to the underlying div", () => {
-    render(<Card id="main-card" role="region">Content</Card>);
+    render(
+      <Card id="main-card" role="region">
+        Content
+      </Card>,
+    );
     const card = screen.getByText("Content");
     expect(card).toHaveAttribute("id", "main-card");
     expect(card).toHaveAttribute("role", "region");

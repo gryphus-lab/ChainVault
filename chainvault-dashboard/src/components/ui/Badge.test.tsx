@@ -2,10 +2,10 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { Badge } from "./Badge";
 
-// Mock the cn utility if you want to test logic, 
+// Mock the cn utility if you want to test logic,
 // or let it run to test final class strings.
 describe("Badge Component", () => {
   it("renders the children text correctly", () => {
@@ -16,7 +16,7 @@ describe("Badge Component", () => {
   it("applies the default variant classes when no variant is provided", () => {
     const { container } = render(<Badge>Default</Badge>);
     const badge = container.firstChild as HTMLElement;
-    
+
     // Checks for base classes and default variant classes
     expect(badge).toHaveClass("bg-gray-100", "text-gray-800", "rounded-full");
   });
@@ -37,16 +37,20 @@ describe("Badge Component", () => {
   it("merges custom classNames via the cn utility", () => {
     render(<Badge className="custom-class">Custom</Badge>);
     const badge = screen.getByText("Custom");
-    
+
     expect(badge).toHaveClass("custom-class");
     // Ensure it still has its base styling
     expect(badge).toHaveClass("inline-flex");
   });
 
   it("forwards additional HTML attributes (props)", () => {
-    render(<Badge id="test-badge" data-testid="badge-ui" aria-label="Status">Forward</Badge>);
+    render(
+      <Badge id="test-badge" data-testid="badge-ui" aria-label="Status">
+        Forward
+      </Badge>,
+    );
     const badge = screen.getByTestId("badge-ui");
-    
+
     expect(badge).toHaveAttribute("id", "test-badge");
     expect(badge).toHaveAttribute("aria-label", "Status");
   });
