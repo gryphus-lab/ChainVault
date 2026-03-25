@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { cn } from "@/lib/utils.ts";
+import { cn } from "@/lib/utils";
 import * as React from "react";
 
 type CardProps = React.HTMLAttributes<HTMLDivElement>;

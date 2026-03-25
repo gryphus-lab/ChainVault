@@ -35,7 +35,7 @@ export default function Timeline({
 
   return (
     <div className="flow-root">
-      <ul role="list" className="-mb-8">
+      <ul className="-mb-8">
         {sortedEvents.map((event, idx) => {
           const isLast = idx === sortedEvents.length - 1;
           const prevTime =

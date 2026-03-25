@@ -7,7 +7,7 @@ import { format, parseISO } from "date-fns";
 import { ArrowLeft, FileText, Download, XCircle } from "lucide-react";
 
 import { getMigrationDetail } from "@/lib/api";
-import type { MigrationDetail } from "@/types";
+import type { Migration, MigrationDetail } from "@/types";
 
 import Timeline from "@/components/Dashboard/Timeline";
 import { Badge } from "@/components/ui/Badge";
@@ -22,6 +22,18 @@ import {
   SkeletonText,
   SkeletonCard,
 } from "../components/ui/Skeleton";
+
+function getOcrAttemptedStatus(migration: Migration) {
+  if (migration.ocrAttempted) {
+    return migration.ocrSuccess ? "✅ Success" : "❌ Failed";
+  } else {
+    return "Not attempted";
+  }
+}
+
+function getOcrStatus(migration: Migration) {
+  return migration.ocrSuccess === true ? "✅ Yes" : "❌ No";
+}
 
 export default function MigrationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -198,12 +210,7 @@ export default function MigrationDetailPage() {
           <CardContent>
             <p className="text-3xl font-bold">{migration.pageCount}</p>
             <p className="text-sm text-gray-500 mt-1">
-              OCR:{" "}
-              {migration.ocrAttempted
-                ? migration.ocrSuccess
-                  ? "✅ Success"
-                  : "❌ Failed"
-                : "Not attempted"}
+              OCR: {getOcrAttemptedStatus(migration)}
             </p>
           </CardContent>
         </Card>
@@ -251,13 +258,7 @@ export default function MigrationDetailPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Success</span>
-                  <span>
-                    {migration.ocrSuccess === true
-                      ? "✅ Yes"
-                      : migration.ocrSuccess === false
-                        ? "❌ No"
-                        : "—"}
-                  </span>
+                  <span>{getOcrStatus(migration)}</span>
                 </div>
                 {migration.ocrPageCount && (
                   <div className="flex justify-between">

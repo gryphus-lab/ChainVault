@@ -16,6 +16,17 @@ import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 
 type StatusFilter = "ALL" | "SUCCESS" | "FAILED" | "RUNNING" | "PENDING";
 
+function getState(migration: Migration) {
+  switch (migration.status) {
+    case "FAILED":
+      return "danger";
+    case "SUCCESS":
+      return "success";
+    default:
+      return "default";
+  }
+}
+
 export default function Overview() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
@@ -48,7 +59,18 @@ export default function Overview() {
 
     // Date filter
     if (dateFilter !== "all") {
-      const days = dateFilter === "24h" ? 1 : dateFilter === "7d" ? 7 : 30;
+      let days: number;
+      switch (dateFilter) {
+        case "7d":
+          days = 7;
+          break;
+        case "24h":
+          days = 1;
+          break;
+        default:
+          days = 30;
+          break;
+      }
       const cutoff = subDays(new Date(), days);
       result = result.filter((m) => new Date(m.createdAt) >= cutoff);
     }
@@ -266,15 +288,7 @@ export default function Overview() {
                         {migration.title}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
-                        <Badge
-                          variant={
-                            migration.status === "SUCCESS"
-                              ? "success"
-                              : migration.status === "FAILED"
-                                ? "danger"
-                                : "default"
-                          }
-                        >
+                        <Badge variant={getState(migration)}>
                           {migration.status}
                         </Badge>
                       </td>

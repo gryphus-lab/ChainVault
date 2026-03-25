@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 import * as React from "react";
 
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
