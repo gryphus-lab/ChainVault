@@ -18,6 +18,15 @@
         <node.version>v20.20.1</node.version>
         <yarn.version>v1.22.22</yarn.version>
         <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
+
+        <sonar.sources>src</sonar.sources>
+        <sonar.tests>src</sonar.tests>
+        <sonar.test.inclusions>**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx</sonar.test.inclusions>
+        <sonar.exclusions>*/node_modules/**,**/dist/**,build/**,.yarn/**</sonar.exclusions>
+        <sonar.language>ts</sonar.language>
+        <sonar.typescript.file.suffixes>.ts,.tsx</sonar.typescript.file.suffixes>
+        <sonar.typescript.tsconfigPath>tsconfig.json</sonar.typescript.tsconfigPath>
+        <sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
     </properties>
     
     <build>
