@@ -16,12 +16,12 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/Card";
+} from "@/components/ui/Card";
 import {
   Skeleton,
   SkeletonText,
   SkeletonCard,
-} from "../components/ui/Skeleton";
+} from "@/components/ui/Skeleton";
 
 function getOcrAttemptedStatus(migration: Migration) {
   if (migration.ocrAttempted) {
