@@ -8,6 +8,7 @@ import ch.gryphus.chainvault.domain.OcrPage;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.util.HashUtils;
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import ch.gryphus.chainvault.workflow.service.SseEmitterService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
@@ -38,8 +39,9 @@ public class MergePdfDelegate extends AbstractTracingDelegate {
     public MergePdfDelegate(
             OpenTelemetry openTelemetry,
             AuditEventService auditService,
+            SseEmitterService sseEmitterService,
             MigrationService migrationService) {
-        super(openTelemetry, auditService, "merge-pdfs", "MERGE_FAILED");
+        super(openTelemetry, auditService, sseEmitterService, "merge-pdfs", "MERGE_FAILED");
         this.migrationService = migrationService;
     }
 

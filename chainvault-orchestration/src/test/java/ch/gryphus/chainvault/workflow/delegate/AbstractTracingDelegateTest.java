@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import ch.gryphus.chainvault.workflow.service.SseEmitterService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -39,6 +40,7 @@ class AbstractTracingDelegateTest {
     @Mock private TextMapPropagator mockTextMapPropagator;
     @Mock private Context mockContext;
     @Mock private AuditEventService mockAuditService;
+    @Mock private SseEmitterService mockSseEmitterService;
     @Mock private DelegateExecution mockExecution;
     @Mock private Tracer mockTracer;
     @Mock private SpanBuilder mockSpanBuilder;
@@ -54,7 +56,11 @@ class AbstractTracingDelegateTest {
     void setUp() {
         abstractTracingDelegateUnderTest =
                 new AbstractTracingDelegate(
-                        mockOpenTelemetry, mockAuditService, "taskType", "errorCode") {
+                        mockOpenTelemetry,
+                        mockAuditService,
+                        mockSseEmitterService,
+                        "taskType",
+                        "errorCode") {
                     @Override
                     protected void doExecute(DelegateExecution execution, Span span, String docId) {
                         //

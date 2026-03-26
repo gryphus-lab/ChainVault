@@ -4,6 +4,7 @@
 package ch.gryphus.chainvault.workflow.delegate;
 
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import ch.gryphus.chainvault.workflow.service.SseEmitterService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +24,16 @@ public class AsyncInitVariablesDelegate extends AbstractTracingDelegate {
      * @param openTelemetry the open telemetry
      * @param auditService  the audit service
      */
-    public AsyncInitVariablesDelegate(OpenTelemetry openTelemetry, AuditEventService auditService) {
-        super(openTelemetry, auditService, "async-init-vars", "ASYNC-INIT_FAILED");
+    public AsyncInitVariablesDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            SseEmitterService sseEmitterService) {
+        super(
+                openTelemetry,
+                auditService,
+                sseEmitterService,
+                "async-init-vars",
+                "ASYNC-INIT_FAILED");
     }
 
     @Override

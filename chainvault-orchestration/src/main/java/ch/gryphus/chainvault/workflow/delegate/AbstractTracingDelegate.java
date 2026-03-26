@@ -4,16 +4,20 @@
 package ch.gryphus.chainvault.workflow.delegate;
 
 import ch.gryphus.chainvault.config.Constants;
+import ch.gryphus.chainvault.model.dto.MigrationEventDto;
 import ch.gryphus.chainvault.model.entity.MigrationAudit;
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import ch.gryphus.chainvault.workflow.service.SseEmitterService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -27,6 +31,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
 
     private final OpenTelemetry openTelemetry;
     private final AuditEventService auditService;
+    private final SseEmitterService sseEmitterService;
     private final String taskType;
     private final String errorCode;
 
@@ -41,10 +46,12 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
     protected AbstractTracingDelegate(
             OpenTelemetry openTelemetry,
             AuditEventService auditService,
+            SseEmitterService sseEmitterService,
             String taskType,
             String errorCode) {
         this.openTelemetry = openTelemetry;
         this.auditService = auditService;
+        this.sseEmitterService = sseEmitterService;
         this.taskType = taskType;
         this.errorCode = errorCode;
     }
@@ -82,6 +89,9 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
                                     outputMap.put(key, value);
                                 }
                             });
+
+            sendSseEvent(docId, span);
+
             auditService.updateAuditEventEnd(
                     execution.getProcessInstanceId(),
                     MigrationAudit.MigrationStatus.SUCCESS,
@@ -99,6 +109,19 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
         } finally {
             span.end();
         }
+    }
+
+    private void sendSseEvent(String docId, Span span) {
+        MigrationEventDto event = new MigrationEventDto();
+        event.setId(UUID.randomUUID().toString());
+        event.setMigrationId(docId);
+        event.setEventType(taskType);
+        event.setStepName(taskType);
+        event.setMessage("%s completed successfully".formatted(taskType));
+        event.setStatus("SUCCESS");
+        event.setTimestamp(Instant.now());
+        event.setTraceId(span.getSpanContext().getTraceId());
+        sseEmitterService.sendEvent(event);
     }
 
     /**

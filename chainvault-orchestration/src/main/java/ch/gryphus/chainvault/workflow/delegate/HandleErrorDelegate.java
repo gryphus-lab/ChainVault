@@ -4,6 +4,7 @@
 package ch.gryphus.chainvault.workflow.delegate;
 
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import ch.gryphus.chainvault.workflow.service.SseEmitterService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
@@ -27,8 +28,11 @@ public class HandleErrorDelegate extends AbstractTracingDelegate {
      * @param openTelemetry the open telemetry
      * @param auditService  the audit service
      */
-    public HandleErrorDelegate(OpenTelemetry openTelemetry, AuditEventService auditService) {
-        super(openTelemetry, auditService, "handle-error", "");
+    public HandleErrorDelegate(
+            OpenTelemetry openTelemetry,
+            AuditEventService auditService,
+            SseEmitterService sseEmitterService) {
+        super(openTelemetry, auditService, sseEmitterService, "handle-error", "");
     }
 
     @Override

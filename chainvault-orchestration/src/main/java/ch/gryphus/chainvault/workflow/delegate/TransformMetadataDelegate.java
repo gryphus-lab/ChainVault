@@ -7,6 +7,7 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.domain.SourceMetadata;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import ch.gryphus.chainvault.workflow.service.SseEmitterService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
@@ -37,8 +38,14 @@ public class TransformMetadataDelegate extends AbstractTracingDelegate {
     public TransformMetadataDelegate(
             OpenTelemetry openTelemetry,
             AuditEventService auditService,
+            SseEmitterService sseEmitterService,
             MigrationService migrationService) {
-        super(openTelemetry, auditService, "transform-metadata", "TRANSFORM_FAILED");
+        super(
+                openTelemetry,
+                auditService,
+                sseEmitterService,
+                "transform-metadata",
+                "TRANSFORM_FAILED");
         this.migrationService = migrationService;
     }
 

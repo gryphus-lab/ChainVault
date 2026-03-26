@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.workflow.delegate;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.service.MigrationService;
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import ch.gryphus.chainvault.workflow.service.SseEmitterService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
@@ -35,8 +36,9 @@ public class SftpUploadDelegate extends AbstractTracingDelegate {
     public SftpUploadDelegate(
             OpenTelemetry openTelemetry,
             AuditEventService auditService,
+            SseEmitterService sseEmitterService,
             MigrationService migrationService) {
-        super(openTelemetry, auditService, "upload-sftp", "UPLOAD_FAILED");
+        super(openTelemetry, auditService, sseEmitterService, "upload-sftp", "UPLOAD_FAILED");
         this.migrationService = migrationService;
     }
 
