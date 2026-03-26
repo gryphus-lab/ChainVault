@@ -64,6 +64,14 @@ const baseMigrations = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: "really-old",
+    docId: "doc-really-old",
+    title: "Really Old Migration",
+    status: "SUCCESS",
+    createdAt: new Date(Date.now() - 300000).toISOString(),
+    updatedAt: new Date(Date.now() - 300000).toISOString(),
+  },
 ];
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -146,6 +154,25 @@ describe("Overview (with live events)", () => {
 
     expect(screen.getByText("Second Migration")).toBeInTheDocument();
     expect(screen.queryByText("First Migration")).not.toBeInTheDocument();
+  });
+
+  it("filters by date", async () => {
+    renderComponent();
+
+    await screen.findByText("First Migration");
+
+    const dateFilter = ["24h", "7d", "30d"]
+    const AllTimeFilter = screen.getByDisplayValue("All Time");
+    for (const filter of dateFilter) {
+      fireEvent.change(AllTimeFilter, {
+        target: { value: filter },
+      });
+    }
+
+    expect(screen.getByText("First Migration")).toBeInTheDocument();
+    expect(screen.getByText("Second Migration")).toBeInTheDocument()
+    expect(screen.getByText("Really Old Migration")).toBeInTheDocument();
+
   });
 
   it("shows empty state when no results", async () => {
