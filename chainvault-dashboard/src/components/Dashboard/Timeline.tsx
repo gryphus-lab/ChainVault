@@ -9,7 +9,7 @@ interface TimelineProps {
   events: MigrationEvent[];
 }
 
-export default function Timeline({ events }: TimelineProps) {
+export default function Timeline({ events }: Readonly<TimelineProps>) {
   if (events.length === 0) {
     return (
       <div className="py-12 text-center text-gray-500">
