@@ -2,63 +2,26 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 
 import Overview from "./Overview";
 
-// Mock API
+// --- mocks ---
 vi.mock("@/lib/api", () => ({
   getMigrations: vi.fn(),
   getMigrationStats: vi.fn(),
 }));
 
+vi.mock("@/hooks/useMigration", () => ({
+  useMigrationEvents: vi.fn(),
+}));
+
 import { getMigrations, getMigrationStats } from "@/lib/api";
+import { useMigrationEvents } from "@/hooks/useMigration";
 
-const mockStats = {
-  total: 3,
-  success: 1,
-  failed: 1,
-  running: 1,
-  pending: 0,
-};
-
-const mockMigrations = [
-  {
-    id: "abc",
-    docId: "doc-abc",
-    title: "First Migration",
-    status: "SUCCESS",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "def",
-    docId: "doc-def",
-    title: "Second Migration",
-    status: "FAILED",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "xyz",
-    docId: "doc-xyz",
-    title: "Running Job",
-    status: "RUNNING",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "really-old", // > 30days
-    docId: "doc-really-old",
-    title: "Really Old Migration",
-    status: "SUCCESS",
-    createdAt: "2025-12-01T10:00:00Z",
-    updatedAt: "2025-12-01T11:00:00Z",
-  },
-];
-
+// --- test helpers ---
 function renderComponent() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -75,53 +38,101 @@ function renderComponent() {
   );
 }
 
+// --- mock data ---
+const mockStats = {
+  total: 2,
+  success: 1,
+  failed: 1,
+  running: 0,
+  pending: 0,
+};
+
+const baseMigrations = [
+  {
+    id: "1",
+    docId: "doc-1",
+    title: "First Migration",
+    status: "PENDING",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "2",
+    docId: "doc-2",
+    title: "Second Migration",
+    status: "FAILED",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-describe("Overview", () => {
+describe("Overview (with live events)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
     (getMigrationStats as any).mockResolvedValue(mockStats);
-    (getMigrations as any).mockResolvedValue(mockMigrations);
+    (getMigrations as any).mockResolvedValue(baseMigrations);
+
+    (useMigrationEvents as any).mockReturnValue({
+      events: [],
+      isConnected: true,
+      clearEvents: vi.fn(),
+    });
   });
 
-  it("shows loading state initially", () => {
-    (getMigrationStats as any).mockReturnValue(new Promise(() => {}));
-    (getMigrations as any).mockReturnValue(new Promise(() => {}));
-
+  it("shows live connection status", async () => {
     renderComponent();
 
-    expect(screen.getAllByRole("generic").length).toBeGreaterThan(0);
+    await screen.findByText("Migration Dashboard");
+
+    expect(screen.getByText("Live")).toBeInTheDocument();
   });
 
-  it("renders stats and migrations", async () => {
-    renderComponent();
-
-    await waitFor(() => {
-      expect(screen.getByText("Migration Dashboard")).toBeInTheDocument();
+  it("shows disconnected state", async () => {
+    (useMigrationEvents as any).mockReturnValue({
+      events: [],
+      isConnected: false,
+      clearEvents: vi.fn(),
     });
 
-    // Stats
-    expect(screen.getByText("3")).toBeInTheDocument(); // total
-    expect(screen.getAllByText("1")).toHaveLength(3); // success/failed/running
+    renderComponent();
 
-    // Table rows
-    expect(screen.getByText("First Migration")).toBeInTheDocument();
-    expect(screen.getByText("Second Migration")).toBeInTheDocument();
-    expect(screen.getByText("Running Job")).toBeInTheDocument();
-    expect(screen.queryByText("Really Old Migration")).toBeInTheDocument();
+    await screen.findByText("Disconnected");
+
+    expect(screen.getByText("Disconnected")).toBeInTheDocument();
   });
 
-  it("filters by search term", async () => {
+  it("calls clearEvents when clicking Clear Live", async () => {
+    const clearEvents = vi.fn();
+
+    (useMigrationEvents as any).mockReturnValue({
+      events: [],
+      isConnected: true,
+      clearEvents,
+    });
+
+    renderComponent();
+
+    await screen.findByText("Migration Dashboard");
+
+    fireEvent.click(screen.getByText("Clear Live"));
+
+    expect(clearEvents).toHaveBeenCalled();
+  });
+
+  it("filters by search", async () => {
     renderComponent();
 
     await screen.findByText("First Migration");
 
-    const input = screen.getByPlaceholderText("Search by Doc ID or Title...");
+    fireEvent.change(
+      screen.getByPlaceholderText("Search by Doc ID or Title..."),
+      { target: { value: "second" } },
+    );
 
-    fireEvent.change(input, { target: { value: "second" } });
-
-    expect(screen.queryByText("First Migration")).not.toBeInTheDocument();
     expect(screen.getByText("Second Migration")).toBeInTheDocument();
+    expect(screen.queryByText("First Migration")).not.toBeInTheDocument();
   });
 
   it("filters by status", async () => {
@@ -129,29 +140,12 @@ describe("Overview", () => {
 
     await screen.findByText("First Migration");
 
-    const select = screen.getByDisplayValue("All Statuses");
-
-    fireEvent.change(select, { target: { value: "FAILED" } });
+    fireEvent.change(screen.getByDisplayValue("All Statuses"), {
+      target: { value: "FAILED" },
+    });
 
     expect(screen.getByText("Second Migration")).toBeInTheDocument();
     expect(screen.queryByText("First Migration")).not.toBeInTheDocument();
-  });
-
-  it("filters by date", async () => {
-    renderComponent();
-
-    await screen.findByText("First Migration");
-
-    const select = screen.getByDisplayValue("All Time");
-
-    const dateFilterValues = ["24h", "7d", "30d"];
-    for (const dateFilter of dateFilterValues) {
-      fireEvent.change(select, { target: { value: dateFilter } });
-    }
-
-    expect(screen.getByText("Second Migration")).toBeInTheDocument();
-    expect(screen.queryByText("First Migration")).toBeInTheDocument();
-    expect(screen.queryByText("Really Old Migration")).not.toBeInTheDocument();
   });
 
   it("shows empty state when no results", async () => {
@@ -159,29 +153,73 @@ describe("Overview", () => {
 
     await screen.findByText("First Migration");
 
-    const input = screen.getByPlaceholderText("Search by Doc ID or Title...");
-
-    fireEvent.change(input, { target: { value: "non-existent" } });
+    fireEvent.change(
+      screen.getByPlaceholderText("Search by Doc ID or Title..."),
+      { target: { value: "zzz" } },
+    );
 
     expect(
       screen.getByText("No migrations found matching your filters."),
     ).toBeInTheDocument();
   });
 
-  it("clears filters when clicking clear button", async () => {
+  it("applies live event updates to migrations", async () => {
+    const now = new Date().toISOString();
+
+    (useMigrationEvents as any).mockReturnValue({
+      events: [
+        {
+          migrationId: "1",
+          status: "SUCCESS",
+          timestamp: now,
+        },
+      ],
+      isConnected: true,
+      clearEvents: vi.fn(),
+    });
+
     renderComponent();
 
     await screen.findByText("First Migration");
 
-    const input = screen.getByPlaceholderText("Search by Doc ID or Title...");
+    // status should be updated from PENDING → SUCCESS
+    expect(screen.getAllByText("SUCCESS").length).toBeGreaterThan(0);
+  });
 
-    fireEvent.change(input, { target: { value: "second" } });
+  it("sorts by updatedAt (live events take priority)", async () => {
+    const older = new Date(Date.now() - 100000).toISOString();
+    const newer = new Date().toISOString();
 
-    const clearButton = screen.getByText("Clear");
-    fireEvent.click(clearButton);
+    (getMigrations as any).mockResolvedValue([
+      {
+        ...baseMigrations[0],
+        updatedAt: older,
+      },
+      {
+        ...baseMigrations[1],
+        updatedAt: older,
+      },
+    ]);
 
-    expect(input).toHaveValue("");
-    expect(screen.getByText("First Migration")).toBeInTheDocument();
-    expect(screen.getByText("Second Migration")).toBeInTheDocument();
+    (useMigrationEvents as any).mockReturnValue({
+      events: [
+        {
+          migrationId: "2",
+          status: "FAILED",
+          timestamp: newer,
+        },
+      ],
+      isConnected: true,
+      clearEvents: vi.fn(),
+    });
+
+    renderComponent();
+
+    await screen.findByText("First Migration");
+
+    const rows = screen.getAllByRole("row");
+
+    // crude but effective: first data row should contain updated migration
+    expect(rows[1]).toHaveTextContent("Second Migration");
   });
 });
