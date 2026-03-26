@@ -13,6 +13,7 @@ vi.mock("@/lib/api", () => ({
   getMigrationDetail: vi.fn(),
 }));
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Mock Timeline (avoid complexity)
 vi.mock("@/components/Dashboard/Timeline", () => ({
   default: ({ events }: any) => (
@@ -78,7 +79,7 @@ describe("MigrationDetailPage", () => {
   it("renders error state", async () => {
     (getMigrationDetail as any).mockRejectedValue(new Error("Failed"));
 
-    customRender(<MigrationDetailPage />)
+    customRender(<MigrationDetailPage />);
 
     const errorTitle = await screen.findByText((content) =>
       content.includes("Failed to load migration"),
@@ -123,7 +124,7 @@ describe("MigrationDetailPage", () => {
   it("shows if OCR was attempted correctly", async () => {
     (getMigrationDetail as any).mockResolvedValue({
       ...mockMigration,
-      ocrAttempted: false
+      ocrAttempted: false,
     });
 
     renderWithRouter();
