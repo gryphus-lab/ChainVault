@@ -8,7 +8,7 @@ COPY chainvault-migration ./chainvault-migration
 COPY chainvault-orchestration ./chainvault-orchestration
 COPY chainvault-report-aggregate ./chainvault-report-aggregate
 COPY docker-resources/chainvault-app/init-scripts/setup.sh ./
-RUN mvn -DskipTests package
+RUN mvn -DskipTests -q package
 
 FROM eclipse-temurin:25-jre-jammy AS runtime
 ARG USERNAME=chainvault
