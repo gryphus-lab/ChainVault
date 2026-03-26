@@ -5,7 +5,7 @@ maven = "3.9"
 python = "3.12"
 "aqua:astral-sh/uv" = "latest" # uv is blazing fast for venv + pip installs
 docker-slim = "latest"
-node = "20"
+node = "24"
 yarn = "4.13.0"
 
 # ────────────────────────────────────────
@@ -93,5 +93,14 @@ load-test = { run = "./start_test.sh -i 1000", description = "Run load test with
 deps = { run = "mvn dependency:tree", description = "Generate maven dependency tree" }
 
 # Formatting / linting (spotless, etc.)
-fmt = { run = "mvn spotless:apply", description = "Format using spotless-maven-plugin" }
-check = { run = "mvn spotless:check", description = "Check using spotless-maven-plugin" }
+check = { run = [
+  "yarn lint:dashboard",
+  "yarn prettier-check:dashboard",
+  "mvn -q spotless:check",
+], description = "Check using yarn lint/prettier and spotless-maven-plugin" }
+fmt = { run = [
+  "yarn lint-fix:dashboard",
+  "yarn prettier:dashboard",
+  "mvn -q spotless:apply",
+], description = "Format using yarn lint/prettier spotless-maven-plugin" }
+

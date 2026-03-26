@@ -13,6 +13,7 @@ vi.mock("@/lib/api", () => ({
   getMigrationDetail: vi.fn(),
 }));
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Mock Timeline (avoid complexity)
 vi.mock("@/components/Dashboard/Timeline", () => ({
   default: ({ events }: any) => (
@@ -21,6 +22,7 @@ vi.mock("@/components/Dashboard/Timeline", () => ({
 }));
 
 import { getMigrationDetail } from "@/lib/api";
+import { customRender } from "@/test/test-utils.tsx";
 
 const mockMigration = {
   id: "123",
@@ -74,8 +76,17 @@ describe("MigrationDetailPage", () => {
     expect(screen.getAllByRole("generic").length).toBeGreaterThan(0);
   });
 
-  //TODO: Add error state test once implemented
+  it("renders error state", async () => {
+    (getMigrationDetail as any).mockRejectedValue(new Error("Failed"));
 
+    customRender(<MigrationDetailPage />);
+
+    const errorTitle = await screen.findByText((content) =>
+      content.includes("Failed to load migration"),
+    );
+
+    expect(errorTitle).toBeInTheDocument();
+  });
   it("renders migration details", async () => {
     (getMigrationDetail as any).mockResolvedValue(mockMigration);
 
@@ -108,6 +119,18 @@ describe("MigrationDetailPage", () => {
     expect(screen.getByText("✅ Yes")).toBeInTheDocument(); // success
     expect(screen.getByText("8")).toBeInTheDocument(); // pages processed
     expect(screen.getByText(/5,000 characters/)).toBeInTheDocument();
+  });
+
+  it("shows if OCR was attempted correctly", async () => {
+    (getMigrationDetail as any).mockResolvedValue({
+      ...mockMigration,
+      ocrAttempted: false,
+    });
+
+    renderWithRouter();
+
+    await screen.findByText("OCR & Processing Details");
+    expect(screen.getByText("No")).toBeInTheDocument(); // attempted
   });
 
   it("shows failure reason when present", async () => {

@@ -11,17 +11,8 @@ import type { Migration, MigrationDetail } from "@/types";
 
 import Timeline from "@/components/Dashboard/Timeline";
 import { Badge } from "@/components/ui/Badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import {
-  Skeleton,
-  SkeletonText,
-  SkeletonCard,
-} from "@/components/ui/Skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Skeleton, SkeletonText, SkeletonCard } from "@/components/ui/Skeleton";
 
 function getOcrAttemptedStatus(migration: Migration) {
   if (migration.ocrAttempted) {

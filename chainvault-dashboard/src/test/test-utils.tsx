@@ -15,6 +15,7 @@ const queryClient = new QueryClient({
   },
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 const AllTheProviders = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -28,5 +29,6 @@ export const customRender = (ui: ReactElement) => {
 };
 
 // Re-export everything from testing-library
+// eslint-disable-next-line react-refresh/only-export-components
 export * from "@testing-library/react";
 export { customRender as render };
