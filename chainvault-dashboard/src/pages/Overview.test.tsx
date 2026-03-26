@@ -67,6 +67,7 @@ function renderComponent() {
   );
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 describe("Overview", () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -10,6 +10,10 @@
     "dev:dashboard": "yarn workspace chainvault-dashboard dev",
     "build:dashboard": "yarn workspace chainvault-dashboard build",
     "test:dashboard": "yarn workspace chainvault-dashboard test",
-    "preview:dashboard": "yarn workspace chainvault-dashboard preview"
+    "lint:dashboard": "yarn workspace chainvault-dashboard lint",
+    "lint-fix:dashboard": "yarn workspace chainvault-dashboard lint:fix",
+    "preview:dashboard": "yarn workspace chainvault-dashboard preview",
+    "prettier:dashboard": "yarn workspace chainvault-dashboard prettier",
+    "prettier-check:dashboard": "yarn workspace chainvault-dashboard prettier:check"
   }
 }
