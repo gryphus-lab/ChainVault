@@ -15,7 +15,7 @@
     <name>${project.groupId}::${project.artifactId}</name>
     
     <properties>
-        <node.version>v25.8.2</node.version>
+        <node.version>v24.14.1</node.version>
         <yarn.version>v1.22.22</yarn.version>
         <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
         

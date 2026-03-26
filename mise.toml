@@ -5,7 +5,7 @@ maven = "3.9"
 python = "3.12"
 "aqua:astral-sh/uv" = "latest" # uv is blazing fast for venv + pip installs
 docker-slim = "latest"
-node = "25"
+node = "24"
 yarn = "4.13.0"
 
 # ────────────────────────────────────────
