@@ -49,6 +49,14 @@ const mockMigrations = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: "really-old", // > 30days
+    docId: "doc-really-old",
+    title: "Really Old Migration",
+    status: "SUCCESS",
+    createdAt: "2025-12-01T10:00:00Z",
+    updatedAt: "2025-12-01T11:00:00Z",
+  },
 ];
 
 function renderComponent() {
@@ -100,6 +108,7 @@ describe("Overview", () => {
     expect(screen.getByText("First Migration")).toBeInTheDocument();
     expect(screen.getByText("Second Migration")).toBeInTheDocument();
     expect(screen.getByText("Running Job")).toBeInTheDocument();
+    expect(screen.queryByText("Really Old Migration")).toBeInTheDocument();
   });
 
   it("filters by search term", async () => {
@@ -126,6 +135,23 @@ describe("Overview", () => {
 
     expect(screen.getByText("Second Migration")).toBeInTheDocument();
     expect(screen.queryByText("First Migration")).not.toBeInTheDocument();
+  });
+
+  it("filters by date", async () => {
+    renderComponent();
+
+    await screen.findByText("First Migration");
+
+    const select = screen.getByDisplayValue("All Time");
+
+    const dateFilterValues = ["24h", "7d", "30d"];
+    for (const dateFilter of dateFilterValues) {
+      fireEvent.change(select, { target: { value: dateFilter } });
+    }
+
+    expect(screen.getByText("Second Migration")).toBeInTheDocument();
+    expect(screen.queryByText("First Migration")).toBeInTheDocument();
+    expect(screen.queryByText("Really Old Migration")).not.toBeInTheDocument();
   });
 
   it("shows empty state when no results", async () => {
