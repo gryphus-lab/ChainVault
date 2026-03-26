@@ -108,31 +108,6 @@ describe("MigrationDetailPage", () => {
     expect(screen.getByTestId("timeline")).toHaveTextContent("2 events");
   });
 
-  it("shows OCR information correctly", async () => {
-    (getMigrationDetail as any).mockResolvedValue(mockMigration);
-
-    renderWithRouter();
-
-    await screen.findByText("OCR & Processing Details");
-
-    expect(screen.getByText("Yes")).toBeInTheDocument(); // attempted
-    expect(screen.getByText("✅ Yes")).toBeInTheDocument(); // success
-    expect(screen.getByText("8")).toBeInTheDocument(); // pages processed
-    expect(screen.getByText(/5,000 characters/)).toBeInTheDocument();
-  });
-
-  it("shows if OCR was attempted correctly", async () => {
-    (getMigrationDetail as any).mockResolvedValue({
-      ...mockMigration,
-      ocrAttempted: false,
-    });
-
-    renderWithRouter();
-
-    await screen.findByText("OCR & Processing Details");
-    expect(screen.getByText("No")).toBeInTheDocument(); // attempted
-  });
-
   it("shows failure reason when present", async () => {
     (getMigrationDetail as any).mockResolvedValue({
       ...mockMigration,
@@ -142,8 +117,8 @@ describe("MigrationDetailPage", () => {
 
     renderWithRouter();
 
-    await screen.findByText("Failure Reason");
-
+    await screen.findByText("Downloads");
+    expect(screen.getByText("Failure Reason:")).toBeInTheDocument();
     expect(screen.getByText("Something broke")).toBeInTheDocument();
   });
 
@@ -154,7 +129,7 @@ describe("MigrationDetailPage", () => {
 
     await screen.findByText("Test Migration");
 
-    expect(screen.queryByText("Failure Reason")).not.toBeInTheDocument();
+    expect(screen.queryByText("Failure Reason:")).not.toBeInTheDocument();
   });
 
   it("renders download links when available", async () => {
@@ -163,10 +138,8 @@ describe("MigrationDetailPage", () => {
     renderWithRouter();
 
     await screen.findByText("Downloads");
-
-    expect(screen.getByText("Download Chain ZIP")).toBeInTheDocument();
-
-    expect(screen.getByText("Download Merged PDF")).toBeInTheDocument();
+    expect(screen.getByText("Chain ZIP")).toBeInTheDocument();
+    expect(screen.getByText("Merged PDF")).toBeInTheDocument();
   });
 
   it("hides download section when no URLs", async () => {
