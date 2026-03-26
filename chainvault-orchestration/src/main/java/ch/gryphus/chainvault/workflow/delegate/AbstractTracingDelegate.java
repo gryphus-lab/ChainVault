@@ -112,6 +112,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
     }
 
     private void sendSseEvent(String docId, Span span) {
+        log.info("{} sending SSE event", taskType);
         MigrationEventDto event = new MigrationEventDto();
         event.setId(UUID.randomUUID().toString());
         event.setMigrationId(docId);

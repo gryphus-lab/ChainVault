@@ -35,7 +35,7 @@ public class SseEmitterService {
                             try {
                                 emitter.send(
                                         SseEmitter.event().name("migration-event").data(event));
-                            } catch (IOException e) {
+                            } catch (IOException _) {
                                 emitters.remove(emitter); // clean up dead emitters
                             }
                         });
@@ -46,7 +46,7 @@ public class SseEmitterService {
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event().name("migration-event").data(event));
-            } catch (IOException e) {
+            } catch (IOException _) {
                 emitters.remove(clientId);
             }
         }
