@@ -1,35 +1,46 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { useQuery } from "@tanstack/react-query";
-import {
-  getMigrationDetail,
-  getMigrations,
-  getMigrationStats,
-} from "@/lib/api";
-import type { Migration, MigrationStats, MigrationDetail } from "@/types";
+import { useCallback, useEffect, useState } from "react";
+import type { MigrationEvent } from "@/types";
 
-export function useMigrationStats() {
-  return useQuery<MigrationStats>({
-    queryKey: ["migration-stats"],
-    queryFn: getMigrationStats,
-    staleTime: 30 * 1000,
-  });
-}
+export function useMigrationEvents() {
+  const [events, setEvents] = useState<MigrationEvent[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
 
-export function useMigrations() {
-  return useQuery<Migration[]>({
-    queryKey: ["migrations"],
-    queryFn: () => getMigrations({ limit: 50 }),
-    staleTime: 60 * 1000,
-  });
-}
+  const connect = useCallback(() => {
+    const eventSource = new EventSource("/api/migrations/events");
 
-export function useMigrationDetail(id: string) {
-  return useQuery<MigrationDetail>({
-    queryKey: ["migration-detail", id],
-    queryFn: () => getMigrationDetail(id),
-    enabled: !!id,
-    staleTime: 30 * 1000,
-  });
+    eventSource.onopen = () => {
+      setIsConnected(true);
+      console.log("✅ SSE connected");
+    };
+
+    eventSource.onmessage = (event) => {
+      try {
+        const newEvent: MigrationEvent = JSON.parse(event.data);
+        setEvents((prev) => [newEvent, ...prev].slice(0, 50)); // keep latest 50
+      } catch (err) {
+        console.error("Failed to parse SSE event:", err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.error("SSE Error:", err);
+      setIsConnected(false);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    return connect();
+  }, [connect]);
+
+  const clearEvents = () => setEvents([]);
+
+  return { events, isConnected, clearEvents };
 }

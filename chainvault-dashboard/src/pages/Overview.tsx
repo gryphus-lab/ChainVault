@@ -5,23 +5,23 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, subDays } from "date-fns";
-import { Search, X } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 
 import { getMigrations, getMigrationStats } from "@/lib/api";
-import type { Migration, MigrationStats } from "@/types";
+import { useMigrationEvents } from "@/hooks/useMigration";
 
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
+import { Migration } from "@/types";
 
 type StatusFilter = "ALL" | "SUCCESS" | "FAILED" | "RUNNING" | "PENDING";
 
-function getState(migration: Migration) {
+function getVariant(migration: Migration) {
   switch (migration.status) {
-    case "FAILED":
-      return "danger";
     case "SUCCESS":
       return "success";
+    case "FAILED":
+      return "danger";
     default:
       return "default";
   }
@@ -34,30 +34,45 @@ export default function Overview() {
     "all",
   );
 
-  const { data: stats, isLoading: statsLoading } = useQuery<MigrationStats>({
+  const { data: stats } = useQuery({
     queryKey: ["migration-stats"],
     queryFn: getMigrationStats,
-    staleTime: 30 * 1000,
   });
 
-  const { data: allMigrations = [], isLoading: migrationsLoading } = useQuery<
-    Migration[]
-  >({
+  const { data: allMigrations = [] } = useQuery({
     queryKey: ["migrations"],
     queryFn: () => getMigrations({ limit: 100 }),
-    staleTime: 60 * 1000,
   });
 
-  // Filtered and searched migrations
-  const filteredMigrations = useMemo(() => {
-    let result = [...allMigrations];
+  // Real-time events
+  const { events: liveEvents, isConnected, clearEvents } = useMigrationEvents();
 
-    // Status filter
+  // Merge live events into migrations (for real-time status updates)
+  const migrationsWithLive = useMemo(() => {
+    const merged = [...allMigrations];
+
+    liveEvents.forEach((liveEvent) => {
+      const index = merged.findIndex((m) => m.id === liveEvent.migrationId);
+      if (index !== -1) {
+        merged[index] = {
+          ...merged[index],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          status: liveEvent.status as any,
+          updatedAt: liveEvent.timestamp,
+        };
+      }
+    });
+
+    return merged;
+  }, [allMigrations, liveEvents]);
+
+  const filteredMigrations = useMemo(() => {
+    let result = [...migrationsWithLive];
+
     if (statusFilter !== "ALL") {
       result = result.filter((m) => m.status === statusFilter);
     }
 
-    // Date filter
     if (dateFilter !== "all") {
       let days: number;
       switch (dateFilter) {
@@ -88,100 +103,75 @@ export default function Overview() {
     // Sort by most recent first
     return result.sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        new Date(b.updatedAt || b.createdAt).getTime() -
+        new Date(a.updatedAt || a.createdAt).getTime(),
     );
-  }, [allMigrations, statusFilter, dateFilter, searchTerm]);
-
-  if (statsLoading || migrationsLoading) {
-    return (
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-48" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-16 bg-gray-100 rounded-lg animate-pulse"
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  }, [migrationsWithLive, statusFilter, dateFilter, searchTerm]);
 
   return (
     <div className="space-y-8">
-      {/* Header + Filters */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header with Connection Status */}
+      <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">
           Migration Dashboard
         </h1>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by Doc ID or Title..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${isConnected ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+          >
+            <div
+              className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
             />
+            {isConnected ? "Live" : "Disconnected"}
           </div>
 
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <button
+            onClick={clearEvents}
+            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
           >
-            <option value="ALL">All Statuses</option>
-            <option value="SUCCESS">Success</option>
-            <option value="FAILED">Failed</option>
-            <option value="RUNNING">Running</option>
-            <option value="PENDING">Pending</option>
-          </select>
-
-          {/* Date Filter */}
-          <select
-            value={dateFilter}
-            onChange={(e) =>
-              setDateFilter(e.target.value as "all" | "24h" | "7d" | "30d")
-            }
-            className="px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Time</option>
-            <option value="24h">Last 24 hours</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-          </select>
-
-          {/* Clear Filters */}
-          {(searchTerm || statusFilter !== "ALL" || dateFilter !== "all") && (
-            <button
-              onClick={() => {
-                setSearchTerm("");
-                setStatusFilter("ALL");
-                setDateFilter("all");
-              }}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-50 transition"
-            >
-              <X className="h-4 w-4" />
-              Clear
-            </button>
-          )}
+            <RefreshCw className="h-4 w-4" />
+            Clear Live
+          </button>
         </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by Doc ID or Title..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+          className="px-5 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="ALL">All Statuses</option>
+          <option value="SUCCESS">Success</option>
+          <option value="FAILED">Failed</option>
+          <option value="RUNNING">Running</option>
+          <option value="PENDING">Pending</option>
+        </select>
+
+        <select
+          value={dateFilter}
+          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+          onChange={(e) => setDateFilter(e.target.value as any)}
+          className="px-5 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="all">All Time</option>
+          <option value="24h">Last 24h</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+        </select>
       </div>
 
       {/* Stats Cards */}
@@ -288,7 +278,7 @@ export default function Overview() {
                         {migration.title}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
-                        <Badge variant={getState(migration)}>
+                        <Badge variant={getVariant(migration)}>
                           {migration.status}
                         </Badge>
                       </td>
