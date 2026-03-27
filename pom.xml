@@ -39,7 +39,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         
         <!-- spring boot -->
-        <spring-boot.version>4.0.4</spring-boot.version>
+        <spring-boot.version>4.0.5</spring-boot.version>
         
         <!-- flowable -->
         <flowable.version>8.0.0</flowable.version>
