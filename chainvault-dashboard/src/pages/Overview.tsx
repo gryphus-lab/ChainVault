@@ -233,7 +233,7 @@ export default function Overview() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Recent Migrations
+            Recent Migrations{/* no space */}
             <span className="text-sm font-normal text-gray-500 ml-2">
               ({filteredMigrations.length} shown)
             </span>

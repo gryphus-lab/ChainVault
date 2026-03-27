@@ -49,9 +49,6 @@ describe("Timeline Component", () => {
 
   it("renders the correct status icons", () => {
     const { container } = render(<Timeline events={mockEvents} />);
-
-    // Check for Lucide icon classes or check SVG existence
-    // Since Lucide icons are SVGs, we can look for the specific color classes
     const successIcon = container.querySelector(".text-green-600");
     const failedIcon = container.querySelector(".text-red-600");
 
@@ -68,5 +65,12 @@ describe("Timeline Component", () => {
 
     render(<Timeline events={[eventWithoutStep]} />);
     expect(screen.getByText("TASK STARTED")).toBeInTheDocument();
+  });
+
+  it("renders message when no events are available", () => {
+    render(<Timeline events={[]} />);
+    expect(
+      screen.getByText("No timeline events available yet."),
+    ).toBeInTheDocument();
   });
 });
