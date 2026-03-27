@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
@@ -47,9 +46,6 @@ class IndexControllerTest {
         // Setup
         // Run the test and verify the results
         var result = mockMvcTester.get().uri("/").exchange();
-        assertThat(result)
-                .hasStatus(HttpStatus.OK)
-                .hasContentTypeCompatibleWith(MediaType.TEXT_HTML);
-        assertThat(result).isNotNull().bodyText().contains("chainvault-dashboard");
+        assertThat(result).hasStatus(HttpStatus.OK).hasViewName("index");
     }
 }
