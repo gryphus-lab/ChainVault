@@ -24,6 +24,7 @@ const safeFormat = (
   try {
     return format(parseISO(dateStr), "PPp");
   } catch {
+    console.warn("Invalid date:", dateStr);
     return fallback;
   }
 };
@@ -334,13 +335,13 @@ export default function Overview() {
                   filteredMigrations.map((migration) => (
                     <tr
                       key={migration.id}
-                      className="hover:bg-gray-50 transition"
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-5 whitespace-nowrap font-mono text-sm text-gray-900">
                         {migration.id}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-700 max-w-xs truncate">
-                        {migration.title}
+                        {migration.title || "Untitled Migration"}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
                         <Badge variant={getVariant(migration)}>
@@ -367,7 +368,7 @@ export default function Overview() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-6 py-12 text-center text-gray-500"
+                      className="px-6 py-16 text-center text-gray-500"
                     >
                       No migrations found matching your filters.
                     </td>
