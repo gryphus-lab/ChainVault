@@ -42,10 +42,26 @@ class SpaControllerTest {
     }
 
     @Test
-    void testForwardToIndex() {
+    void testIndex_ReturnsTheIndexPage() {
         // Setup
         // Run the test and verify the results
         var result = mockMvcTester.get().uri("/").exchange();
-        assertThat(result).hasStatus(HttpStatus.OK).hasViewName("forward:/index.html");
+        assertThat(result).hasStatus(HttpStatus.OK).hasViewName("index");
+    }
+
+    @Test
+    void testForwardToIndex_ShouldWorkAsExpected() {
+        // Setup
+        // Run the test and verify the results
+        var result = mockMvcTester.get().uri("/overview").exchange();
+        assertThat(result).hasStatus(HttpStatus.OK).hasForwardedUrl("/index.html");
+    }
+
+    @Test
+    void testForwardSpaRoutes_doesNotForwardApiCalls() {
+        // Setup
+        // Run the test and verify the results
+        var result = mockMvcTester.get().uri("/api/migrations/events").exchange();
+        assertThat(result).hasStatus(HttpStatus.OK).doesNotHaveToString("index");
     }
 }
