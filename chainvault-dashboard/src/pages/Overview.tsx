@@ -5,10 +5,10 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, subDays } from "date-fns";
-import { Search, RefreshCw } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { getMigrations, getMigrationStats } from "@/lib/api";
-import { useMigrationEvents } from "@/hooks/useMigration";
+import { useMigrationEvents } from "@/hooks/useMigrationEvents.ts";
 
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -45,7 +45,12 @@ export default function Overview() {
   });
 
   // Real-time events
-  const { events: liveEvents, isConnected, clearEvents } = useMigrationEvents();
+  const {
+    events: liveEvents,
+    isConnected,
+    clearEvents,
+    reconnect,
+  } = useMigrationEvents();
 
   // Merge live events into migrations (for real-time status updates)
   const migrationsWithLive = useMemo(() => {
@@ -118,20 +123,27 @@ export default function Overview() {
 
         <div className="flex items-center gap-3">
           <div
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${isConnected ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium
+    ${isConnected ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
           >
             <div
-              className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
+              className={`w-2.5 h-2.5 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
             />
-            {isConnected ? "Live" : "Disconnected"}
+            {isConnected ? "Live • Connected" : "Disconnected"}
           </div>
 
           <button
-            onClick={clearEvents}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+            onClick={reconnect}
+            className="flex items-center gap-2 px-4 py-1.5 text-sm border border-gray-300 rounded-xl hover:bg-gray-50"
           >
-            <RefreshCw className="h-4 w-4" />
-            Clear Live
+            Reconnect
+          </button>
+
+          <button
+            onClick={clearEvents}
+            className="flex items-center gap-2 px-4 py-1.5 text-sm border border-gray-300 rounded-xl hover:bg-gray-50"
+          >
+            Clear Events
           </button>
         </div>
       </div>

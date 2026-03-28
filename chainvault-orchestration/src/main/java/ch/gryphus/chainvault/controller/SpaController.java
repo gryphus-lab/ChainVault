@@ -5,13 +5,12 @@ package ch.gryphus.chainvault.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.ModelAndView;
 
 @Controller
-public class IndexController {
+public class SpaController {
 
-    @GetMapping("/")
-    public ModelAndView home() {
-        return new ModelAndView("index");
+    @GetMapping({"/", "/migration/**", "/dashboard", "/overview"})
+    public String forwardToIndex() {
+        return "forward:/index.html";
     }
 }

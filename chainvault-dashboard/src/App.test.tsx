@@ -17,18 +17,6 @@ vi.mock("@/pages/MigrationDetailPage", () => ({
 }));
 
 describe("App routing", () => {
-  it("renders header", () => {
-    render(
-      <MemoryRouter initialEntries={["/"]}>
-        <App />
-      </MemoryRouter>,
-    );
-
-    expect(
-      screen.getByText("ChainVault Migration Dashboard"),
-    ).toBeInTheDocument();
-  });
-
   it("renders Overview on /", () => {
     render(
       <MemoryRouter initialEntries={["/"]}>

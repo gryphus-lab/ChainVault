@@ -14,23 +14,23 @@ export const getMigrations = async (params?: {
   limit?: number;
   offset?: number;
 }): Promise<Migration[]> => {
-  const res = await api.get("/migrations", { params });
+  const res = await api.get("/api/migrations", { params });
   return res.data;
 };
 
 export const getMigrationById = async (id: string): Promise<Migration> => {
-  const res = await api.get(`/migrations/${id}`);
+  const res = await api.get(`/api/migrations/${id}`);
   return res.data;
 };
 
 export const getMigrationStats = async (): Promise<MigrationStats> => {
-  const res = await api.get("/migrations/stats");
+  const res = await api.get("/api/migrations/stats");
   return res.data;
 };
 
 export const getMigrationDetail = async (
   id: string,
 ): Promise<MigrationDetail> => {
-  const res = await api.get(`/migrations/${id}/detail`);
+  const res = await api.get(`/api/migrations/${id}/detail`);
   return res.data;
 };

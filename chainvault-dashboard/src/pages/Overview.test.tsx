@@ -14,12 +14,12 @@ vi.mock("@/lib/api", () => ({
   getMigrationStats: vi.fn(),
 }));
 
-vi.mock("@/hooks/useMigration", () => ({
+vi.mock("@/hooks/useMigrationEvents", () => ({
   useMigrationEvents: vi.fn(),
 }));
 
 import { getMigrations, getMigrationStats } from "@/lib/api";
-import { useMigrationEvents } from "@/hooks/useMigration";
+import { useMigrationEvents } from "@/hooks/useMigrationEvents.ts";
 
 // --- test helpers ---
 function renderComponent() {
@@ -94,7 +94,7 @@ describe("Overview (with live events)", () => {
 
     await screen.findByText("Migration Dashboard");
 
-    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getByText("Live • Connected")).toBeInTheDocument();
   });
 
   it("shows disconnected state", async () => {
@@ -124,7 +124,7 @@ describe("Overview (with live events)", () => {
 
     await screen.findByText("Migration Dashboard");
 
-    fireEvent.click(screen.getByText("Clear Live"));
+    fireEvent.click(screen.getByText("Clear Events"));
 
     expect(clearEvents).toHaveBeenCalled();
   });

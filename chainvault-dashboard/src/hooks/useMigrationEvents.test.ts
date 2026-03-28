@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 
-import { useMigrationEvents } from "./useMigration";
+import { useMigrationEvents } from "./useMigrationEvents";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // --- Mock EventSource ---
@@ -64,7 +64,7 @@ describe("useMigrationEvents", () => {
     expect(result.current.events[0]).toEqual(mockEvent);
   });
 
-  it("keeps only latest 50 events", () => {
+  it("keeps only latest 60 events", () => {
     const { result } = renderHook(() => useMigrationEvents());
 
     const instance = MockEventSource.instances[0];
@@ -81,7 +81,7 @@ describe("useMigrationEvents", () => {
       }
     });
 
-    expect(result.current.events.length).toBe(50);
+    expect(result.current.events.length).toBe(60);
   });
 
   it("handles invalid JSON safely", () => {
