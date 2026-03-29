@@ -43,7 +43,7 @@ public final class SftpUtils {
                     if (pdfPath != null) { // when PDF was not generated
                         session.write(
                                 Files.newInputStream((Path) pdfPath),
-                                "%s/%s.pdf".formatted(folder, docId));
+                                "%s/%s-merged.pdf".formatted(folder, docId));
                     }
                     session.write(
                             new ByteArrayInputStream(
