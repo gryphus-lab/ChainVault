@@ -197,9 +197,9 @@ export default function Overview() {
           </CardHeader>
           <CardContent>
             <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
-              {liveEvents.slice(0, 8).map((event, i) => (
+              {liveEvents.slice(0, 8).map((event) => (
                 <div
-                  key={i}
+                  key={event.id}
                   className="flex gap-4 p-3 bg-gray-50 rounded-xl text-sm"
                 >
                   <div className="font-mono text-xs text-gray-500 whitespace-nowrap pt-0.5">

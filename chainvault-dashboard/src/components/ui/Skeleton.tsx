@@ -48,7 +48,7 @@ export function SkeletonText({
   return (
     <div className={cn("space-y-2", className)}>
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton key={i} height="h-4" className="w-full" />
+        <Skeleton key={i.toLocaleString()} height="h-4" className="w-full" />
       ))}
     </div>
   );
