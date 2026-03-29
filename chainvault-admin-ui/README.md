@@ -33,7 +33,6 @@ Explore the live demo of Argon Admin Dashboard [here](https://argon-admin-dashbo
 
 ![Light Mode](https://res.cloudinary.com/duxego3ja/image/upload/v1709215626/argon-admin-dashboard/qf006k0kwkhrgmefengy.png)
 
-
 ## Contributions and Feedback
 
 We welcome contributions and feedback from the community to enhance and improve Argon Admin Dashboard further. Feel free to submit pull requests or open issues for any suggestions or bug reports.
