@@ -4,10 +4,7 @@
 package ch.gryphus.chainvault.workflow.service;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
-import ch.gryphus.chainvault.model.entity.MigrationAudit;
-import ch.gryphus.chainvault.model.entity.MigrationDetail;
-import ch.gryphus.chainvault.model.entity.MigrationEvent;
-import ch.gryphus.chainvault.model.entity.MigrationStats;
+import ch.gryphus.chainvault.model.entity.*;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.repository.MigrationEventRepository;
 import io.opentelemetry.api.common.AttributeKey;
@@ -204,8 +201,24 @@ public class AuditEventService {
         throw new BpmnError(errorCode, exception.getMessage());
     }
 
-    public List<MigrationAudit> getMigrations(int limit) {
-        return auditRepo.getTopByCompletedAtIsNotNull(Limit.of(limit));
+    public List<Migration> getMigrations(int limit) {
+        List<MigrationAudit> auditRecords = auditRepo.getAllByCompletedAtIsNotNull(Limit.of(limit));
+        List<Migration> migrations = new ArrayList<>();
+        auditRecords.forEach(
+                audit -> {
+                    Migration m = new Migration();
+                    m.setId(String.valueOf(audit.getId()));
+                    m.setDocId(audit.getDocumentId());
+                    m.setStatus(String.valueOf(audit.getStatus()));
+                    m.setCreatedAt(audit.getCreatedAt());
+                    m.setTraceId(audit.getTraceId());
+                    m.setOcrPageCount(audit.getOcrPageCount());
+                    m.setOcrAttempted(audit.getOcrAttempted());
+                    m.setOcrSuccess(audit.getOcrSuccess());
+                    m.setOcrTotalTextLength(audit.getOcrTotalTextLength());
+                    migrations.add(m);
+                });
+        return migrations;
     }
 
     public MigrationStats getStats() {
@@ -219,15 +232,21 @@ public class AuditEventService {
     }
 
     public MigrationDetail getDetail(String id) {
-        MigrationDetail detail = new MigrationDetail();
 
         Optional<MigrationAudit> auditRecord =
                 Optional.of(auditRepo.getReferenceById(Long.valueOf(id)));
-        detail.setPdfUrl(auditRecord.get().getOutputFileKey());
-        detail.setChainZipUrl(auditRecord.get().getChainOfCustodyZip());
-        detail.setEvents(
-                eventRepo.findByMigrationAuditIdOrderByCreatedAtAsc(auditRecord.get().getId()));
 
+        MigrationDetail detail = new MigrationDetail();
+        detail.setDocId(auditRecord.get().getDocumentId());
+        detail.setCreatedAt(auditRecord.get().getCreatedAt());
+        detail.setOcrPageCount(auditRecord.get().getOcrPageCount());
+        detail.setOcrAttempted(auditRecord.get().getOcrAttempted());
+        detail.setOcrSuccess(auditRecord.get().getOcrSuccess());
+        detail.setOcrTotalTextLength(auditRecord.get().getOcrTotalTextLength());
+        detail.setTraceId(auditRecord.get().getTraceId());
+        detail.setEvents(eventRepo.getAllByMigrationAuditId((auditRecord.get().getId())));
+        detail.setChainZipUrl(auditRecord.get().getChainOfCustodyZip());
+        detail.setPdfUrl(auditRecord.get().getOutputFileKey());
         return detail;
     }
 }

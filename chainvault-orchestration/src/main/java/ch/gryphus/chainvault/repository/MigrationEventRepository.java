@@ -20,4 +20,6 @@ public interface MigrationEventRepository extends JpaRepository<MigrationEvent, 
      * @return the list
      */
     List<MigrationEvent> findByMigrationAuditIdOrderByCreatedAtAsc(Long auditId);
+
+    List<MigrationEvent> getAllByMigrationAuditId(Long migrationAuditId);
 }

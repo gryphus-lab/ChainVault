@@ -3,7 +3,7 @@
  */
 package ch.gryphus.chainvault.controller;
 
-import ch.gryphus.chainvault.model.entity.MigrationAudit;
+import ch.gryphus.chainvault.model.entity.Migration;
 import ch.gryphus.chainvault.model.entity.MigrationDetail;
 import ch.gryphus.chainvault.model.entity.MigrationStats;
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
@@ -25,7 +25,7 @@ public class MigrationController {
     }
 
     @GetMapping
-    public List<MigrationAudit> getMigrations(@RequestParam(defaultValue = "100") int limit) {
+    public List<Migration> getMigrations(@RequestParam(defaultValue = "100") int limit) {
         return auditEventService.getMigrations(limit);
     }
 

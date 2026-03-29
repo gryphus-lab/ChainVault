@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MigrationDetail extends MigrationAudit {
+public class MigrationDetail extends Migration {
     private List<MigrationEvent> events;
     private String ocrTextPreview;
     private String chainZipUrl;
