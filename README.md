@@ -20,7 +20,7 @@ Used by Gryphus Lab to coordinate extraction, transformation, signing, merging a
 |      Aspect       |              Technology              |
 |-------------------|--------------------------------------|
 | Language          | Java 25                              |
-| Framework         | Spring Boot 4                        |
+| Framework         | Spring Boot 4, React + Vi            |
 | Orchestration     | Flowable (BPMN 2.0)                  |
 | Database          | PostgreSQL 18 (Docker)               |
 | Schema Migrations | Liquibase (YAML)                     |
@@ -58,6 +58,9 @@ provides observability via Micrometer + Prometheus/Loki.
 - Aggregated JaCoCo coverage across modules (including Docker integration tests)
 - GitHub Actions CI with enforced SonarCloud quality gates and Qodana static analysis
 - Multi-stage Docker builds pushed to GHCR
+- Interactive migration dashboard (React + Vite) with real-time SSE updates, status/date filtering, and search
+- REST API for migration list, aggregated stats, and per-migration detail
+- SPA routing via `SpaController` (serves the React frontend from Spring Boot)
 
 ## Project Structure
 
@@ -65,6 +68,24 @@ provides observability via Micrometer + Prometheus/Loki.
 .
 ├── chainvault-migration/           # Core business logic: extraction, transformation, signing, merging, SFTP upload
 ├── chainvault-orchestration/       # Flowable BPMN engine, REST API, main application, delegates
+│   └── src/main/java/.../
+│       ├── controller/
+│       │   ├── MigrationController.java   # REST: /api/migrations (list, stats, detail)
+│       │   └── SpaController.java         # SPA catch-all routing → index.html
+│       ├── model/entity/
+│       │   ├── Migration.java             # Migration DTO
+│       │   ├── MigrationDetail.java       # Extended DTO with events + download URLs
+│       │   └── MigrationStats.java        # Aggregated stats DTO
+│       └── workflow/service/
+│           ├── AuditEventService.java     # getMigrations / getStats / getDetail
+│           └── SseEmitterService.java     # SSE push (events serialised as JSON)
+├── chainvault-dashboard/           # React + Vite frontend (served by Spring Boot)
+│   └── src/
+│       ├── hooks/useMigrationEvents.ts    # SSE hook with auto-reconnect
+│       ├── pages/
+│       │   ├── Overview.tsx               # Dashboard: stats cards, live feed, table
+│       │   └── MigrationDetailPage.tsx    # Per-migration timeline, OCR info, downloads
+│       └── lib/api.ts                     # getMigrations / getMigrationStats / getMigrationDetail
 ├── chainvault-report-aggregate/    # JaCoCo aggregated coverage reports for CI & SonarCloud
 ├── docker-compose.yml              # Core stack: app + postgres + sftp-test + fake-source-api
 ├── docker-compose-lgtm.yml         # Observability: Prometheus, Loki, Alloy, Grafana
@@ -105,8 +126,9 @@ mise dev
 
 After startup check:
 
-* Health:     http://localhost:8085/actuator/health
-* Swagger UI: http://localhost:8085/swagger-ui.html
+* Health:          http://localhost:8085/actuator/health
+* Swagger UI:      http://localhost:8085/swagger-ui.html
+* Dashboard (SPA): http://localhost:8085/
 
 ## Local Development
 
@@ -136,6 +158,34 @@ Access:
 * Grafana:     http://localhost:3000  (admin/admin by default)
 * Prometheus:  http://localhost:9090
 * Loki:        http://localhost:3100  (via Grafana datasource)
+
+## REST API
+
+| Method |             Path              |                              Description                               |
+|--------|-------------------------------|------------------------------------------------------------------------|
+| `GET`  | `/api/migrations?limit={n}`   | List recent migrations (default 100)                                   |
+| `GET`  | `/api/migrations/stats`       | Aggregated stats (total, success, failed, pending, running, last 24 h) |
+| `GET`  | `/api/migrations/{id}/detail` | Full migration detail (events timeline, OCR info, download URLs)       |
+| `GET`  | `/api/migrations/events`      | SSE stream of live migration events                                    |
+
+All responses are JSON. The detail endpoint returns a `MigrationDetail` which extends `Migration` and includes:
+- `events` — ordered list of `MigrationEvent` objects for the timeline
+- `ocrTextPreview` — truncated OCR text preview
+- `chainZipUrl` / `pdfUrl` — download links for the chain-of-custody ZIP and merged PDF
+
+## Dashboard
+
+The React frontend is built by `chainvault-dashboard` (React 18 + Vite + TailwindCSS + TanStack Query) and served
+statically by Spring Boot via `SpaController`. All SPA routes (`/`, `/migration/**`, `/dashboard`, `/overview`) are
+forwarded to `index.html`.
+
+|       View       |          Route           |                          Description                          |
+|------------------|--------------------------|---------------------------------------------------------------|
+| Overview         | `/`                      | Stats cards, live SSE event feed, filterable migrations table |
+| Migration Detail | `/migration/{id}/detail` | Timeline, OCR breakdown, failure reason, artifact downloads   |
+
+**Live event feed** (`useMigrationEvents` hook): subscribes to `/api/migrations/events` via SSE, buffers up to 100 events
+in memory, merges live status updates into the migrations table, and auto-reconnects on disconnect (3 s backoff).
 
 ## Configuration
 
@@ -169,10 +219,12 @@ mise verify
 
 ### Docker Integration Tests
 
-The `chainvault-orchestration` module contains three integration test classes under `src/test/java/.../docker/`:
+The `chainvault-orchestration` module contains integration test classes under `src/test/java/.../docker/` and `src/test/java/.../controller/`:
 
 - `DockerServicesIT` — individual service health, connectivity, and port-mapping tests
 - `DockerComposeIT` — full compose-stack tests (service startup, inter-service networking)
+- `MigrationControllerTest` — unit tests for `MigrationController` (stats, list, detail endpoints)
+- `SpaControllerTest` — unit tests for SPA route forwarding
 
 Run a specific class:
 
