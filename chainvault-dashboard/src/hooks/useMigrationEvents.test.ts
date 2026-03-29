@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 
-import { useMigrationEvents } from "./useMigration";
+import { useMigrationEvents } from "./useMigrationEvents";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // --- Mock EventSource ---
@@ -49,7 +49,10 @@ describe("useMigrationEvents", () => {
     const instance = MockEventSource.instances[0];
 
     const mockEvent = {
+      id: "1",
       migrationId: "1",
+      eventType: "extract-hash",
+      message: "extract-hash completed successfully",
       status: "SUCCESS",
       timestamp: new Date().toISOString(),
     };
@@ -64,7 +67,7 @@ describe("useMigrationEvents", () => {
     expect(result.current.events[0]).toEqual(mockEvent);
   });
 
-  it("keeps only latest 50 events", () => {
+  it("keeps only latest 60 events", () => {
     const { result } = renderHook(() => useMigrationEvents());
 
     const instance = MockEventSource.instances[0];
@@ -73,7 +76,10 @@ describe("useMigrationEvents", () => {
       for (let i = 0; i < 60; i++) {
         instance.onmessage?.({
           data: JSON.stringify({
+            id: `${i}`,
             migrationId: `${i}`,
+            eventType: "extract-hash",
+            message: "extract-hash completed successfully",
             status: "SUCCESS",
             timestamp: new Date().toISOString(),
           }),
@@ -81,7 +87,7 @@ describe("useMigrationEvents", () => {
       }
     });
 
-    expect(result.current.events.length).toBe(50);
+    expect(result.current.events.length).toBe(60);
   });
 
   it("handles invalid JSON safely", () => {
@@ -129,7 +135,10 @@ describe("useMigrationEvents", () => {
     act(() => {
       instance.onmessage?.({
         data: JSON.stringify({
+          id: "1",
           migrationId: "1",
+          eventType: "extract-hash",
+          message: "extract-hash completed successfully",
           status: "SUCCESS",
           timestamp: new Date().toISOString(),
         }),

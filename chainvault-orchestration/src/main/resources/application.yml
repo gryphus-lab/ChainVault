@@ -4,6 +4,7 @@ spring:
     name: chainvault-document-migration
   thymeleaf:
     prefix: classpath:/static/
+
   # ───────────────────────────────────────────────
   # Database Configuration (PostgreSQL example)
   # ───────────────────────────────────────────────

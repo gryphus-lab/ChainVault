@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MigrationEventDto {
-
     private String id;
     private String migrationId;
     private String eventType;

@@ -1,20 +1,32 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO, subDays } from "date-fns";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, Clock } from "lucide-react";
 
 import { getMigrations, getMigrationStats } from "@/lib/api";
-import { useMigrationEvents } from "@/hooks/useMigration";
+import { useMigrationEvents } from "@/hooks/useMigrationEvents";
 
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Migration } from "@/types";
 
 type StatusFilter = "ALL" | "SUCCESS" | "FAILED" | "RUNNING" | "PENDING";
+
+const safeFormat = (
+  dateStr: string | undefined | null,
+  fallback: string = "—",
+) => {
+  if (!dateStr) return fallback;
+  try {
+    return format(parseISO(dateStr), "PPp");
+  } catch {
+    return fallback;
+  }
+};
 
 function getVariant(migration: Migration) {
   switch (migration.status) {
@@ -39,30 +51,56 @@ export default function Overview() {
     queryFn: getMigrationStats,
   });
 
-  const { data: allMigrations = [] } = useQuery({
+  const {
+    data: allMigrations = [],
+    isLoading: migrationsLoading,
+    error: migrationsError,
+  } = useQuery({
     queryKey: ["migrations"],
-    queryFn: () => getMigrations({ limit: 100 }),
+    queryFn: async () => {
+      const data = await getMigrations({ limit: 100 });
+      console.log("🔍 Raw data from getMigrations:", data); // ← Add this
+      return Array.isArray(data) ? data : [];
+    },
+    retry: 2,
   });
 
-  // Real-time events
-  const { events: liveEvents, isConnected, clearEvents } = useMigrationEvents();
+  // Debug log
+  useEffect(() => {
+    console.log("📊 allMigrations count:", allMigrations.length);
+    if (allMigrations.length > 0) {
+      console.log("📊 First migration sample:", allMigrations[0]);
+    }
+  }, [allMigrations]);
 
-  // Merge live events into migrations (for real-time status updates)
+  const {
+    events: liveEvents,
+    isConnected,
+    clearEvents,
+    reconnect,
+  } = useMigrationEvents();
+
+  // Debug: Log data counts
+  useEffect(() => {
+    console.log("📊 allMigrations count:", allMigrations.length);
+    console.log("📊 First migration sample:", allMigrations[0]);
+  }, [allMigrations]);
+
+  // Merge live updates
   const migrationsWithLive = useMemo(() => {
     const merged = [...allMigrations];
-
     liveEvents.forEach((liveEvent) => {
+      if (!liveEvent?.migrationId) return;
       const index = merged.findIndex((m) => m.id === liveEvent.migrationId);
       if (index !== -1) {
         merged[index] = {
           ...merged[index],
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           status: liveEvent.status as any,
-          updatedAt: liveEvent.timestamp,
+          updatedAt: liveEvent.timestamp || merged[index].updatedAt,
         };
       }
     });
-
     return merged;
   }, [allMigrations, liveEvents]);
 
@@ -87,7 +125,7 @@ export default function Overview() {
           break;
       }
       const cutoff = subDays(new Date(), days);
-      result = result.filter((m) => new Date(m.createdAt) >= cutoff);
+      result = result.filter((m) => new Date(m.createdAt || 0) >= cutoff);
     }
 
     // Search term (docId or title)
@@ -95,22 +133,31 @@ export default function Overview() {
       const term = searchTerm.toLowerCase().trim();
       result = result.filter(
         (m) =>
-          m.docId.toLowerCase().includes(term) ||
-          m.title.toLowerCase().includes(term),
+          (m.docId || "").toLowerCase().includes(term) ||
+          (m.title || "").toLowerCase().includes(term),
       );
     }
 
-    // Sort by most recent first
     return result.sort(
       (a, b) =>
-        new Date(b.updatedAt || b.createdAt).getTime() -
-        new Date(a.updatedAt || a.createdAt).getTime(),
+        new Date(b.updatedAt || b.createdAt || 0).getTime() -
+        new Date(a.updatedAt || a.createdAt || 0).getTime(),
     );
   }, [migrationsWithLive, statusFilter, dateFilter, searchTerm]);
 
+  function getMigrationStatus() {
+    if (migrationsLoading) {
+      return "Loading migrations...";
+    } else if (migrationsError) {
+      return "Error loading migrations";
+    } else {
+      return "No migrations found yet.";
+    }
+  }
+
   return (
     <div className="space-y-8">
-      {/* Header with Connection Status */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">
           Migration Dashboard
@@ -118,23 +165,70 @@ export default function Overview() {
 
         <div className="flex items-center gap-3">
           <div
-            className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${isConnected ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium ${isConnected ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
           >
             <div
-              className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
+              className={`w-2.5 h-2.5 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
             />
-            {isConnected ? "Live" : "Disconnected"}
+            {isConnected ? "Live • Connected" : "Disconnected"}
           </div>
-
+          <button
+            onClick={reconnect}
+            className="px-4 py-1.5 text-sm border rounded-xl hover:bg-gray-50"
+          >
+            Reconnect
+          </button>
           <button
             onClick={clearEvents}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+            className="px-4 py-1.5 text-sm border rounded-xl hover:bg-gray-50"
           >
-            <RefreshCw className="h-4 w-4" />
-            Clear Live
+            Clear Events
           </button>
         </div>
       </div>
+
+      {/* Live Events Panel */}
+      {liveEvents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" /> Live Events ({liveEvents.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
+              {liveEvents.slice(0, 8).map((event, i) => (
+                <div
+                  key={i}
+                  className="flex gap-4 p-3 bg-gray-50 rounded-xl text-sm"
+                >
+                  <div className="font-mono text-xs text-gray-500 whitespace-nowrap pt-0.5">
+                    {event.timestamp
+                      ? format(parseISO(event.timestamp), "HH:mm:ss")
+                      : "—"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">
+                      {event.stepName || event.eventType}
+                    </div>
+                    <div className="text-gray-600 text-sm">{event.message}</div>
+                    {event.migrationId && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        Migration: {event.migrationId}
+                      </div>
+                    )}
+                  </div>
+                  <Badge
+                    variant={event.status === "SUCCESS" ? "success" : "default"}
+                  >
+                    {event.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">
@@ -266,35 +360,38 @@ export default function Overview() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredMigrations.length > 0 ? (
-                  filteredMigrations.map((migration) => (
+                  filteredMigrations.map((migration, index) => (
                     <tr
-                      key={migration.id}
-                      className="hover:bg-gray-50 transition"
+                      key={migration?.id || `row-${index}`}
+                      className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-5 whitespace-nowrap font-mono text-sm text-gray-900">
-                        {migration.id}
+                        {migration?.id || "—"}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-700 max-w-xs truncate">
-                        {migration.title}
+                        {migration?.title || "Untitled"}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
-                        <Badge variant={getVariant(migration)}>
-                          {migration.status}
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        <Badge variant={getVariant(migration || ({} as any))}>
+                          {migration?.status || "UNKNOWN"}
                         </Badge>
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-500">
-                        {format(parseISO(migration.createdAt), "PPp")}
+                        {safeFormat(migration?.createdAt)}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-500">
-                        {format(parseISO(migration.updatedAt), "PPp")}
+                        {safeFormat(migration?.updatedAt)}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-right">
-                        <Link
-                          to={`/migration/${migration.id}`}
-                          className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                        >
-                          View Details →
-                        </Link>
+                        {migration?.id && (
+                          <Link
+                            to={`/migration/${migration.id}`}
+                            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                          >
+                            View Details →
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -302,9 +399,9 @@ export default function Overview() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-6 py-12 text-center text-gray-500"
+                      className="px-6 py-16 text-center text-gray-500"
                     >
-                      No migrations found matching your filters.
+                      {getMigrationStatus()}
                     </td>
                   </tr>
                 )}

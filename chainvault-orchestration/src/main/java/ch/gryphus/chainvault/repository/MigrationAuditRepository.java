@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.repository;
 import ch.gryphus.chainvault.model.entity.MigrationAudit;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -38,4 +39,8 @@ public interface MigrationAuditRepository extends JpaRepository<MigrationAudit, 
      * @return the list
      */
     List<MigrationAudit> findByStatus(MigrationAudit.MigrationStatus status);
+
+    int countAllByStatus(MigrationAudit.MigrationStatus status);
+
+    List<MigrationAudit> getAllByCompletedAtIsNotNull(Limit of);
 }

@@ -24,7 +24,6 @@ export interface MigrationStats {
   running: number;
   success: number;
   failed: number;
-  compensated: number;
   last24h: number;
 }
 

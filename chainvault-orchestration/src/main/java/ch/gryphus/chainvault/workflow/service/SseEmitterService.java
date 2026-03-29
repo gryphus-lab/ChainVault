@@ -10,33 +10,47 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import tools.jackson.databind.ObjectMapper;
 
 @Transactional
 @Service
 public class SseEmitterService {
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private final ObjectMapper objectMapper;
+
+    public SseEmitterService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     public SseEmitter createEmitter(String clientId) {
-        SseEmitter emitter = new SseEmitter(0L); // 0 = no timeout
+        SseEmitter emitter = new SseEmitter(0L); // no timeout
         emitters.put(clientId, emitter);
 
         emitter.onCompletion(() -> emitters.remove(clientId));
         emitter.onTimeout(() -> emitters.remove(clientId));
-        emitter.onError(_ -> emitters.remove(clientId));
+        emitter.onError(ex -> emitters.remove(clientId));
 
         return emitter;
     }
 
     public void sendEvent(MigrationEventDto event) {
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(event);
+        } catch (Exception _) {
+            json = "{}";
+        }
+
+        String finalJson = json;
         emitters.values()
-                .forEach(
+                .removeIf(
                         emitter -> {
                             try {
-                                emitter.send(
-                                        SseEmitter.event().name("migration-event").data(event));
+                                emitter.send(finalJson);
+                                return false;
                             } catch (IOException _) {
-                                emitters.remove(emitter.toString()); // clean up dead emitters
+                                return true; // remove dead emitter
                             }
                         });
     }

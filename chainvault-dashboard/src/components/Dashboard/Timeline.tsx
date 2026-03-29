@@ -18,9 +18,12 @@ export default function Timeline({ events }: Readonly<TimelineProps>) {
     );
   }
 
-  const sortedEvents = [...events].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-  );
+  const sortedEvents = [...events]
+    .filter((e) => e?.timestamp)
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
 
   return (
     <div className="flow-root">

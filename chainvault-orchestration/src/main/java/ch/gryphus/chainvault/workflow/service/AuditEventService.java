@@ -4,8 +4,7 @@
 package ch.gryphus.chainvault.workflow.service;
 
 import ch.gryphus.chainvault.domain.MigrationContext;
-import ch.gryphus.chainvault.model.entity.MigrationAudit;
-import ch.gryphus.chainvault.model.entity.MigrationEvent;
+import ch.gryphus.chainvault.model.entity.*;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.repository.MigrationEventRepository;
 import io.opentelemetry.api.common.AttributeKey;
@@ -13,12 +12,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.flowable.engine.delegate.BpmnError;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -201,5 +199,54 @@ public class AuditEventService {
 
         // Throw BPMN error to trigger boundary event
         throw new BpmnError(errorCode, exception.getMessage());
+    }
+
+    public List<Migration> getMigrations(int limit) {
+        List<MigrationAudit> auditRecords = auditRepo.getAllByCompletedAtIsNotNull(Limit.of(limit));
+        List<Migration> migrations = new ArrayList<>();
+        auditRecords.forEach(
+                audit -> {
+                    Migration m = new Migration();
+                    m.setId(String.valueOf(audit.getId()));
+                    m.setDocId(audit.getDocumentId());
+                    m.setStatus(String.valueOf(audit.getStatus()));
+                    m.setCreatedAt(audit.getCreatedAt());
+                    m.setTraceId(audit.getTraceId());
+                    m.setOcrPageCount(audit.getOcrPageCount());
+                    m.setOcrAttempted(audit.getOcrAttempted());
+                    m.setOcrSuccess(audit.getOcrSuccess());
+                    m.setOcrTotalTextLength(audit.getOcrTotalTextLength());
+                    migrations.add(m);
+                });
+        return migrations;
+    }
+
+    public MigrationStats getStats() {
+        MigrationStats stats = new MigrationStats();
+        stats.setTotal(auditRepo.count());
+        stats.setSuccess(auditRepo.countAllByStatus(MigrationAudit.MigrationStatus.SUCCESS));
+        stats.setFailed(auditRepo.countAllByStatus(MigrationAudit.MigrationStatus.FAILED));
+        stats.setPending(auditRepo.countAllByStatus(MigrationAudit.MigrationStatus.PENDING));
+        stats.setRunning(auditRepo.countAllByStatus(MigrationAudit.MigrationStatus.RUNNING));
+        return stats;
+    }
+
+    public MigrationDetail getDetail(String id) {
+
+        Optional<MigrationAudit> auditRecord =
+                Optional.of(auditRepo.getReferenceById(Long.valueOf(id)));
+
+        MigrationDetail detail = new MigrationDetail();
+        detail.setDocId(auditRecord.get().getDocumentId());
+        detail.setCreatedAt(auditRecord.get().getCreatedAt());
+        detail.setOcrPageCount(auditRecord.get().getOcrPageCount());
+        detail.setOcrAttempted(auditRecord.get().getOcrAttempted());
+        detail.setOcrSuccess(auditRecord.get().getOcrSuccess());
+        detail.setOcrTotalTextLength(auditRecord.get().getOcrTotalTextLength());
+        detail.setTraceId(auditRecord.get().getTraceId());
+        detail.setEvents(eventRepo.getAllByMigrationAuditId((auditRecord.get().getId())));
+        detail.setChainZipUrl(auditRecord.get().getChainOfCustodyZip());
+        detail.setPdfUrl(auditRecord.get().getOutputFileKey());
+        return detail;
     }
 }

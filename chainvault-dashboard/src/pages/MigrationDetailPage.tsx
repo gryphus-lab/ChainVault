@@ -16,6 +16,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 export default function MigrationDetailPage() {
   const { id } = useParams<{ id: string }>();
 
+  const safeFormat = (
+    dateStr: string | undefined | null,
+    fallback: string = "—",
+  ) => {
+    if (!dateStr) return fallback;
+    try {
+      return format(parseISO(dateStr), "PPp");
+    } catch {
+      return fallback;
+    }
+  };
+
   const {
     data: migration,
     isLoading,
@@ -87,7 +99,7 @@ export default function MigrationDetailPage() {
             <CardTitle className="text-sm text-gray-500">Created</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>{format(parseISO(migration.createdAt), "PPP")}</p>
+            <p>{safeFormat(migration.createdAt)}</p>
           </CardContent>
         </Card>
 

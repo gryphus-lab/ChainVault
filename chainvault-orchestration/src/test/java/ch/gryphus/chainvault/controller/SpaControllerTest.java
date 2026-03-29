@@ -21,8 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
-@WebMvcTest(IndexController.class)
-class IndexControllerTest {
+@WebMvcTest(SpaController.class)
+class SpaControllerTest {
 
     @Autowired private MockMvcTester mockMvcTester;
     @MockitoBean private TraceIdFilter traceIdFilter;
@@ -42,10 +42,18 @@ class IndexControllerTest {
     }
 
     @Test
-    void testHome() {
+    void testForwardToIndex_ShouldWorkAsExpected() {
         // Setup
         // Run the test and verify the results
-        var result = mockMvcTester.get().uri("/").exchange();
-        assertThat(result).hasStatus(HttpStatus.OK).hasViewName("index");
+        var result = mockMvcTester.get().uri("/overview").exchange();
+        assertThat(result).hasStatus(HttpStatus.OK).hasForwardedUrl("/index.html");
+    }
+
+    @Test
+    void testForwardSpaRoutes_doesNotForwardApiCalls() {
+        // Setup
+        // Run the test and verify the results
+        var result = mockMvcTester.get().uri("/api/migrations/events").exchange();
+        assertThat(result).hasStatus(HttpStatus.OK).doesNotHaveToString("index");
     }
 }
