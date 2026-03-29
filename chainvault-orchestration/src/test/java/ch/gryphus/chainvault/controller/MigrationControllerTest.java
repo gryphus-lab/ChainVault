@@ -20,7 +20,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +55,7 @@ class MigrationControllerTest {
     }
 
     @Test
-    void testGetMigrations() throws UnsupportedEncodingException {
+    void testGetMigrations() {
         // Setup
         // Configure AuditEventService.getMigrations(...).
         final Migration migration = new Migration();
@@ -75,8 +74,17 @@ class MigrationControllerTest {
                                 .param("limit", "0")
                                 .accept(MediaType.APPLICATION_JSON));
 
-        assertThat(result).hasStatus(HttpStatus.OK).hasContentType(MediaType.APPLICATION_JSON);
-        assertThat(result.getResponse().getContentAsString()).contains("\"id\":\"TEST-123\"");
+        String expectedResult =
+                """
+                [{"docId":"DOC-TEST-1234", "failureReason":null, "id":"TEST-123",
+                "ocrAttempted":null, "ocrPageCount":null, "ocrSuccess":null, "ocrTotalTextLength":null, "pageCount":0,
+                "processInstanceKey":null, "status":"SUCCESS", "title":"Test Title", "traceId":null, "updatedAt":null}]
+                """;
+        assertThat(result)
+                .hasStatus(HttpStatus.OK)
+                .hasContentType(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .isLenientlyEqualTo(expectedResult);
     }
 
     @Test
@@ -88,8 +96,11 @@ class MigrationControllerTest {
         var result =
                 mockMvcTester.perform(get("/api/migrations").accept(MediaType.APPLICATION_JSON));
 
-        assertThat(result).hasStatus(HttpStatus.OK).hasContentType(MediaType.APPLICATION_JSON);
-        assertThat(result.getResponse().getContentLength()).isZero();
+        assertThat(result)
+                .hasStatus(HttpStatus.OK)
+                .hasContentType(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .isStrictlyEqualTo("[]");
     }
 
     @Test
@@ -108,10 +119,9 @@ class MigrationControllerTest {
         var result =
                 mockMvcTester.perform(
                         get("/api/migrations/stats").accept(MediaType.APPLICATION_JSON));
-        assertThat(result)
-                .hasStatus(HttpStatus.OK)
-                .hasBodyTextEqualTo(
-                        "{\"failed\":0,\"last24h\":0,\"pending\":0,\"running\":5,\"success\":5,\"total\":10}");
+        String expectedResult =
+                "{\"failed\":0,\"last24h\":0,\"pending\":0,\"running\":5,\"success\":5,\"total\":10}";
+        assertThat(result).hasStatus(HttpStatus.OK).hasBodyTextEqualTo(expectedResult);
     }
 
     @Test
