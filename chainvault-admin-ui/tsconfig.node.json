@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "types": ["node", "vitest"]
+  },
+  "include": ["vite.config.ts", "vitest.config.ts"]
+}
