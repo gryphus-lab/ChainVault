@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { tokens, themeSettings, useMode } from "./theme";
