@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import { createContext, useMemo, useState } from "react";
 import { Box, CssBaseline, ThemeProvider, Container } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import { Navbar } from "./scenes";
@@ -9,14 +9,14 @@ export const ToggledContext = createContext(null);
 function App() {
   const [theme, colorMode] = useMode();
   const [toggled, setToggled] = useState(false);
-  const values = { toggled, setToggled };
+  const values = useMemo(() => ({ toggled, setToggled }), []);
 
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <ToggledContext.Provider value={values}>
-          {/* <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>
+          <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>
             <Box
               sx={{
                 flexGrow: 1,
@@ -31,7 +31,7 @@ function App() {
                 <Outlet />
               </Box>
             </Box>
-          </Box> */}
+          </Box>
           <Box
             sx={{
               display: "flex",

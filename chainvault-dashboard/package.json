@@ -1,20 +1,6 @@
 {
   "name": "chainvault-dashboard",
-  "private": true,
   "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "preview": "vite preview",
-    "prettier": "prettier . --write",
-    "prettier:check": "prettier . --check"
-  },
   "dependencies": {
     "@tanstack/react-query": "^5.95.2",
     "@tanstack/react-table": "^8.21.3",
@@ -52,5 +38,19 @@
     "vite": "^8.0.1",
     "vitest": "^4.1.1"
   },
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.13.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prettier": "prettier . --write",
+    "prettier:check": "prettier . --check",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "type": "module"
 }
