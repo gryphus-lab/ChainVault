@@ -216,5 +216,5 @@ export const useMode = () => {
   // Move the [mode] array outside the createTheme parentheses
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
 
-  return [theme, colorMode];
+  return [theme, colorMode] as const;
 };
