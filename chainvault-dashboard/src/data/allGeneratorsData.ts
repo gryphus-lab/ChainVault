@@ -108,7 +108,7 @@ export const allGeneratorsData = [
     kwHoursExport: "0 kWh",
     site: "Bakken",
     lat: 48.7,
-    lng: -103.0,
+    lng: -103,
   },
   {
     id: "GN2753",
@@ -125,7 +125,7 @@ export const allGeneratorsData = [
     apparentPower: "0.80 kVA",
     kwHoursExport: "480000 kWh",
     site: "Bakken",
-    lat: 48.0,
+    lat: 48,
     lng: -103.2,
   },
   {
