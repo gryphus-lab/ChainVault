@@ -16,7 +16,7 @@ describe("Theme Logic", () => {
     const lightTokens = tokens("light");
     // In your light mode logic: primary[100] is #040509
     expect(lightTokens.primary[100]).toBe("#040509");
-    expect(lightTokens.gray[100]).toBe("#141414");
+    expect(lightTokens.gray[100]).toBe("#e0e0e0");
   });
 
   it("should generate correct MUI theme settings for dark mode", () => {

@@ -1,10 +1,49 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { createTheme, PaletteMode } from "@mui/material";
+import { createTheme, PaletteMode, Theme } from "@mui/material";
 import { useMemo, useState, createContext } from "react";
 
-// 1. Define raw color constants once
+// Helper to reverse scales where light/dark are just mirrors
+const reverseScale = (scale: Record<number, string>) =>
+  Object.fromEntries(Object.entries(scale).reverse());
+
+const SHARED_COLORS = {
+  blueAccent: {
+    100: "#e1e2fe",
+    200: "#c3c6fd",
+    300: "#a4a9fc",
+    400: "#868dfb",
+    500: "#6870fa",
+    600: "#535ac8",
+    700: "#3e4396",
+    800: "#2a2d64",
+    900: "#151632",
+  },
+  redAccentBase: {
+    100: "#f8dcdb",
+    200: "#f1b9b7",
+    300: "#e99592",
+    400: "#e2726e",
+    500: "#db4f4a",
+    600: "#af3f3b",
+    700: "#832f2c",
+    800: "#58201e",
+    900: "#2c100f",
+  },
+  greenAccentBase: {
+    100: "#dbf5ee",
+    200: "#b7ebde",
+    300: "#94e2cd",
+    400: "#70d8bd",
+    500: "#4cceac",
+    600: "#3da58a",
+    700: "#2e7c67",
+    800: "#1e5245",
+    900: "#0f2922",
+  },
+};
+
 const DARK_COLORS = {
   gray: {
     100: "#e0e0e0",
@@ -28,39 +67,9 @@ const DARK_COLORS = {
     800: "#080b12",
     900: "#040509",
   },
-  greenAccent: {
-    100: "#dbf5ee",
-    200: "#b7ebde",
-    300: "#94e2cd",
-    400: "#70d8bd",
-    500: "#4cceac",
-    600: "#3da58a",
-    700: "#2e7c67",
-    800: "#1e5245",
-    900: "#0f2922",
-  },
-  redAccent: {
-    100: "#f8dcdb",
-    200: "#f1b9b7",
-    300: "#e99592",
-    400: "#e2726e",
-    500: "#db4f4a",
-    600: "#af3f3b",
-    700: "#832f2c",
-    800: "#58201e",
-    900: "#2c100f",
-  },
-  blueAccent: {
-    100: "#e1e2fe",
-    200: "#c3c6fd",
-    300: "#a4a9fc",
-    400: "#868dfb",
-    500: "#6870fa",
-    600: "#535ac8",
-    700: "#3e4396",
-    800: "#2a2d64",
-    900: "#151632",
-  },
+  greenAccent: SHARED_COLORS.greenAccentBase,
+  redAccent: SHARED_COLORS.redAccentBase,
+  blueAccent: SHARED_COLORS.blueAccent,
   orangeAccent: {
     100: "#ffe8cc",
     200: "#ffd199",
@@ -75,17 +84,7 @@ const DARK_COLORS = {
 };
 
 const LIGHT_COLORS = {
-  gray: {
-    100: "#141414",
-    200: "#292929",
-    300: "#3d3d3d",
-    400: "#525252",
-    500: "#666666",
-    600: "#858585",
-    700: "#a3a3a3",
-    800: "#c2c2c2",
-    900: "#e0e0e0",
-  },
+  gray: reverseScale(DARK_COLORS.gray),
   primary: {
     100: "#040509",
     200: "#080b12",
@@ -97,29 +96,9 @@ const LIGHT_COLORS = {
     800: "#a1a4ab",
     900: "#d0d1d5",
   },
-  greenAccent: {
-    100: "#0f2922",
-    200: "#1e5245",
-    300: "#2e7c67",
-    400: "#3da58a",
-    500: "#4cceac",
-    600: "#70d8bd",
-    700: "#94e2cd",
-    800: "#b7ebde",
-    900: "#dbf5ee",
-  },
-  redAccent: {
-    100: "#2c100f",
-    200: "#58201e",
-    300: "#832f2c",
-    400: "#af3f3b",
-    500: "#db4f4a",
-    600: "#e2726e",
-    700: "#e99592",
-    800: "#f1b9b7",
-    900: "#f8dcdb",
-  },
-  blueAccent: DARK_COLORS.blueAccent, // Blue is identical in both modes
+  greenAccent: reverseScale(SHARED_COLORS.greenAccentBase),
+  redAccent: reverseScale(SHARED_COLORS.redAccentBase),
+  blueAccent: SHARED_COLORS.blueAccent,
   orangeAccent: {
     100: "#fff7ed",
     200: "#ffedd5",
@@ -136,8 +115,15 @@ const LIGHT_COLORS = {
 export const tokens = (mode: PaletteMode) =>
   mode === "dark" ? DARK_COLORS : LIGHT_COLORS;
 
-const fontConfig = {
-  fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
+const fontConfig = { fontFamily: ["Source Sans Pro", "sans-serif"].join(",") };
+const typographyLevels = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+const fontSizes: Record<string, number> = {
+  h1: 40,
+  h2: 32,
+  h3: 24,
+  h4: 20,
+  h5: 16,
+  h6: 14,
 };
 
 export const themeSettings = (mode: PaletteMode) => {
@@ -148,34 +134,30 @@ export const themeSettings = (mode: PaletteMode) => {
       primary: {
         main: mode === "dark" ? colors.primary[500] : colors.primary[100],
       },
-      secondary: {
-        main: colors.greenAccent[500],
-      },
+      secondary: { main: colors.greenAccent[500] },
       neutral: {
         dark: colors.gray[700],
         main: colors.gray[500],
         light: colors.gray[100],
       },
-      background: {
-        default: colors.primary[500],
-      },
+      background: { default: colors.primary[500] },
     },
     typography: {
       ...fontConfig,
       fontSize: 12,
-      h1: { ...fontConfig, fontSize: 40 },
-      h2: { ...fontConfig, fontSize: 32 },
-      h3: { ...fontConfig, fontSize: 24 },
-      h4: { ...fontConfig, fontSize: 20 },
-      h5: { ...fontConfig, fontSize: 16 },
-      h6: { ...fontConfig, fontSize: 14 },
+      ...Object.fromEntries(
+        typographyLevels.map((lvl) => [
+          lvl,
+          { ...fontConfig, fontSize: fontSizes[lvl] },
+        ]),
+      ),
     },
   };
 };
 
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
-export const useMode = () => {
+export const useMode = (): [Theme, { toggleColorMode: () => void }] => {
   const [mode, setMode] = useState<PaletteMode>("dark");
   const colorMode = useMemo(
     () => ({
@@ -187,5 +169,5 @@ export const useMode = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const theme = useMemo(() => createTheme(themeSettings(mode) as any), [mode]);
-  return [theme, colorMode] as const;
+  return [theme, colorMode];
 };

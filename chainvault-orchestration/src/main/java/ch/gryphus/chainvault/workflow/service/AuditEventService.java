@@ -7,7 +7,8 @@ import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.model.dto.Migration;
 import ch.gryphus.chainvault.model.dto.MigrationDetail;
 import ch.gryphus.chainvault.model.dto.MigrationStats;
-import ch.gryphus.chainvault.model.entity.*;
+import ch.gryphus.chainvault.model.entity.MigrationAudit;
+import ch.gryphus.chainvault.model.entity.MigrationEvent;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.repository.MigrationEventRepository;
 import io.opentelemetry.api.common.AttributeKey;
@@ -16,7 +17,11 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.flowable.engine.delegate.BpmnError;
@@ -29,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(noRollbackForClassName = {"org.flowable.engine.delegate.BpmnError"})
 public class AuditEventService {
 
     private final MigrationAuditRepository auditRepo;
