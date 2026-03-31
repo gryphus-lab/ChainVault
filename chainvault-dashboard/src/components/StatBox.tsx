@@ -11,7 +11,6 @@ interface StatBoxProps {
   title: string;
   subtitle: string;
   icon?: React.ReactNode;
-  progress?: string | number;
   increase?: string;
 }
 
