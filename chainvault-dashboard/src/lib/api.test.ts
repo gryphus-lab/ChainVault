@@ -58,7 +58,7 @@ describe("API Service", () => {
 
     const result = await getMigrationDetail("123");
 
-    expect(spy).toHaveBeenCalledWith("migrations/123");
+    expect(spy).toHaveBeenCalledWith("migrations/123/detail");
     expect(result).toEqual(mockDetail);
   });
 

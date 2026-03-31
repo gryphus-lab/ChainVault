@@ -31,7 +31,7 @@ export const getMigrationStats = async (): Promise<any> => {
 export const getMigrationDetail = async (
   id: string,
 ): Promise<MigrationDetail> => {
-  return api.get(`migrations/${id}`).json();
+  return api.get(`migrations/${id}/detail`).json();
 };
 
 export const getMigrationEvents = async (
