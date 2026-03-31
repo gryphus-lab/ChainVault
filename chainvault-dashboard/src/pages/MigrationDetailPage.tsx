@@ -19,27 +19,35 @@ export default function MigrationDetailPage() {
   const {
     data: migration,
     isLoading,
-    error,
-  } = useQuery<MigrationDetail>({
+    isError,
+  } = useQuery<MigrationDetail, Error>({
     queryKey: ["migration-detail", id],
-    queryFn: () => getMigrationDetail(id!),
+    queryFn: (): Promise<MigrationDetail> => getMigrationDetail(id!),
     enabled: !!id,
     staleTime: 30 * 1000,
+    retry: 2,
   });
 
   if (isLoading) {
     return (
-      <div className="text-center py-20">Loading migration details...</div>
+      <div className="text-center py-20 text-gray-600">
+        Loading migration details...
+      </div>
     );
   }
 
-  if (error || !migration) {
+  if (isError || !migration) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-600">Failed to load migration {id}</p>
+        <p className="text-red-600 text-lg">
+          Failed to load migration details for ID: {id}
+        </p>
+        <p className="text-gray-500 mt-2">
+          The migration may not exist or there was a server error.
+        </p>
         <Link
           to="/"
-          className="text-blue-600 hover:underline mt-4 inline-block"
+          className="text-blue-600 hover:underline mt-6 inline-block text-lg"
         >
           ← Back to Dashboard
         </Link>
@@ -71,14 +79,14 @@ export default function MigrationDetailPage() {
         <Badge className={statusClass}>{migration.status}</Badge>
       </div>
 
-      {/* Stats */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-gray-500">Document ID</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-mono">{migration.docId}</p>
+            <p className="font-mono">{migration.docId || "—"}</p>
           </CardContent>
         </Card>
 
@@ -118,7 +126,7 @@ export default function MigrationDetailPage() {
           <CardTitle>Migration Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <Timeline events={migration.events} />
+          <Timeline events={migration.events || []} />
         </CardContent>
       </Card>
 
@@ -129,7 +137,7 @@ export default function MigrationDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-8 text-sm">
-            <div>
+            <div className="space-y-2">
               <p>
                 <strong>OCR Attempted:</strong>{" "}
                 {migration.ocrAttempted ? "Yes" : "No"}
@@ -138,12 +146,12 @@ export default function MigrationDetailPage() {
                 <strong>OCR Success:</strong>{" "}
                 {migration.ocrSuccess ? "✅ Yes" : "❌ No"}
               </p>
-              {migration.ocrPageCount && (
+              {migration.ocrPageCount !== undefined && (
                 <p>
                   <strong>Pages Processed:</strong> {migration.ocrPageCount}
                 </p>
               )}
-              {migration.ocrTotalTextLength && (
+              {migration.ocrTotalTextLength !== undefined && (
                 <p>
                   <strong>Text Length:</strong>{" "}
                   {migration.ocrTotalTextLength.toLocaleString()} chars
@@ -166,13 +174,13 @@ export default function MigrationDetailPage() {
           <CardHeader>
             <CardTitle>Downloads</CardTitle>
           </CardHeader>
-          <CardContent className="flex gap-4">
+          <CardContent className="flex flex-wrap gap-4">
             {migration.chainZipUrl && (
               <a
                 href={migration.chainZipUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800"
+                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition"
               >
                 <Download className="h-5 w-5" /> Chain ZIP
               </a>
@@ -182,7 +190,7 @@ export default function MigrationDetailPage() {
                 href={migration.pdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50"
+                className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition"
               >
                 <FileText className="h-5 w-5" /> Merged PDF
               </a>
