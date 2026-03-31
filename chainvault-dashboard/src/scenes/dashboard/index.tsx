@@ -26,7 +26,7 @@ function Dashboard() {
         gridAutoRows="140px"
         gap="20px"
       >
-        <StatisticsPanel colors={colors} selectedData={undefined} />
+        <StatisticsPanel colors={colors} />
       </Box>
 
       <Box sx={{ flex: 1 }}>
