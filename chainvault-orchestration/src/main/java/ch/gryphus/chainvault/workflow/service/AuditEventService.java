@@ -210,6 +210,12 @@ public class AuditEventService {
         throw new BpmnError(errorCode, exception.getMessage());
     }
 
+    /**
+     * Gets migrations.
+     *
+     * @param limit the limit
+     * @return the migrations
+     */
     public List<Migration> getMigrations(int limit) {
         List<MigrationAudit> auditRecords = auditRepo.getAllByCompletedAtIsNotNull(Limit.of(limit));
         List<Migration> migrations = new ArrayList<>();
@@ -217,9 +223,11 @@ public class AuditEventService {
                 audit -> {
                     Migration m = new Migration();
                     m.setId(String.valueOf(audit.getId()));
+                    m.setProcessInstanceKey(audit.getProcessInstanceKey());
                     m.setDocId(audit.getDocumentId());
                     m.setStatus(String.valueOf(audit.getStatus()));
                     m.setCreatedAt(audit.getCreatedAt());
+                    m.setUpdatedAt(audit.getLastUpdatedAt());
                     m.setTraceId(audit.getTraceId());
                     m.setOcrPageCount(audit.getOcrPageCount());
                     m.setOcrAttempted(audit.getOcrAttempted());
@@ -230,6 +238,11 @@ public class AuditEventService {
         return migrations;
     }
 
+    /**
+     * Gets stats.
+     *
+     * @return the stats
+     */
     public MigrationStats getStats() {
         MigrationStats stats = new MigrationStats();
         stats.setTotal(auditRepo.count());
@@ -240,6 +253,12 @@ public class AuditEventService {
         return stats;
     }
 
+    /**
+     * Gets detail.
+     *
+     * @param id the id
+     * @return the detail
+     */
     public MigrationDetail getDetail(String id) {
         MigrationDetail detail = new MigrationDetail();
         MigrationAudit audit =

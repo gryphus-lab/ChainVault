@@ -2,14 +2,14 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import { format, parseISO, differenceInSeconds } from "date-fns";
-import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { CheckCircle2, XCircle, Clock } from "lucide-react";
 import type { MigrationEvent } from "@/types";
 
 interface TimelineProps {
   events: MigrationEvent[];
 }
 
-export default function Timeline({ events }: Readonly<TimelineProps>) {
+const Timeline = ({ events }: TimelineProps) => {
   if (events.length === 0) {
     return (
       <div className="py-12 text-center text-gray-500">
@@ -19,10 +19,10 @@ export default function Timeline({ events }: Readonly<TimelineProps>) {
   }
 
   const sortedEvents = [...events]
-    .filter((e) => e?.timestamp)
+    .filter((e) => e?.createdAt)
     .sort(
       (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
 
   return (
@@ -31,8 +31,8 @@ export default function Timeline({ events }: Readonly<TimelineProps>) {
         {sortedEvents.map((event, index) => {
           const isLast = index === sortedEvents.length - 1;
           const prevTime =
-            index > 0 ? parseISO(sortedEvents[index - 1].timestamp) : null;
-          const currTime = parseISO(event.timestamp);
+            index > 0 ? parseISO(sortedEvents[index - 1].createdAt) : null;
+          const currTime = parseISO(event.createdAt);
           const duration = prevTime
             ? differenceInSeconds(currTime, prevTime)
             : 0;
@@ -50,17 +50,14 @@ export default function Timeline({ events }: Readonly<TimelineProps>) {
                 <div className="relative flex items-start space-x-4">
                   {/* Icon */}
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-8 ring-white">
-                    {event.status === "SUCCESS" && (
+                    {event.eventType === "TASK_COMPLETED" && (
                       <CheckCircle2 className="h-6 w-6 text-green-600" />
                     )}
-                    {event.status === "FAILED" && (
+                    {event.eventType === "TASK_FAILED" && (
                       <XCircle className="h-6 w-6 text-red-600" />
                     )}
-                    {event.status === "RUNNING" && (
+                    {event.eventType === "TASK_STARTED" && (
                       <Clock className="h-6 w-6 text-blue-600 animate-pulse" />
-                    )}
-                    {event.status === "PENDING" && (
-                      <AlertTriangle className="h-6 w-6 text-amber-500" />
                     )}
                   </div>
 
@@ -105,4 +102,6 @@ export default function Timeline({ events }: Readonly<TimelineProps>) {
       </ul>
     </div>
   );
-}
+};
+
+export default Timeline;

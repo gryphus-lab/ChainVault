@@ -25,8 +25,9 @@ public class HandleErrorDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Handle error delegate.
      *
-     * @param openTelemetry the open telemetry
-     * @param auditService  the audit service
+     * @param openTelemetry     the open telemetry
+     * @param auditService      the audit service
+     * @param sseEmitterService the sse emitter service
      */
     public HandleErrorDelegate(
             OpenTelemetry openTelemetry,

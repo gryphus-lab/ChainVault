@@ -33,9 +33,8 @@ export interface MigrationEvent {
   eventType: "TASK_STARTED" | "TASK_COMPLETED" | "TASK_FAILED";
   stepName?: string;
   message: string;
-  timestamp: string;
+  createdAt: string;
   traceId?: string;
-  status: "SUCCESS" | "FAILED" | "RUNNING" | "PENDING";
   durationMs?: number;
   errorCode?: string;
   errorMessage?: string;

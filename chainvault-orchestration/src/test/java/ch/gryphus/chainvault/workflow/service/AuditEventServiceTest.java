@@ -308,6 +308,9 @@ class AuditEventServiceTest {
                 .isInstanceOf(IllegalStateException.class);
     }
 
+    /**
+     * Test get migrations.
+     */
     @Test
     void testGetMigrations() {
         // Setup
@@ -367,6 +370,9 @@ class AuditEventServiceTest {
         assertThat(result).isEqualTo(expectedResult);
     }
 
+    /**
+     * Test get migrations migration audit repository returns no items.
+     */
     @Test
     void testGetMigrations_MigrationAuditRepositoryReturnsNoItems() {
         // Setup
@@ -380,6 +386,9 @@ class AuditEventServiceTest {
         assertThat(result).isEqualTo(Collections.emptyList());
     }
 
+    /**
+     * Test get stats.
+     */
     @Test
     void testGetStats() {
         // Setup
@@ -400,6 +409,9 @@ class AuditEventServiceTest {
         assertThat(result).isEqualTo(expectedResult);
     }
 
+    /**
+     * Test get detail returns expected results.
+     */
     @Test
     void testGetDetail_ReturnsExpectedResults() {
         // Setup
@@ -480,6 +492,9 @@ class AuditEventServiceTest {
         assertThat(result.getEvents()).hasSize(1);
     }
 
+    /**
+     * Test get detail should throw exception when id does not exist.
+     */
     @Test
     void testGetDetail_ShouldThrowExceptionWhenIdDoesNotExist() {
         // Setup

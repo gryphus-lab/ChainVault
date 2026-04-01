@@ -32,6 +32,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
+/**
+ * The type Migration controller test.
+ */
 @WebMvcTest(MigrationController.class)
 class MigrationControllerTest {
 
@@ -40,6 +43,12 @@ class MigrationControllerTest {
     @MockitoBean private AuditEventService mockAuditEventService;
     @MockitoBean private TraceIdFilter traceIdFilter;
 
+    /**
+     * Sets .
+     *
+     * @throws ServletException the servlet exception
+     * @throws IOException      the io exception
+     */
     @BeforeEach
     void setup() throws ServletException, IOException {
         doAnswer(
@@ -54,6 +63,9 @@ class MigrationControllerTest {
                 .doFilter(any(), any(), any());
     }
 
+    /**
+     * Test get migrations.
+     */
     @Test
     void testGetMigrations() {
         // Setup
@@ -87,6 +99,9 @@ class MigrationControllerTest {
                 .isLenientlyEqualTo(expectedResult);
     }
 
+    /**
+     * Test get migrations audit event service returns no items.
+     */
     @Test
     void testGetMigrations_AuditEventServiceReturnsNoItems() {
         // Setup
@@ -103,6 +118,9 @@ class MigrationControllerTest {
                 .isStrictlyEqualTo("[]");
     }
 
+    /**
+     * Test get stats.
+     */
     @Test
     void testGetStats() {
         // Setup
@@ -124,6 +142,9 @@ class MigrationControllerTest {
         assertThat(result).hasStatus(HttpStatus.OK).hasBodyTextEqualTo(expectedResult);
     }
 
+    /**
+     * Test get detail.
+     */
     @Test
     void testGetDetail() {
         // Setup

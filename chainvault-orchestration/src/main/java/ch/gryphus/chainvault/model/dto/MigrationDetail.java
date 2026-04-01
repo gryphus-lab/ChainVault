@@ -8,6 +8,9 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * The type Migration detail.
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class MigrationDetail extends Migration {

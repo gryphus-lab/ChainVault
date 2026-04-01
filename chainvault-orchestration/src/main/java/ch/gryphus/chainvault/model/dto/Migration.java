@@ -6,6 +6,9 @@ package ch.gryphus.chainvault.model.dto;
 import java.time.Instant;
 import lombok.Data;
 
+/**
+ * The type Migration.
+ */
 @Data
 public class Migration {
     private String id;
@@ -16,7 +19,6 @@ public class Migration {
     private Instant updatedAt;
     private String processInstanceKey;
     private String traceId;
-    private int pageCount;
     private Boolean ocrAttempted;
     private Boolean ocrSuccess;
     private Integer ocrPageCount;

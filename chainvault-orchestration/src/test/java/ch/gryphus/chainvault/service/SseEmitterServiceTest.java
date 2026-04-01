@@ -21,6 +21,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+/**
+ * The type Sse emitter service test.
+ */
 @MockitoSettings(strictness = Strictness.LENIENT)
 @ExtendWith(MockitoExtension.class)
 class SseEmitterServiceTest {
@@ -29,11 +32,17 @@ class SseEmitterServiceTest {
 
     private MigrationEventDto testEvent;
 
+    /**
+     * Sets up.
+     */
     @BeforeEach
     void setUp() {
         testEvent = new MigrationEventDto();
     }
 
+    /**
+     * Create emitter success.
+     */
     @Test
     @DisplayName("Should create and store a new emitter")
     void createEmitter_Success() {
@@ -44,6 +53,9 @@ class SseEmitterServiceTest {
         assertEquals(0L, emitter.getTimeout());
     }
 
+    /**
+     * Send event to client success.
+     */
     @Test
     @DisplayName("Should send event to a specific client")
     void sendEventToClient_Success() {
@@ -61,6 +73,11 @@ class SseEmitterServiceTest {
                         });
     }
 
+    /**
+     * Send event removes emitter on failure.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     @DisplayName("Should remove emitter on IOException during broadcast")
     void sendEvent_RemovesEmitterOnFailure() throws IOException {
@@ -73,6 +90,11 @@ class SseEmitterServiceTest {
         assertDoesNotThrow(() -> sseEmitterService.sendEvent(testEvent));
     }
 
+    /**
+     * Send event to client removes emitter on failure.
+     *
+     * @throws IOException the io exception
+     */
     @Test
     @DisplayName("Should remove emitter on IOException when sending to a specific client")
     void sendEventToClient_RemovesEmitterOnFailure() throws IOException {
@@ -84,6 +106,9 @@ class SseEmitterServiceTest {
         assertDoesNotThrow(() -> sseEmitterService.sendEventToClient(clientId, testEvent));
     }
 
+    /**
+     * Send event broadcasts to all.
+     */
     @Test
     @DisplayName("Should handle broadcast to multiple clients")
     void sendEvent_BroadcastsToAll() {

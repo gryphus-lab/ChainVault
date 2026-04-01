@@ -10,11 +10,17 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
+/**
+ * The type Orchestration architecture test.
+ */
 @AnalyzeClasses(
         packages = "ch.gryphus.chainvault",
         importOptions = ImportOption.DoNotIncludeTests.class)
 class OrchestrationArchitectureTest {
 
+    /**
+     * The constant layered_architecture.
+     */
     @ArchTest
     static final ArchRule layered_architecture =
             layeredArchitecture()

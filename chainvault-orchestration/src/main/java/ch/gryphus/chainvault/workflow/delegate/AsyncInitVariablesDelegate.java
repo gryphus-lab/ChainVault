@@ -21,8 +21,9 @@ public class AsyncInitVariablesDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Async init variables delegate.
      *
-     * @param openTelemetry the open telemetry
-     * @param auditService  the audit service
+     * @param openTelemetry     the open telemetry
+     * @param auditService      the audit service
+     * @param sseEmitterService the sse emitter service
      */
     public AsyncInitVariablesDelegate(
             OpenTelemetry openTelemetry,

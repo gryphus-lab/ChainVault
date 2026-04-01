@@ -26,6 +26,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+/**
+ * The type Migration sse controller test.
+ */
 @WebMvcTest(MigrationSseController.class)
 class MigrationSseControllerTest {
 
@@ -33,6 +36,12 @@ class MigrationSseControllerTest {
     @MockitoBean private TraceIdFilter traceIdFilter;
     @MockitoBean private SseEmitterService mockSseEmitterService;
 
+    /**
+     * Sets .
+     *
+     * @throws ServletException the servlet exception
+     * @throws IOException      the io exception
+     */
     @BeforeEach
     void setup() throws ServletException, IOException {
         doAnswer(
@@ -47,6 +56,9 @@ class MigrationSseControllerTest {
                 .doFilter(any(), any(), any());
     }
 
+    /**
+     * Should return sse stream with provided client id.
+     */
     @Test
     void shouldReturnSseStreamWithProvidedClientId() {
         // given
@@ -65,6 +77,9 @@ class MigrationSseControllerTest {
         verify(mockSseEmitterService).createEmitter(clientId);
     }
 
+    /**
+     * Should generate client id when not provided.
+     */
     @Test
     void shouldGenerateClientIdWhenNotProvided() {
         // given

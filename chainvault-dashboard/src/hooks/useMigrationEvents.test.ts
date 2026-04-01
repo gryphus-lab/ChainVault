@@ -53,8 +53,7 @@ describe("useMigrationEvents", () => {
       migrationId: "1",
       eventType: "extract-hash",
       message: "extract-hash completed successfully",
-      status: "SUCCESS",
-      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
 
     act(() => {
@@ -81,7 +80,7 @@ describe("useMigrationEvents", () => {
             eventType: "extract-hash",
             message: "extract-hash completed successfully",
             status: "SUCCESS",
-            timestamp: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
           }),
         } as MessageEvent);
       }
@@ -140,7 +139,7 @@ describe("useMigrationEvents", () => {
           eventType: "extract-hash",
           message: "extract-hash completed successfully",
           status: "SUCCESS",
-          timestamp: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
         }),
       } as MessageEvent);
     });

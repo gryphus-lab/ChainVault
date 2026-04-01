@@ -21,12 +21,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
+/**
+ * The type Spa controller test.
+ */
 @WebMvcTest(SpaController.class)
 class SpaControllerTest {
 
     @Autowired private MockMvcTester mockMvcTester;
     @MockitoBean private TraceIdFilter traceIdFilter;
 
+    /**
+     * Sets .
+     *
+     * @throws ServletException the servlet exception
+     * @throws IOException      the io exception
+     */
     @BeforeEach
     void setup() throws ServletException, IOException {
         doAnswer(
@@ -41,6 +50,9 @@ class SpaControllerTest {
                 .doFilter(any(), any(), any());
     }
 
+    /**
+     * Test forward to index should work as expected.
+     */
     @Test
     void testForwardToIndex_ShouldWorkAsExpected() {
         // Setup
@@ -49,6 +61,9 @@ class SpaControllerTest {
         assertThat(result).hasStatus(HttpStatus.OK).hasForwardedUrl("/index.html");
     }
 
+    /**
+     * Test forward spa routes does not forward api calls.
+     */
     @Test
     void testForwardSpaRoutes_doesNotForwardApiCalls() {
         // Setup
