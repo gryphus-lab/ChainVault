@@ -38,6 +38,7 @@ public class HandleErrorDelegate extends AbstractTracingDelegate {
     @Override
     protected void doExecute(DelegateExecution execution, Span span, String docId)
             throws IOException, NoSuchAlgorithmException {
+
         // cleanup temporary working directory
         var workingDirectory =
                 getTransientVariableSafely(execution, "workingDirectory", Path.class);

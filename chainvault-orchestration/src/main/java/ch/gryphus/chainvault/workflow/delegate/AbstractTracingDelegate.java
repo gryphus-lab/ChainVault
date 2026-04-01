@@ -17,7 +17,9 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.TesseractException;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -69,8 +71,8 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
                         .spanBuilder(taskType)
                         .setParent(parentContext)
                         .startSpan();
-
         String processInstanceId = execution.getProcessInstanceId();
+
         try (var _ = span.makeCurrent()) {
             log.info("{} started", taskType);
             String docId =
@@ -90,27 +92,30 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
                                 }
                             });
 
-            sendSseEvent(processInstanceId, span);
+            var status =
+                    Objects.equals(taskType, "handle-error")
+                            ? MigrationAudit.MigrationStatus.FAILED
+                            : MigrationAudit.MigrationStatus.SUCCESS;
+
+            sendSseEvent(processInstanceId, span, status);
 
             auditService.updateAuditEventEnd(
-                    processInstanceId,
-                    MigrationAudit.MigrationStatus.SUCCESS,
-                    null,
-                    null,
-                    taskType,
-                    "Success",
-                    outputMap);
+                    processInstanceId, status, null, null, taskType, "Success", outputMap);
+
             log.info("{} finished", taskType);
         } catch (Exception e) {
             log.error("{} encountered an exception", taskType, e);
             span.recordException(e);
+
+            sendSseEvent(processInstanceId, span, MigrationAudit.MigrationStatus.FAILED);
             auditService.handleException(e, span, processInstanceId, errorCode, taskType);
         } finally {
             span.end();
         }
     }
 
-    private void sendSseEvent(String piKey, Span span) {
+    private void sendSseEvent(
+            String piKey, @NonNull Span span, MigrationAudit.MigrationStatus status) {
         log.info("{} sending SSE event", taskType);
         MigrationEventDto event = new MigrationEventDto();
         event.setId(UUID.randomUUID().toString());
@@ -118,7 +123,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
         event.setEventType(taskType);
         event.setStepName(taskType);
         event.setMessage("%s completed successfully".formatted(taskType));
-        event.setStatus("SUCCESS");
+        event.setStatus(String.valueOf(status));
         event.setTimestamp(Instant.now());
         event.setTraceId(span.getSpanContext().getTraceId());
         sseEmitterService.sendEvent(event);

@@ -5,7 +5,7 @@ package ch.gryphus.chainvault.workflow.delegate;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.service.SseEmitterService;
@@ -13,6 +13,7 @@ import ch.gryphus.chainvault.workflow.service.AuditEventService;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -44,6 +45,7 @@ class AbstractTracingDelegateTest {
     @Mock private DelegateExecution mockExecution;
     @Mock private Tracer mockTracer;
     @Mock private SpanBuilder mockSpanBuilder;
+    @Mock private SpanContext mockSpanContext;
     @Mock private Span mockSpan;
     @Mock private MigrationAuditRepository mockAuditRepo;
 
@@ -74,6 +76,8 @@ class AbstractTracingDelegateTest {
         when(mockTracer.spanBuilder(anyString())).thenReturn(mockSpanBuilder);
         when(mockSpanBuilder.setParent(any())).thenReturn(mockSpanBuilder);
         when(mockSpanBuilder.startSpan()).thenReturn(mockSpan);
+        when(mockSpan.getSpanContext()).thenReturn(mockSpanContext);
+        when(mockSpanContext.getTraceId()).thenReturn("traceId");
     }
 
     /**
