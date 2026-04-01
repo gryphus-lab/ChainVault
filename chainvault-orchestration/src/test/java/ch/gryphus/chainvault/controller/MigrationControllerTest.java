@@ -89,7 +89,7 @@ class MigrationControllerTest {
         String expectedResult =
                 """
                 [{"docId":"DOC-TEST-1234", "failureReason":null, "id":"TEST-123",
-                "ocrAttempted":null, "ocrPageCount":null, "ocrSuccess":null, "ocrTotalTextLength":null, "pageCount":0,
+                "ocrAttempted":null, "ocrPageCount":null, "ocrSuccess":null, "ocrTotalTextLength":null,
                 "processInstanceKey":null, "status":"SUCCESS", "title":"Test Title", "traceId":null, "updatedAt":null}]
                 """;
         assertThat(result)

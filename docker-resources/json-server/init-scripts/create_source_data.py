@@ -18,7 +18,7 @@ LINE_SEPARATOR = (
 
 DEST_DIR = "./static/payloads/"
 TOTAL_BUNDLES = 10
-PAGES_PER_INVOICE = (1, 5)  # min–max pages per invoice
+PAGES_PER_INVOICE = (1, 10)  # min–max pages per invoice
 
 COMPANIES = [
     "Acme Solutions AG",
@@ -251,7 +251,6 @@ def render_page(
     margin = int(200 * scale)
     header_y = int(180 * scale)
     line_spacing = int(45 * scale)
-    table_y_offset = int(80 * scale)
 
     img = Image.new("RGB", (base_width, base_height), color=(250, 250, 245))
     draw = ImageDraw.Draw(img)
