@@ -51,9 +51,7 @@ export default function Overview() {
       if (index !== -1) {
         merged[index] = {
           ...merged[index],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          status: liveEvent.status as any,
-          updatedAt: liveEvent.timestamp || merged[index].updatedAt,
+          updatedAt: liveEvent.createdAt || merged[index].updatedAt,
         };
       }
     });
@@ -155,8 +153,8 @@ export default function Overview() {
                   className="flex gap-4 p-3 bg-gray-50 rounded-xl text-sm"
                 >
                   <div className="font-mono text-xs text-gray-500 whitespace-nowrap pt-0.5">
-                    {event.timestamp
-                      ? format(parseISO(event.timestamp), "HH:mm:ss")
+                    {event.createdAt
+                      ? format(parseISO(event.createdAt), "HH:mm:ss")
                       : "—"}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -171,9 +169,13 @@ export default function Overview() {
                     )}
                   </div>
                   <Badge
-                    variant={event.status === "SUCCESS" ? "success" : "default"}
+                    variant={
+                      event.eventType === "TASK_COMPLETED"
+                        ? "success"
+                        : "default"
+                    }
                   >
-                    {event.status}
+                    {event.eventType}
                   </Badge>
                 </div>
               ))}

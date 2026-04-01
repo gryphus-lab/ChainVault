@@ -32,7 +32,7 @@ export function useMigrationEvents() {
 
         const newEvent: MigrationEvent = JSON.parse(rawData);
 
-        if (!newEvent?.id || !newEvent?.timestamp) {
+        if (!newEvent?.id || !newEvent?.createdAt) {
           console.warn("⚠️ Received incomplete event:", newEvent);
           return;
         }

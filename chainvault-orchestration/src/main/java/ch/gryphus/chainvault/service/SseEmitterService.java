@@ -11,16 +11,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * The type Sse emitter service.
+ */
 @Service
 public class SseEmitterService {
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Sse emitter service.
+     *
+     * @param objectMapper the object mapper
+     */
     public SseEmitterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Create emitter sse emitter.
+     *
+     * @param clientId the client id
+     * @return the sse emitter
+     */
     public SseEmitter createEmitter(String clientId) {
         SseEmitter emitter = new SseEmitter(0L); // no timeout
         emitters.put(clientId, emitter);
@@ -32,6 +46,11 @@ public class SseEmitterService {
         return emitter;
     }
 
+    /**
+     * Send event.
+     *
+     * @param event the event
+     */
     public void sendEvent(MigrationEventDto event) {
         String json;
         try {
@@ -53,6 +72,12 @@ public class SseEmitterService {
                         });
     }
 
+    /**
+     * Send event to client.
+     *
+     * @param clientId the client id
+     * @param event    the event
+     */
     public void sendEventToClient(String clientId, MigrationEventDto event) {
         SseEmitter emitter = emitters.get(clientId);
         if (emitter != null) {

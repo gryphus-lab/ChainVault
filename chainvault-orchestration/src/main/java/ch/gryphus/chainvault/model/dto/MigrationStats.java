@@ -5,6 +5,9 @@ package ch.gryphus.chainvault.model.dto;
 
 import lombok.Data;
 
+/**
+ * The type Migration stats.
+ */
 @Data
 public class MigrationStats {
     private long total;

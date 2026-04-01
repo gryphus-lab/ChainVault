@@ -101,15 +101,6 @@ export default function MigrationDetailPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-gray-500">Pages</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{migration.pageCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
             <CardTitle className="text-sm text-gray-500">Trace ID</CardTitle>
           </CardHeader>
           <CardContent>
@@ -146,17 +137,19 @@ export default function MigrationDetailPage() {
                 <strong>OCR Success:</strong>{" "}
                 {migration.ocrSuccess ? "✅ Yes" : "❌ No"}
               </p>
-              {migration.ocrPageCount !== undefined && (
-                <p>
-                  <strong>Pages Processed:</strong> {migration.ocrPageCount}
-                </p>
-              )}
-              {migration.ocrTotalTextLength !== undefined && (
-                <p>
-                  <strong>Text Length:</strong>{" "}
-                  {migration.ocrTotalTextLength.toLocaleString()} chars
-                </p>
-              )}
+              {migration.ocrPageCount !== undefined &&
+                migration.ocrPageCount !== null && (
+                  <p>
+                    <strong>Pages Processed:</strong> {migration.ocrPageCount}
+                  </p>
+                )}
+              {migration.ocrTotalTextLength !== undefined &&
+                migration.ocrTotalTextLength !== null && (
+                  <p>
+                    <strong>Text Length:</strong>{" "}
+                    {migration.ocrTotalTextLength.toLocaleString()} chars
+                  </p>
+                )}
             </div>
 
             {migration.failureReason && (

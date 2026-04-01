@@ -31,9 +31,10 @@ public class SignDocumentDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Sign document delegate.
      *
-     * @param openTelemetry    the open telemetry
-     * @param auditService     the audit service
-     * @param migrationService the migration service
+     * @param openTelemetry     the open telemetry
+     * @param auditService      the audit service
+     * @param sseEmitterService the sse emitter service
+     * @param migrationService  the migration service
      */
     public SignDocumentDelegate(
             OpenTelemetry openTelemetry,

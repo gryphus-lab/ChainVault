@@ -20,7 +20,7 @@ const MigrationDataGrid = (input: { data: any }) => {
 
   const formattedResults = gridData.map((item) => ({
     ...item,
-    title: item.title || "Untiled",
+    title: item.title || "Untitled",
     status: item.status,
     createdAt: safeFormat(item.createdAt),
     updatedAt: safeFormat(item.updatedAt),
@@ -47,12 +47,7 @@ const MigrationDataGrid = (input: { data: any }) => {
       headerName: "Actions",
       renderCell: (params: GridRenderCellParams<RowData>) =>
         params.row.id && (
-          <Link
-            to={`/migration/${params.row.id}`}
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-          >
-            View Details →
-          </Link>
+          <Link to={`/migration/${params.row.id}`}>View Details →</Link>
         ),
       cellClassName: "name-column--cell",
     },

@@ -2,11 +2,12 @@
 [tools]
 java = "temurin-25"
 maven = "3.9"
-python = "3.12"
-"aqua:astral-sh/uv" = "latest" # uv is blazing fast for venv + pip installs
+python = "3.14"
 docker-slim = "latest"
 node = "24"
 yarn = "4.13.0"
+jq = "latest"
+uv = "latest"
 
 # ────────────────────────────────────────
 # Environment (activated repo-wide)
@@ -17,17 +18,19 @@ yarn = "4.13.0"
 _JAVA_OPTIONS = "-Xmx2048m -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto"
 MAVEN_OPTS = "-Xmx1024m"
 
-# mise auto-creates .venv when you enter the directory (recommended!)
-_.python.venv = { path = ".venv", create = true, uv_create_args = [
-  "--system-site-packages",
-] }
+# Install seed packages (pip, setuptools, and wheel) into the virtual environment.
+_.python.venv = { path = ".venv", create = true, uv_create_args = ["--seed"] }
 UV_PROJECT_ENVIRONMENT = ".venv"
+MISE_PYTHON_DEFAULT_PACKAGES_FILE = "./default-python-packages"
 
 # Spring Boot 4 common defaults
 SPRING_PROFILES_ACTIVE = "local"
 
 # Tesseract test data
 TESSDATA_PREFIX = "/opt/homebrew/share/tessdata"
+
+[settings]
+python.default_packages_file = "./default-python-packages"
 
 # ────────────────────────────────────────
 # Tasks (run from anywhere — mise uses root config)

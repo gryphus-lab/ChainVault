@@ -21,5 +21,11 @@ public interface MigrationEventRepository extends JpaRepository<MigrationEvent, 
      */
     List<MigrationEvent> findByMigrationAuditIdOrderByCreatedAtAsc(Long auditId);
 
+    /**
+     * Gets all by migration audit id.
+     *
+     * @param migrationAuditId the migration audit id
+     * @return the all by migration audit id
+     */
     List<MigrationEvent> getAllByMigrationAuditId(Long migrationAuditId);
 }

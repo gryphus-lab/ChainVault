@@ -29,9 +29,10 @@ public class SftpUploadDelegate extends AbstractTracingDelegate {
     /**
      * Instantiates a new Sftp upload delegate.
      *
-     * @param openTelemetry    the open telemetry
-     * @param auditService     the audit service
-     * @param migrationService the migration service
+     * @param openTelemetry     the open telemetry
+     * @param auditService      the audit service
+     * @param sseEmitterService the sse emitter service
+     * @param migrationService  the migration service
      */
     public SftpUploadDelegate(
             OpenTelemetry openTelemetry,

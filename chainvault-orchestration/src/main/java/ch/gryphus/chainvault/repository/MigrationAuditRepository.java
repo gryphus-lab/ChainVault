@@ -40,7 +40,19 @@ public interface MigrationAuditRepository extends JpaRepository<MigrationAudit, 
      */
     List<MigrationAudit> findByStatus(MigrationAudit.MigrationStatus status);
 
+    /**
+     * Count all by status int.
+     *
+     * @param status the status
+     * @return the int
+     */
     int countAllByStatus(MigrationAudit.MigrationStatus status);
 
+    /**
+     * Gets all by completed at is not null.
+     *
+     * @param of the of
+     * @return the all by completed at is not null
+     */
     List<MigrationAudit> getAllByCompletedAtIsNotNull(Limit of);
 }

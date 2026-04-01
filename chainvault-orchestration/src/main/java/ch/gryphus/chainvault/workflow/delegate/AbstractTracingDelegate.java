@@ -40,10 +40,11 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
     /**
      * Instantiates a new Abstract tracing delegate.
      *
-     * @param openTelemetry the open telemetry
-     * @param auditService  the audit service
-     * @param taskType      the task type
-     * @param errorCode     the error code
+     * @param openTelemetry     the open telemetry
+     * @param auditService      the audit service
+     * @param sseEmitterService the sse emitter service
+     * @param taskType          the task type
+     * @param errorCode         the error code
      */
     protected AbstractTracingDelegate(
             OpenTelemetry openTelemetry,

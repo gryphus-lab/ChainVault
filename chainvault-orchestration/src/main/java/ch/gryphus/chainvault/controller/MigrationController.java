@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * The type Migration controller.
+ */
 @RestController
 @RequestMapping("/api/migrations")
 public class MigrationController {
@@ -20,11 +23,23 @@ public class MigrationController {
     private final AuditEventService auditEventService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Instantiates a new Migration controller.
+     *
+     * @param auditEventService the audit event service
+     * @param objectMapper      the object mapper
+     */
     public MigrationController(AuditEventService auditEventService, ObjectMapper objectMapper) {
         this.auditEventService = auditEventService;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Gets migrations.
+     *
+     * @param limit the limit
+     * @return the migrations
+     */
     @GetMapping
     public ResponseEntity<String> getMigrations(@RequestParam(defaultValue = "100") int limit) {
         return new ResponseEntity<>(
@@ -32,12 +47,23 @@ public class MigrationController {
                 HttpStatus.OK);
     }
 
+    /**
+     * Gets stats.
+     *
+     * @return the stats
+     */
     @GetMapping("/stats")
     public ResponseEntity<String> getStats() {
         return new ResponseEntity<>(
                 objectMapper.writeValueAsString(auditEventService.getStats()), HttpStatus.OK);
     }
 
+    /**
+     * Gets detail.
+     *
+     * @param id the id
+     * @return the detail
+     */
     @GetMapping("/{id}/detail")
     public ResponseEntity<String> getDetail(@PathVariable String id) {
         return new ResponseEntity<>(

@@ -10,17 +10,23 @@ const mockEvents: MigrationEvent[] = [
   {
     id: "1",
     migrationId: "mig-123",
-    timestamp: "2024-01-01T10:00:00Z",
-    status: "SUCCESS",
+    createdAt: "2024-01-01T10:00:00Z",
     stepName: "Initialize",
     message: "Starting migration",
     eventType: "TASK_STARTED",
   },
   {
     id: "2",
+    migrationId: "mig-123",
+    createdAt: "2024-01-01T10:00:01Z",
+    stepName: "Initialize",
+    message: "Starting migration",
+    eventType: "TASK_COMPLETED",
+  },
+  {
+    id: "3",
     migrationId: "mig-345",
-    timestamp: "2024-01-01T10:00:01Z", // 1000ms later
-    status: "FAILED",
+    createdAt: "2024-01-01T10:00:05Z", // 5000ms later
     stepName: "Data Export",
     message: "Connection lost",
     eventType: "TASK_FAILED",
@@ -32,12 +38,13 @@ const mockEvents: MigrationEvent[] = [
 describe("Timeline Component", () => {
   it("renders a list of events in chronological order", () => {
     // Pass events out of order to test internal sorting
-    const outOfOrder = [mockEvents[1], mockEvents[0]];
+    const outOfOrder = [mockEvents[1], mockEvents[2], mockEvents[0]];
     render(<Timeline events={outOfOrder} />);
 
     const items = screen.getAllByRole("listitem");
     expect(items[0]).toHaveTextContent("Initialize");
-    expect(items[1]).toHaveTextContent("Data Export");
+    expect(items[1]).toHaveTextContent("Initialize");
+    expect(items[2]).toHaveTextContent("Data Export");
   });
 
   it("displays error messages and trace IDs when present", () => {
