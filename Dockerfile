@@ -10,7 +10,7 @@ COPY chainvault-report-aggregate ./chainvault-report-aggregate
 COPY docker-resources/chainvault-app/init-scripts/setup.sh ./
 RUN mvn -DskipTests -q package
 
-FROM eclipse-temurin:25-jre-jammy AS runtime
+FROM eclipse-temurin:25-jre-noble AS runtime
 ARG USERNAME=chainvault
 ARG CHAINVAULT_VERSION=1.0.0-SNAPSHOT
 
