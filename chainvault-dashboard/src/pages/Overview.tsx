@@ -51,7 +51,7 @@ export default function Overview() {
       if (index !== -1) {
         merged[index] = {
           ...merged[index],
-          updatedAt: liveEvent.createdAt || merged[index].updatedAt,
+          updatedAt: liveEvent.timestamp || merged[index].updatedAt,
         };
       }
     });
@@ -153,8 +153,8 @@ export default function Overview() {
                   className="flex gap-4 p-3 bg-gray-50 rounded-xl text-sm"
                 >
                   <div className="font-mono text-xs text-gray-500 whitespace-nowrap pt-0.5">
-                    {event.createdAt
-                      ? format(parseISO(event.createdAt), "HH:mm:ss")
+                    {event.timestamp
+                      ? format(parseISO(event.timestamp), "HH:mm:ss")
                       : "—"}
                   </div>
                   <div className="flex-1 min-w-0">

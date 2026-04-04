@@ -10,7 +10,7 @@ const mockEvents: MigrationEvent[] = [
   {
     id: "1",
     migrationId: "mig-123",
-    createdAt: "2024-01-01T10:00:00Z",
+    timestamp: "2024-01-01T10:00:00Z",
     stepName: "Initialize",
     message: "Starting migration",
     eventType: "TASK_STARTED",
@@ -18,7 +18,7 @@ const mockEvents: MigrationEvent[] = [
   {
     id: "2",
     migrationId: "mig-123",
-    createdAt: "2024-01-01T10:00:01Z",
+    timestamp: "2024-01-01T10:00:01Z",
     stepName: "Initialize",
     message: "Starting migration",
     eventType: "TASK_COMPLETED",
@@ -26,7 +26,7 @@ const mockEvents: MigrationEvent[] = [
   {
     id: "3",
     migrationId: "mig-345",
-    createdAt: "2024-01-01T10:00:05Z", // 5000ms later
+    timestamp: "2024-01-01T10:00:05Z", // 5000ms later
     stepName: "Data Export",
     message: "Connection lost",
     eventType: "TASK_FAILED",

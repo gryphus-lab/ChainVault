@@ -19,10 +19,10 @@ const Timeline = ({ events }: TimelineProps) => {
   }
 
   const sortedEvents = [...events]
-    .filter((e) => e?.createdAt)
+    .filter((e) => e?.timestamp)
     .sort(
       (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
 
   return (
@@ -31,8 +31,8 @@ const Timeline = ({ events }: TimelineProps) => {
         {sortedEvents.map((event, index) => {
           const isLast = index === sortedEvents.length - 1;
           const prevTime =
-            index > 0 ? parseISO(sortedEvents[index - 1].createdAt) : null;
-          const currTime = parseISO(event.createdAt);
+            index > 0 ? parseISO(sortedEvents[index - 1].timestamp) : null;
+          const currTime = parseISO(event.timestamp);
           const duration = prevTime
             ? differenceInSeconds(currTime, prevTime)
             : 0;

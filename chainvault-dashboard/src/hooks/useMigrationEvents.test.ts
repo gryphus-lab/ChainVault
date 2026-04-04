@@ -111,12 +111,12 @@ describe("useMigrationEvents", () => {
 
     const event1 = {
       id: "1",
-      createdAt: "2026-01-01T10:00:00Z",
+      timestamp: "2026-01-01T10:00:00Z",
       message: "First",
     };
     const event2 = {
       id: "2",
-      createdAt: "2026-01-01T10:05:00Z",
+      timestamp: "2026-01-01T10:05:00Z",
       message: "Second",
     };
 
@@ -142,7 +142,7 @@ describe("useMigrationEvents", () => {
         instance.onmessage?.({
           data: JSON.stringify({
             id: `${i}`,
-            createdAt: new Date().toISOString(),
+            timestamp: new Date().toISOString(),
             message: `Event ${i}`,
           }),
         } as MessageEvent);
