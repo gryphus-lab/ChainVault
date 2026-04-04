@@ -17,9 +17,9 @@ ARG CHAINVAULT_VERSION=1.0.0-SNAPSHOT
 USER root
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends curl && \
-    rm -rf /var/lib/apt/lists/* \
+    rm -rf /var/lib/apt/lists/* && \
+    addgroup --system "$USERNAME" && adduser --system "$USERNAME" --ingroup "$USERNAME"
 
-RUN addgroup --system "$USERNAME" && adduser --system "$USERNAME" --ingroup "$USERNAME"
 COPY --from=build /workspace/setup.sh /opt/setup.sh
 RUN chmod +x /opt/setup.sh && /opt/setup.sh
 
