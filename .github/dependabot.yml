@@ -9,8 +9,16 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "maven"
     directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "chainvault-dashboard/"
     schedule:
       interval: "daily"
   - package-ecosystem: "github-actions"
