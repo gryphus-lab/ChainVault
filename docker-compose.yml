@@ -30,7 +30,7 @@ services:
       # OpenTelemetry
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
       # Tesseract
-      TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
     depends_on:
       sftp-test:
         condition: service_healthy
