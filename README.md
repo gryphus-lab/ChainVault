@@ -172,6 +172,7 @@ Access:
 | `GET`  | `/api/migrations/events`      | SSE stream of live migration events                                    |
 
 All responses are JSON. The detail endpoint returns a `MigrationDetail` which extends `Migration` and includes:
+
 - `events` — ordered list of `MigrationEvent` objects for the timeline
 - `ocrTextPreview` — truncated OCR text preview
 - `chainZipUrl` / `pdfUrl` — download links for the chain-of-custody ZIP and merged PDF
@@ -187,7 +188,8 @@ forwarded to `index.html`.
 | Overview         | `/`                      | Stats cards, live SSE event feed, filterable migrations table |
 | Migration Detail | `/migration/{id}/detail` | Timeline, OCR breakdown, failure reason, artifact downloads   |
 
-**Live event feed** (`useMigrationEvents` hook): subscribes to `/api/migrations/events` via SSE, buffers up to 100 events
+**Live event feed** (`useMigrationEvents` hook): subscribes to `/api/migrations/events` via SSE, buffers up to 100
+events
 in memory, merges live status updates into the migrations table, and auto-reconnects on disconnect (3 s backoff).
 
 ## Configuration
@@ -222,7 +224,8 @@ mise verify
 
 ### Docker Integration Tests
 
-The `chainvault-orchestration` module contains integration test classes under `src/test/java/.../docker/` and `src/test/java/.../controller/`:
+The `chainvault-orchestration` module contains integration test classes under `src/test/java/.../docker/` and
+`src/test/java/.../controller/`:
 
 - `DockerServicesIT` — individual service health, connectivity, and port-mapping tests
 - `DockerComposeIT` — full compose-stack tests (service startup, inter-service networking)
@@ -263,7 +266,8 @@ mise compose-down-full
 
 ## BPMN Workflow
 
-The `chainvault` BPMN process (`chainvault-orchestration/src/main/resources/processes/chainvault.bpmn`) follows this execution path:
+The `chainvault` BPMN process (`chainvault-orchestration/src/main/resources/processes/chainvault.bpmn`) follows this
+execution path:
 
 ![](img/bpmn_process.png "Chainvault BPMN Process")
 
