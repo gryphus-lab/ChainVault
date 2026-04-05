@@ -1,67 +1,58 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, FileText, Download } from "lucide-react";
+import { useParams, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { ArrowLeft, FileText, Download } from 'lucide-react'
 
-import { getMigrationDetail } from "@/lib/api";
-import type { MigrationDetail } from "@/types";
+import { getMigrationDetail } from '@/lib/api'
+import type { MigrationDetail } from '@/types'
 
-import Timeline from "@/components/dashboard/Timeline";
-import { Badge } from "@/components/ui/Badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { safeFormat } from "@/lib/utils";
+import Timeline from '@/components/dashboard/Timeline'
+import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { safeFormat } from '@/lib/utils'
 
 export default function MigrationDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>()
 
   const {
     data: migration,
     isLoading,
     isError,
   } = useQuery<MigrationDetail, Error>({
-    queryKey: ["migration-detail", id],
+    queryKey: ['migration-detail', id],
     queryFn: (): Promise<MigrationDetail> => getMigrationDetail(id!),
     enabled: !!id,
     staleTime: 30 * 1000,
     retry: 2,
-  });
+  })
 
   if (isLoading) {
-    return (
-      <div className="text-center py-20 text-gray-600">
-        Loading migration details...
-      </div>
-    );
+    return <div className="text-center py-20 text-gray-600">Loading migration details...</div>
   }
 
   if (isError || !migration) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-600 text-lg">
-          Failed to load migration details for ID: {id}
-        </p>
+        <p className="text-red-600 text-lg">Failed to load migration details for ID: {id}</p>
         <p className="text-gray-500 mt-2">
           The migration may not exist or there was a server error.
         </p>
-        <Link
-          to="/"
-          className="text-blue-600 hover:underline mt-6 inline-block text-lg"
-        >
+        <Link to="/" className="text-blue-600 hover:underline mt-6 inline-block text-lg">
           ← Back to Dashboard
         </Link>
       </div>
-    );
+    )
   }
 
   const statusClass =
     {
-      SUCCESS: "bg-green-100 text-green-800",
-      FAILED: "bg-red-100 text-red-800",
-      RUNNING: "bg-blue-100 text-blue-800",
-      PENDING: "bg-gray-100 text-gray-800",
-    }[migration.status] || "bg-gray-100 text-gray-800";
+      SUCCESS: 'bg-green-100 text-green-800',
+      FAILED: 'bg-red-100 text-red-800',
+      RUNNING: 'bg-blue-100 text-blue-800',
+      PENDING: 'bg-gray-100 text-gray-800',
+    }[migration.status] || 'bg-gray-100 text-gray-800'
 
   return (
     <div className="space-y-8">
@@ -86,7 +77,7 @@ export default function MigrationDetailPage() {
             <CardTitle className="text-sm text-gray-500">Document ID</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-mono">{migration.docId || "—"}</p>
+            <p className="font-mono">{migration.docId || '—'}</p>
           </CardContent>
         </Card>
 
@@ -104,9 +95,7 @@ export default function MigrationDetailPage() {
             <CardTitle className="text-sm text-gray-500">Trace ID</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-mono text-sm break-all">
-              {migration.traceId || "—"}
-            </p>
+            <p className="font-mono text-sm break-all">{migration.traceId || '—'}</p>
           </CardContent>
         </Card>
       </div>
@@ -130,24 +119,21 @@ export default function MigrationDetailPage() {
           <div className="grid md:grid-cols-2 gap-8 text-sm">
             <div className="space-y-2">
               <p>
-                <strong>OCR Attempted:</strong>{" "}
-                {migration.ocrAttempted ? "Yes" : "No"}
+                <strong>OCR Attempted:</strong> {migration.ocrAttempted ? 'Yes' : 'No'}
               </p>
               <p>
-                <strong>OCR Success:</strong>{" "}
-                {migration.ocrSuccess ? "✅ Yes" : "❌ No"}
+                <strong>OCR Success:</strong> {migration.ocrSuccess ? '✅ Yes' : '❌ No'}
               </p>
-              {migration.ocrPageCount !== undefined &&
-                migration.ocrPageCount !== null && (
-                  <p>
-                    <strong>Pages Processed:</strong> {migration.ocrPageCount}
-                  </p>
-                )}
+              {migration.ocrPageCount !== undefined && migration.ocrPageCount !== null && (
+                <p>
+                  <strong>Pages Processed:</strong> {migration.ocrPageCount}
+                </p>
+              )}
               {migration.ocrTotalTextLength !== undefined &&
                 migration.ocrTotalTextLength !== null && (
                   <p>
-                    <strong>Text Length:</strong>{" "}
-                    {migration.ocrTotalTextLength.toLocaleString()} chars
+                    <strong>Text Length:</strong> {migration.ocrTotalTextLength.toLocaleString()}{' '}
+                    chars
                   </p>
                 )}
             </div>
@@ -192,5 +178,5 @@ export default function MigrationDetailPage() {
         </Card>
       )}
     </div>
-  );
+  )
 }

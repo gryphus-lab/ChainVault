@@ -1,77 +1,77 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   api,
   getMigrations,
   getMigrationStats,
   getMigrationDetail,
   getMigrationEvents,
-} from "./api";
+} from './api'
 
-describe("API Service", () => {
+describe('API Service', () => {
   // Mock the .json() resolution
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockJsonResponse = (data: any) => ({
     json: vi.fn().mockResolvedValue(data),
-  });
+  })
 
   beforeEach(() => {
-    vi.restoreAllMocks();
-  });
+    vi.restoreAllMocks()
+  })
 
-  it("getMigrations calls the correct endpoint with params", async () => {
-    const mockData = [{ id: "1" }];
+  it('getMigrations calls the correct endpoint with params', async () => {
+    const mockData = [{ id: '1' }]
     const spy = vi
-      .spyOn(api, "get")
+      .spyOn(api, 'get')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .mockReturnValue(mockJsonResponse(mockData) as any);
+      .mockReturnValue(mockJsonResponse(mockData) as any)
 
-    const result = await getMigrations({ limit: 10 });
+    const result = await getMigrations({ limit: 10 })
 
-    expect(spy).toHaveBeenCalledWith("migrations", {
+    expect(spy).toHaveBeenCalledWith('migrations', {
       searchParams: { limit: 10 },
-    });
-    expect(result).toEqual(mockData);
-  });
+    })
+    expect(result).toEqual(mockData)
+  })
 
-  it("getMigrationStats calls the stats endpoint", async () => {
-    const mockStats = { total: 5 };
+  it('getMigrationStats calls the stats endpoint', async () => {
+    const mockStats = { total: 5 }
     const spy = vi
-      .spyOn(api, "get")
+      .spyOn(api, 'get')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .mockReturnValue(mockJsonResponse(mockStats) as any);
+      .mockReturnValue(mockJsonResponse(mockStats) as any)
 
-    const result = await getMigrationStats();
+    const result = await getMigrationStats()
 
-    expect(spy).toHaveBeenCalledWith("migrations/stats");
-    expect(result).toEqual(mockStats);
-  });
+    expect(spy).toHaveBeenCalledWith('migrations/stats')
+    expect(result).toEqual(mockStats)
+  })
 
-  it("getMigrationDetail calls the specific ID endpoint", async () => {
-    const mockDetail = { id: "123", status: "completed" };
+  it('getMigrationDetail calls the specific ID endpoint', async () => {
+    const mockDetail = { id: '123', status: 'completed' }
     const spy = vi
-      .spyOn(api, "get")
+      .spyOn(api, 'get')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .mockReturnValue(mockJsonResponse(mockDetail) as any);
+      .mockReturnValue(mockJsonResponse(mockDetail) as any)
 
-    const result = await getMigrationDetail("123");
+    const result = await getMigrationDetail('123')
 
-    expect(spy).toHaveBeenCalledWith("migrations/123/detail");
-    expect(result).toEqual(mockDetail);
-  });
+    expect(spy).toHaveBeenCalledWith('migrations/123/detail')
+    expect(result).toEqual(mockDetail)
+  })
 
-  it("getMigrationEvents calls the events sub-resource", async () => {
-    const mockEvents = [{ event: "started" }];
+  it('getMigrationEvents calls the events sub-resource', async () => {
+    const mockEvents = [{ event: 'started' }]
     const spy = vi
-      .spyOn(api, "get")
+      .spyOn(api, 'get')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .mockReturnValue(mockJsonResponse(mockEvents) as any);
+      .mockReturnValue(mockJsonResponse(mockEvents) as any)
 
-    const result = await getMigrationEvents("abc");
+    const result = await getMigrationEvents('abc')
 
-    expect(spy).toHaveBeenCalledWith("migrations/abc/events");
-    expect(result).toEqual(mockEvents);
-  });
-});
+    expect(spy).toHaveBeenCalledWith('migrations/abc/events')
+    expect(result).toEqual(mockEvents)
+  })
+})

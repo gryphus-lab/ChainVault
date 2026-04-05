@@ -21,10 +21,6 @@
     },
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": [
-    "src",
-    "vitest.config.ts",
-    "node_modules/@types/node/globals.d.ts"
-  ],
+  "include": ["src", "vitest.config.ts", "node_modules/@types/node/globals.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { Box, Typography, useTheme } from "@mui/material";
-import { tokens } from "@/theme";
+import { Box, Typography, useTheme } from '@mui/material'
+import { tokens } from '@/theme'
 
-const Header = ({ title = "", subtitle = "" }) => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+const Header = ({ title = '', subtitle = '' }) => {
+  const theme = useTheme()
+  const colors = tokens(theme.palette.mode)
 
   return (
     <Box mb="30px">
@@ -14,7 +14,7 @@ const Header = ({ title = "", subtitle = "" }) => {
         variant="h2"
         color={colors.gray[100]}
         fontWeight="bold"
-        sx={{ mb: "5px" }} // Using sx for consistency
+        sx={{ mb: '5px' }} // Using sx for consistency
       >
         {title}
       </Typography>
@@ -22,7 +22,7 @@ const Header = ({ title = "", subtitle = "" }) => {
         {subtitle}
       </Typography>
     </Box>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

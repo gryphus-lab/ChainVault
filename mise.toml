@@ -102,7 +102,8 @@ check = { run = [
   "yarn prettier-check:dashboard",
   "mvn spotless:check",
 ], description = "Check using yarn lint/prettier and spotless-maven-plugin" }
-fmt = { run = [
+
+format = { run = [
   "yarn lint-fix:dashboard",
   "yarn prettier:dashboard",
   "mvn spotless:apply",

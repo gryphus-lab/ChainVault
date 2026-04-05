@@ -1,111 +1,104 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { format, parseISO, subDays } from "date-fns";
-import { Clock, Search } from "lucide-react";
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { format, parseISO, subDays } from 'date-fns'
+import { Clock, Search } from 'lucide-react'
 
-import { getMigrations } from "@/lib/api";
-import { useMigrationEvents } from "@/hooks/useMigrationEvents";
+import { getMigrations } from '@/lib/api'
+import { useMigrationEvents } from '@/hooks/useMigrationEvents'
 
-import { Badge } from "@/components/ui/Badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import MigrationDataGrid from "@/scenes/dashboard/migrationDataGrid";
+import { Badge } from '@/components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import MigrationDataGrid from '@/scenes/dashboard/migrationDataGrid'
 
-type StatusFilter = "ALL" | "SUCCESS" | "FAILED" | "RUNNING" | "PENDING";
+type StatusFilter = 'ALL' | 'SUCCESS' | 'FAILED' | 'RUNNING' | 'PENDING'
 
 export default function Overview() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
-  const [dateFilter, setDateFilter] = useState<"all" | "24h" | "7d" | "30d">(
-    "all",
-  );
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
+  const [dateFilter, setDateFilter] = useState<'all' | '24h' | '7d' | '30d'>('all')
 
   const {
     data: allMigrations = [],
     isLoading: migrationsLoading,
     error: migrationsError,
   } = useQuery({
-    queryKey: ["migrations"],
+    queryKey: ['migrations'],
     queryFn: async () => {
-      const data = await getMigrations({ limit: 100 });
-      return Array.isArray(data) ? data : [];
+      const data = await getMigrations({ limit: 100 })
+      return Array.isArray(data) ? data : []
     },
     retry: 2,
-  });
+  })
 
-  const {
-    events: liveEvents,
-    isConnected,
-    clearEvents,
-    reconnect,
-  } = useMigrationEvents();
+  const { events: liveEvents, isConnected, clearEvents, reconnect } = useMigrationEvents()
 
   // Merge live updates
   const migrationsWithLive = useMemo(() => {
-    const merged = [...allMigrations];
+    const merged = [...allMigrations]
     liveEvents.forEach((liveEvent) => {
-      if (!liveEvent?.migrationId) return;
-      const index = merged.findIndex((m) => m.id === liveEvent.migrationId);
+      if (!liveEvent?.migrationId) return
+      const index = merged.findIndex((m) => m.id === liveEvent.migrationId)
       if (index !== -1) {
         merged[index] = {
           ...merged[index],
           updatedAt: liveEvent.timestamp || merged[index].updatedAt,
-        };
+        }
       }
-    });
-    return merged;
-  }, [allMigrations, liveEvents]);
+    })
+    return merged
+  }, [allMigrations, liveEvents])
 
   const filteredMigrations = useMemo(() => {
-    let result = [...migrationsWithLive];
+    let result = [...migrationsWithLive]
 
-    if (statusFilter !== "ALL") {
-      result = result.filter((m) => m.status === statusFilter);
+    if (statusFilter !== 'ALL') {
+      result = result.filter((m) => m.status === statusFilter)
     }
 
-    if (dateFilter !== "all") {
-      let days: number;
+    if (dateFilter !== 'all') {
+      let days: number
       switch (dateFilter) {
-        case "7d":
-          days = 7;
-          break;
-        case "24h":
-          days = 1;
-          break;
+        case '7d':
+          days = 7
+          break
+        case '24h':
+          days = 1
+          break
         default:
-          days = 30;
-          break;
+          days = 30
+          break
       }
-      const cutoff = subDays(new Date(), days);
-      result = result.filter((m) => new Date(m.createdAt || 0) >= cutoff);
+      const cutoff = subDays(new Date(), days)
+      result = result.filter((m) => new Date(m.createdAt || 0) >= cutoff)
     }
 
     // Search term (docId or title)
     if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase().trim();
+      const term = searchTerm.toLowerCase().trim()
       result = result.filter(
         (m) =>
-          (m.docId || "").toLowerCase().includes(term) ||
-          (m.title || "").toLowerCase().includes(term),
-      );
+          (m.docId || '').toLowerCase().includes(term) ||
+          (m.title || '').toLowerCase().includes(term),
+      )
     }
 
     return result.sort(
       (a, b) =>
         new Date(b.updatedAt || b.createdAt || 0).getTime() -
         new Date(a.updatedAt || a.createdAt || 0).getTime(),
-    );
-  }, [migrationsWithLive, statusFilter, dateFilter, searchTerm]);
+    )
+  }, [migrationsWithLive, statusFilter, dateFilter, searchTerm])
 
   function getMigrationStatus() {
     if (migrationsLoading) {
-      return "Loading migrations...";
+      return 'Loading migrations...'
     } else if (migrationsError) {
-      return "Error loading migrations";
+      return 'Error loading migrations'
     } else {
-      return "No migrations found yet.";
+      return 'No migrations found yet.'
     }
   }
 
@@ -115,12 +108,12 @@ export default function Overview() {
       <div className="flex justify-between">
         <div className="flex gap-3">
           <div
-            className={`flex gap-2 px-4 py-1.5 rounded-full text-sm font-medium ${isConnected ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}
+            className={`flex gap-2 px-4 py-1.5 rounded-full text-sm font-medium ${isConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}
           >
             <div
-              className={`w-2.5 h-2.5 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
+              className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}
             />
-            {isConnected ? "Live • Connected" : "Disconnected"}
+            {isConnected ? 'Live • Connected' : 'Disconnected'}
           </div>
           <button
             onClick={reconnect}
@@ -148,19 +141,12 @@ export default function Overview() {
           <CardContent>
             <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
               {liveEvents.slice(0, 8).map((event) => (
-                <div
-                  key={event.id}
-                  className="flex gap-4 p-3 bg-gray-50 rounded-xl text-sm"
-                >
+                <div key={event.id} className="flex gap-4 p-3 bg-gray-50 rounded-xl text-sm">
                   <div className="font-mono text-xs text-gray-500 whitespace-nowrap pt-0.5">
-                    {event.timestamp
-                      ? format(parseISO(event.timestamp), "HH:mm:ss")
-                      : "—"}
+                    {event.timestamp ? format(parseISO(event.timestamp), 'HH:mm:ss') : '—'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
-                      {event.stepName || event.eventType}
-                    </div>
+                    <div className="font-medium truncate">{event.stepName || event.eventType}</div>
                     <div className="text-gray-600 text-sm">{event.message}</div>
                     {event.migrationId && (
                       <div className="text-xs text-blue-600 mt-1">
@@ -168,13 +154,7 @@ export default function Overview() {
                       </div>
                     )}
                   </div>
-                  <Badge
-                    variant={
-                      event.eventType === "TASK_COMPLETED"
-                        ? "success"
-                        : "default"
-                    }
-                  >
+                  <Badge variant={event.eventType === 'TASK_COMPLETED' ? 'success' : 'default'}>
                     {event.eventType}
                   </Badge>
                 </div>
@@ -241,5 +221,5 @@ export default function Overview() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

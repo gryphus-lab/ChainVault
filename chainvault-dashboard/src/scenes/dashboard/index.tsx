@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { Box, useTheme } from "@mui/material";
+import { Box, useTheme } from '@mui/material'
 
-import { Header } from "@/components";
-import { tokens } from "@/theme";
-import { Route, Routes } from "react-router-dom";
-import Overview from "@/pages/Overview";
-import MigrationDetailPage from "@/pages/MigrationDetailPage";
-import StatisticsPanel from "@/scenes/dashboard/statisticsPanel";
+import { Header } from '@/components'
+import { tokens } from '@/theme'
+import { Route, Routes } from 'react-router-dom'
+import Overview from '@/pages/Overview'
+import MigrationDetailPage from '@/pages/MigrationDetailPage'
+import StatisticsPanel from '@/scenes/dashboard/statisticsPanel'
 
 function Dashboard() {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const theme = useTheme()
+  const colors = tokens(theme.palette.mode)
 
   return (
     <Box m="20px">
@@ -20,12 +20,7 @@ function Dashboard() {
         <Header title="Chainvault" subtitle="Migration Dashboard" />
       </Box>
 
-      <Box
-        display="grid"
-        gridTemplateColumns={"repeat(12, 1fr)"}
-        gridAutoRows="140px"
-        gap="20px"
-      >
+      <Box display="grid" gridTemplateColumns={'repeat(12, 1fr)'} gridAutoRows="140px" gap="20px">
         <StatisticsPanel colors={colors} />
       </Box>
 
@@ -36,7 +31,7 @@ function Dashboard() {
         </Routes>
       </Box>
     </Box>
-  );
+  )
 }
 
-export default Dashboard;
+export default Dashboard
