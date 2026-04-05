@@ -65,7 +65,7 @@ class DockerComposeIT {
                             Wait.forHttp("/actuator/health")
                                     .forStatusCode(200)
                                     .withStartupTimeout(Duration.ofMinutes(5)))
-                    .withEnv("_JAVA_OPTIONS", "-Xmx1g -XX:+UseG1GC")
+                    .withEnv("CHAINVAULT_JAVA_OPTIONS", "-Xmx1g -XX:+UseG1GC")
                     .withBuild(true);
 
     /**
