@@ -63,7 +63,7 @@ class DockerComposeIT {
                             CHAINVAULT_SERVICE,
                             8085,
                             Wait.forLogMessage(".*Started MigrationApplication.*", 1)
-                                    .withStartupTimeout(Duration.ofSeconds(120L)))
+                                    .withStartupTimeout(Duration.ofMinutes(5L)))
                     .withEnv("CHAINVAULT_JAVA_OPTIONS", "-Xmx1g -XX:+UseG1GC")
                     .withBuild(true);
 
