@@ -59,9 +59,10 @@ class DockerComposeIT {
                             9091,
                             Wait.forLogMessage(".*JSON Server started on PORT :9091.*", 1)
                                     .withStartupTimeout(Duration.ofSeconds(120L)))
-                    .withExposedService(CHAINVAULT_SERVICE, 8085,
-                            Wait.forHealthcheck()
-                                    .withStartupTimeout(Duration.ofMinutes(3)))
+                    .withExposedService(
+                            CHAINVAULT_SERVICE,
+                            8085,
+                            Wait.forHealthcheck().withStartupTimeout(Duration.ofMinutes(3)))
                     .withBuild(true);
 
     /**
