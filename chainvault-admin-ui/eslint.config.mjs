@@ -14,6 +14,7 @@ export default tseslint.config(
       '.yarn/**',
       '*.cjs',
       'vite.config.mjs',
+      'target',
     ],
   },
   ...tseslint.configs.recommended,

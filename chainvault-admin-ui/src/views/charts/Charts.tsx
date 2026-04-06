@@ -9,9 +9,10 @@ import {
   CChartRadar,
 } from '@coreui/react-chartjs'
 import { DocsLink } from '../../components'
+import { randomInt } from 'node:crypto'
 
 const Charts = () => {
-  const random = () => Math.round(Math.random() * 100)
+  const random = () => randomInt(0, 101)
 
   return (
     <CRow>

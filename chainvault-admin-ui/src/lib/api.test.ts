@@ -12,7 +12,7 @@ import {
 
 describe('API Service', () => {
   // Mock the .json() resolution
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const mockJsonResponse = (data: any) => ({
     json: vi.fn().mockResolvedValue(data),
   })
@@ -25,7 +25,7 @@ describe('API Service', () => {
     const mockData = [{ id: '1' }]
     const spy = vi
       .spyOn(api, 'get')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .mockReturnValue(mockJsonResponse(mockData) as any)
 
     const result = await getMigrations({ limit: 10 })
@@ -40,7 +40,7 @@ describe('API Service', () => {
     const mockStats = { total: 5 }
     const spy = vi
       .spyOn(api, 'get')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .mockReturnValue(mockJsonResponse(mockStats) as any)
 
     const result = await getMigrationStats()
@@ -53,7 +53,7 @@ describe('API Service', () => {
     const mockDetail = { id: '123', status: 'completed' }
     const spy = vi
       .spyOn(api, 'get')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .mockReturnValue(mockJsonResponse(mockDetail) as any)
 
     const result = await getMigrationDetail('123')
@@ -66,7 +66,7 @@ describe('API Service', () => {
     const mockEvents = [{ event: 'started' }]
     const spy = vi
       .spyOn(api, 'get')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .mockReturnValue(mockJsonResponse(mockEvents) as any)
 
     const result = await getMigrationEvents('abc')

@@ -3,6 +3,7 @@ import type { Chart } from 'chart.js'
 
 import { CChartLine } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
+import { randomInt } from 'node:crypto'
 
 const MainChart = () => {
   const chartRef = useRef<Chart | null>(null)
@@ -43,7 +44,7 @@ const MainChart = () => {
       document.documentElement.removeEventListener('ColorSchemeChange', handleColorSchemeChange)
   }, [chartRef])
 
-  const random = (min = 0, max = 100) => Math.floor(Math.random() * (max - min + 1)) + min
+  const random = (min = 0, max = 100) => randomInt(0, max - min + 1) + min
 
   return (
     <CChartLine

@@ -33,9 +33,10 @@ import { DocsExample } from '../../components'
 
 import WidgetsBrand from './WidgetsBrand'
 import WidgetsDropdown from './WidgetsDropdown'
+import { randomInt } from 'node:crypto'
 
 const Widgets = () => {
-  const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min)
+  const random = (min: number, max: number) => randomInt(0, max - min + 1) + min
 
   return (
     <CCard className="mb-4">
