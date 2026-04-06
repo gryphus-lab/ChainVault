@@ -29,7 +29,8 @@
         <sonar.exclusions>*/node_modules/**,
             **/dist/**,
             build/**,
-            .yarn/**</sonar.exclusions>
+            .yarn/**,
+            src/test/setup.ts</sonar.exclusions>
         <sonar.language>ts</sonar.language>
         <sonar.typescript.file.suffixes>.ts,.tsx</sonar.typescript.file.suffixes>
         <sonar.typescript.tsconfigPath>tsconfig.json</sonar.typescript.tsconfigPath>
