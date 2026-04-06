@@ -12,7 +12,7 @@ main() {
         libtesseract-dev tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng \
         libpng-dev libjpeg-dev libtiff-dev zlib1g-dev \
         libwebp-dev libopenjp2-7-dev libgif-dev \
-        autoconf automake libtool
+        autoconf automake libtool netcat-openbsd
 
     mkdir -p /tmp/leptonica-build
     cd /tmp/leptonica-build
