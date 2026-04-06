@@ -25,8 +25,7 @@
         <sonar.test.inclusions>**/*.test.ts,
             **/*.test.tsx,
             **/*.spec.ts,
-            **/*.spec.tsx,
-            </sonar.test.inclusions>
+            **/*.spec.tsx</sonar.test.inclusions>
         <sonar.exclusions>*/node_modules/**,
             **/dist/**,
             build/**,
