@@ -15,9 +15,10 @@ export default defineConfig({
     reporters: ['default', ['junit', { outputFile: './target/surefire-reports/junit.xml' }]],
     pool: 'forks',
     globals: true,
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: './src/test/setup.ts',
     include: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
 
     coverage: {
       provider: 'v8',

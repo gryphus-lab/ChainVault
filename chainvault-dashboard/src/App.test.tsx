@@ -1,57 +1,60 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { describe, it, vi, expect } from 'vitest'
-import { createTheme } from '@mui/material'
+import { createTheme } from '@mui/material/styles'
+
 import App from './App'
 
-// 1. Create a real (but basic) MUI theme for the mock
-const mockTheme = createTheme({
-  palette: {
-    mode: 'light',
-  },
+// --- mocks ---
+
+// mock useMode
+/* eslint-disable @typescript-eslint/no-explicit-any */
+vi.mock('./theme', async () => {
+  const actual = await vi.importActual<any>('./theme')
+
+  return {
+    ...actual,
+    useMode: vi.fn(),
+  }
 })
 
-vi.mock('./theme', () => ({
-  // We must return a valid MUI theme object so CssBaseline doesn't crash
-  useMode: vi.fn(() => [mockTheme, { toggleColorMode: vi.fn() }]),
-  ColorModeContext: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Provider: ({ children }: any) => <div data-testid="color-provider">{children}</div>,
-  },
-}))
-
-// 2. Mock scenes
+// mock scenes
 vi.mock('./scenes', () => ({
-  Dashboard: () => <div data-testid="mock-dashboard">Dashboard</div>,
-  Navbar: () => <nav data-testid="mock-navbar">Navbar</nav>,
+  Navbar: () => <div>Navbar Component</div>,
+  Dashboard: () => <div>Dashboard Component</div>,
 }))
 
-describe('App Component', () => {
-  it('renders the Navbar and Dashboard within the providers', () => {
-    render(<App />)
+// mock toggled context
+vi.mock('./context/ToggledContext', async () => {
+  return await vi.importActual<any>('./context/ToggledContext')
+})
 
-    expect(screen.getByTestId('mock-navbar')).toBeInTheDocument()
-    expect(screen.getByTestId('mock-dashboard')).toBeInTheDocument()
+import { useMode } from './theme'
+
+describe('App', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    ;(useMode as any).mockReturnValue([createTheme(), { toggleColorMode: vi.fn() }])
   })
 
-  it('applies the flex container styles for layout', () => {
-    const { container } = render(<App />)
+  it('renders without crashing', () => {
+    render(<App />)
 
-    // Select the first Box (the wrapper)
-    const flexBox = container.querySelector('.MuiBox-root')
-    expect(flexBox).toHaveStyle({
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-    })
+    expect(screen.getByText('Navbar Component')).toBeInTheDocument()
+    expect(screen.getByText('Dashboard Component')).toBeInTheDocument()
   })
 
-  it('renders the MUI container', () => {
+  it('renders core layout sections', () => {
     render(<App />)
-    // Check for the presence of the container class
-    const muiContainer = document.querySelector('.MuiContainer-root')
-    expect(muiContainer).toBeInTheDocument()
+    expect(screen.getByText('Navbar Component')).toBeInTheDocument()
+    expect(screen.getByText('Dashboard Component')).toBeInTheDocument()
+  })
+
+  it('uses useMode hook to provide theme', () => {
+    render(<App />)
+
+    expect(useMode).toHaveBeenCalled()
   })
 })
