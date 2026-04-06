@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ch.gryphus</groupId>
+        <artifactId>chainvault</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    
+    <artifactId>chainvault-admin-ui</artifactId>
+    <packaging>jar</packaging>
+    <name>${project.groupId}::${project.artifactId}</name>
+    
+    <properties>
+        <node.version>v24.14.1</node.version>
+        <yarn.version>v1.22.22</yarn.version>
+        <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
+        <sync-packagejson-version-maven-plugin.version>1.3.0</sync-packagejson-version-maven-plugin.version>
+        
+        <sonar.sources>src</sonar.sources>
+        <sonar.tests>src</sonar.tests>
+        <sonar.test.inclusions>**/*.test.ts,
+            **/*.test.tsx,
+            **/*.spec.ts,
+            **/*.spec.tsx</sonar.test.inclusions>
+        <sonar.exclusions>*/node_modules/**,
+            **/dist/**,
+            build/**,
+            .yarn/**,
+            src/test/setup.ts</sonar.exclusions>
+        <sonar.language>ts</sonar.language>
+        <sonar.typescript.file.suffixes>.ts,.tsx</sonar.typescript.file.suffixes>
+        <sonar.typescript.tsconfigPath>tsconfig.json</sonar.typescript.tsconfigPath>
+        <sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
+    </properties>
+    <build>
+        <plugins>
+            <!-- Frontend Maven Plugin -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend-maven-plugin.version}</version>
+                <configuration>
+                    <workingDirectory>${project.basedir}</workingDirectory>
+                    <installDirectory>${project.build.directory}/node</installDirectory>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <yarnVersion>${yarn.version}</yarnVersion>
+                    <yarnDownloadRoot>https://github.com/yarnpkg/yarn/releases/download/</yarnDownloadRoot>
+                </configuration>
+                <executions>
+                    <!-- Install Yarn -->
+                    <execution>
+                        <id>install-yarn</id>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                    </execution>
+                    
+                    <!-- Install dependencies -->
+                    <execution>
+                        <id>yarn-install</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <!-- Build React app -->
+                    <execution>
+                        <id>yarn-react-build</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <!-- Run tests -->
+                    <execution>
+                        <id>yarn-react-tests</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>test:coverage</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>de.ingogriebsch.maven</groupId>
+                <artifactId>sync-packagejson-version-maven-plugin</artifactId>
+                <version>${sync-packagejson-version-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>sync</id>
+                        <goals>
+                            <goal>sync</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Copy built files to target so Sonar can analyze them -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-react-build</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/classes/static</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>dist</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

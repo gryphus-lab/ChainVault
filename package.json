@@ -17,7 +17,8 @@
   "workspaces": [
     "chainvault-migration",
     "chainvault-orchestration",
-    "chainvault-dashboard"
+    "chainvault-dashboard",
+    "chainvault-admin-ui"
   ],
   "packageManager": "yarn@4.13.0"
 }
