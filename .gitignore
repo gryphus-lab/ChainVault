@@ -36,3 +36,4 @@ kafka.keystore.jks*
 **/!.yarn/versions
 **/coverage
 **/*.tsbuildinfo
+**/build/

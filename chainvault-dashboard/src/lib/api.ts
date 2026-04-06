@@ -5,7 +5,7 @@ import ky from 'ky'
 import { MigrationDetail } from '@/types'
 
 const api = ky.create({
-  prefixUrl: '/api',
+  prefix: '/api',
   timeout: 15000,
   retry: {
     limit: 2,

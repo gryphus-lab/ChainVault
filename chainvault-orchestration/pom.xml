@@ -228,7 +228,7 @@
                         <configuration>
                             <target>
                                 <copy failonerror="true" todir="${project.build.directory}/classes/static">
-                                    <fileset dir="${maven.multiModuleProjectDirectory}/chainvault-dashboard/target/classes/static"/>
+                                    <fileset dir="${maven.multiModuleProjectDirectory}/chainvault-admin-ui/target/classes/static"/>
                                 </copy>
                             </target>
                         </configuration>

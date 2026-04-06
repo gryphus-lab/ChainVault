@@ -1,0 +1,89 @@
+{
+  "name": "chainvault-admin-ui",
+  "description": "CoreUI Free React Admin Template",
+  "version": "1.0.0-SNAPSHOT",
+  "author": "The CoreUI Team (https://github.com/orgs/coreui/people)",
+  "bugs": {
+    "url": "https://github.com/coreui/coreui-free-react-admin-template/issues"
+  },
+  "dependencies": {
+    "@coreui/chartjs": "^4.2.0",
+    "@coreui/coreui": "^5.6.1",
+    "@coreui/icons": "^3.0.1",
+    "@coreui/icons-react": "^2.3.0",
+    "@coreui/react": "^5.10.0",
+    "@coreui/react-chartjs": "^3.0.0",
+    "@coreui/utils": "^2.0.2",
+    "@popperjs/core": "^2.11.8",
+    "chart.js": "^4.5.1",
+    "classnames": "^2.5.1",
+    "clsx": "^2.1.1",
+    "core-js": "^3.49.0",
+    "date-fns": "^4.1.0",
+    "ky": "^2.0.0",
+    "prop-types": "^15.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.14.0",
+    "redux": "5.0.1",
+    "simplebar-react": "^3.3.2",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.2",
+    "@types/prop-types": "^15.7.15",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.2",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-vitest": "^0.5.4",
+    "globals": "^17.4.0",
+    "jsdom": "^29.0.1",
+    "postcss": "^8.5.8",
+    "prettier": "^3.8.1",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "sass": "^1.99.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.58.0",
+    "vite": "^8.0.5",
+    "vitest": "^4.1.2"
+  },
+  "homepage": ".",
+  "license": "MIT",
+  "overrides": {
+    "lru-cache": "^11.2.7"
+  },
+  "packageManager": "yarn@4.13.0",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:coreui/coreui-free-react-admin-template.git"
+  },
+  "resolutions": {
+    "lru-cache": "^11.2.7"
+  },
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "serve": "vite preview",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "type": "module"
+}
