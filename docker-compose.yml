@@ -11,7 +11,7 @@ services:
       - ./logs:/app/logs
     environment:
       # Java options
-      _JAVA_OPTIONS: "-Xmx4g -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto"
+      _JAVA_OPTIONS: "-Xmx1g -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto"
       SPRING_PROFILES_ACTIVE: default
       # SFTP (from sftp-test)
       target.sftp.host: sftp-test
@@ -43,7 +43,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 3
-      start_period: 15s # Gives JVM time to warm up before checking
+      start_period: 20s
     restart: unless-stopped
 
   postgres:
