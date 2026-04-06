@@ -9,10 +9,15 @@ import {
   CChartRadar,
 } from '@coreui/react-chartjs'
 import { DocsLink } from '../../components'
-import { randomInt } from 'node:crypto'
+
+function secureRandomInt(max: number): number {
+  const array = new Uint32Array(1)
+  crypto.getRandomValues(array)
+  return array[0] % (max + 1)
+}
 
 const Charts = () => {
-  const random = () => randomInt(0, 101)
+  const random = () => secureRandomInt(100)
 
   return (
     <CRow>

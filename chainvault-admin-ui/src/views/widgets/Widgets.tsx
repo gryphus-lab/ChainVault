@@ -33,10 +33,15 @@ import { DocsExample } from '../../components'
 
 import WidgetsBrand from './WidgetsBrand'
 import WidgetsDropdown from './WidgetsDropdown'
-import { randomInt } from 'node:crypto'
+
+function secureRandomInt(max: number): number {
+  const array = new Uint32Array(1)
+  crypto.getRandomValues(array)
+  return array[0] % (max + 1)
+}
 
 const Widgets = () => {
-  const random = (min: number, max: number) => randomInt(0, max - min + 1) + min
+  const random = (min: number, max: number) => secureRandomInt(max - min + 1) + min
 
   return (
     <CCard className="mb-4">
