@@ -20,8 +20,7 @@ const AppBreadcrumb = () => {
     const filteredSegments = location.split('/').filter(Boolean)
     const breadcrumbs = filteredSegments.reduce(
       (acc, curr, index) => {
-        const prevPath = acc.currentPath
-        const currentPathname = prevPath === '/' ? `/${curr}` : `${prevPath}/${curr}`
+        const currentPathname = `${acc.currentPath}/${curr}`
 
         const routeName = getRouteName(currentPathname, routes)
         if (routeName) {
