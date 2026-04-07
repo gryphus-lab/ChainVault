@@ -3,6 +3,13 @@
  */
 import { format, parseISO } from 'date-fns'
 
+/**
+ * Generates a cryptographically secure random integer in the range [0, maxExclusive).
+ *
+ * @param maxExclusive - The exclusive upper bound; must be a positive integer.
+ * @returns An integer greater than or equal to 0 and less than `maxExclusive`.
+ * @throws RangeError if `maxExclusive` is not a positive integer
+ */
 export default function secureRandomInt(maxExclusive: number): number {
   if (!Number.isInteger(maxExclusive) || maxExclusive <= 0) {
     throw new RangeError('maxExclusive must be a positive integer')

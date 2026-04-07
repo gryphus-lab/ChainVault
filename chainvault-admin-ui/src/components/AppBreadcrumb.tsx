@@ -17,8 +17,9 @@ const AppBreadcrumb = () => {
   }
 
   const getBreadcrumbs = (location: string) => {
-    const breadcrumbs = location.split('/').reduce(
-      (acc, curr, index, array) => {
+    const filteredSegments = location.split('/').filter(Boolean)
+    const breadcrumbs = filteredSegments.reduce(
+      (acc, curr, index) => {
         const prevPath = acc.currentPath
         const currentPathname = prevPath === '/' ? `/${curr}` : `${prevPath}/${curr}`
 
@@ -27,7 +28,7 @@ const AppBreadcrumb = () => {
           acc.list.push({
             pathname: currentPathname,
             name: routeName,
-            active: index + 1 === array.length,
+            active: index === filteredSegments.length - 1,
           })
         }
 
