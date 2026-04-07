@@ -355,7 +355,7 @@ const Dashboard = () => {
                 </CTableHead>
                 <CTableBody>
                   {tableExample.map((item, index) => (
-                    <CTableRow v-for="item in tableItems" key={`${item.user}-${index}`}>
+                    <CTableRow v-for="item in tableItems" key={`${item.user.name}-${index}`}>
                       <CTableDataCell className="text-center">
                         <CAvatar size="md" src={item.avatar.src} status={item.avatar.status} />
                       </CTableDataCell>
