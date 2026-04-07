@@ -118,7 +118,13 @@ const Typography = () => {
             —a larger, slightly more opinionated heading style.
           </p>
           <div className="bd-example bd-example-type">
-            <table aria-hidden="true" className="table">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
               <tbody>
                 <tr>
                   <td>
