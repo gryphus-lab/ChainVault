@@ -58,8 +58,7 @@ const AppBreadcrumb = () => {
         return (
           <CBreadcrumbItem
             {...(breadcrumb.active ? { active: true } : { href: breadcrumb.pathname })}
-            // Combining index and path guarantees uniqueness even if paths repeat
-            key={`${breadcrumb.pathname}-${index}`}
+            key={breadcrumb.pathname}
           >
             {breadcrumb.name}
           </CBreadcrumbItem>
