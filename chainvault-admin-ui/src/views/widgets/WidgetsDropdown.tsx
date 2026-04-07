@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React, { useEffect, useRef } from 'react'
 import type { Chart } from 'chart.js'
 import PropTypes from 'prop-types'
@@ -404,7 +407,6 @@ const WidgetsDropdown = (props: { className?: string }) => {
 
 WidgetsDropdown.propTypes = {
   className: PropTypes.string,
-  withCharts: PropTypes.bool,
 }
 
 export default WidgetsDropdown

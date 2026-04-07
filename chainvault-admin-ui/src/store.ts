@@ -1,12 +1,6 @@
-/**
- * Redux Store Configuration
- *
- * Simple Redux store managing global application state.
- * Handles sidebar visibility and theme preferences.
- *
- * @module store
+/*
+ * Copyright (c) 2026. Gryphus Lab
  */
-
 import { legacy_createStore as createStore } from 'redux'
 
 export interface RootState {
@@ -32,7 +26,6 @@ const initialState: RootState = {
  * @param {Object} state - Current state (defaults to initialState)
  * @param {Object} action - Action object with type and payload
  * @param {string} action.type - Action type ('set' to update state)
- * @param {...*} rest - Additional properties to merge into state
  * @returns {Object} New state object
  *
  * @example
@@ -48,14 +41,11 @@ const initialState: RootState = {
  * dispatch({ type: 'set', sidebarShow: true, theme: 'light' })
  */
 const changeState = (
-  state: RootState = initialState,
+  state: RootState | undefined,
   { type, ...rest }: { type: string } & Partial<RootState>,
 ): RootState => {
-  if (type === 'set') {
-    return { ...state, ...rest }
-  } else {
-    return state
-  }
+  const currentState = state ?? initialState
+  return type === 'set' ? { ...currentState, ...rest } : currentState
 }
 
 /**

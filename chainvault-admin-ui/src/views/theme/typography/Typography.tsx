@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import { CCard, CCardHeader, CCardBody } from '@coreui/react'
 import { DocsLink } from '../../../components'
@@ -115,7 +118,7 @@ const Typography = () => {
             —a larger, slightly more opinionated heading style.
           </p>
           <div className="bd-example bd-example-type">
-            <table className="table">
+            <table aria-hidden="true" className="table">
               <tbody>
                 <tr>
                   <td>

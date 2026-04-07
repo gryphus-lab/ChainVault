@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import {
   CButton,
@@ -46,7 +49,7 @@ const Dropdowns = () => {
               <>
                 {['primary', 'secondary', 'success', 'info', 'warning', 'danger'].map(
                   (color, index) => (
-                    <CDropdown variant="btn-group" key={index}>
+                    <CDropdown variant="btn-group" key={`${color}-${index}`}>
                       <CDropdownToggle color={color}>{color}</CDropdownToggle>
                       <CDropdownMenu>
                         <CDropdownItem href="#">Action</CDropdownItem>
@@ -84,7 +87,7 @@ const Dropdowns = () => {
               <>
                 {['primary', 'secondary', 'success', 'info', 'warning', 'danger'].map(
                   (color, index) => (
-                    <CDropdown variant="btn-group" key={index}>
+                    <CDropdown variant="btn-group" key={`${color}-${index}`}>
                       <CButton color={color}>{color}</CButton>
                       <CDropdownToggle color={color} split />
                       <CDropdownMenu>

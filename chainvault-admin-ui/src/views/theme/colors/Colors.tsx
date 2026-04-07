@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React, { useEffect, useState, useRef } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
@@ -22,6 +25,10 @@ const ThemeView = () => {
 
   return (
     <table className="table w-100" ref={ref}>
+      <tr>
+        <td className="text-center"></td>
+        <td className="text-center"></td>
+      </tr>
       <tbody>
         <tr>
           <td className="text-body-secondary">HEX:</td>
