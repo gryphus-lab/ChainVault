@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2026. Gryphus Lab
- */
 import React, { useEffect, useState, useRef } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
@@ -25,12 +22,6 @@ const ThemeView = () => {
 
   return (
     <table className="table w-100" ref={ref}>
-     <table className="table w-100" ref={ref}>
-       <tbody>
-         <tr>
-           <td className="text-body-secondary">HEX:</td>
-           <td className="font-weight-bold">{rgbToHex(color)}</td>
-         </tr>
       <tbody>
         <tr>
           <td className="text-body-secondary">HEX:</td>

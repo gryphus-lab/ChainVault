@@ -119,12 +119,6 @@ const Typography = () => {
           </p>
           <div className="bd-example bd-example-type">
             <table className="table">
-              <thead>
-                <tr>
-                  <th>Example</th>
-                </tr>
-              </thead>
-              <tbody>
               <tbody>
                 <tr>
                   <td>
