@@ -8,6 +8,8 @@ import { routes } from '../routes'
 
 import { CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
 
+type Breadcrumb = { pathname: string; name: string; active: boolean }
+
 const AppBreadcrumb = () => {
   const currentLocation = useLocation().pathname
 
@@ -36,7 +38,7 @@ const AppBreadcrumb = () => {
           currentPath: currentPathname,
         }
       },
-      { list: [] as { pathname: string; name: any; active: boolean }[], currentPath: '' },
+      { list: [] as Breadcrumb[], currentPath: '' },
     )
 
     return breadcrumbs.list
