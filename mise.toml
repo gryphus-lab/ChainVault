@@ -98,15 +98,13 @@ deps = { run = "mvn dependency:tree", description = "Generate maven dependency t
 
 # Formatting / linting (spotless, etc.)
 check = { run = [
-  "yarn lint:dashboard",
-  "yarn prettier-check:dashboard",
+  "yarn lint:admin-ui",
+  "yarn prettier-check:admin-ui",
   "mvn spotless:check",
 ], description = "Check using yarn lint/prettier and spotless-maven-plugin" }
 
 format = { run = [
   "yarn lint-fix:admin-ui",
-  "yarn lint-fix:dashboard",
-  "yarn prettier:dashboard",
   "yarn prettier:admin-ui",
   "mvn spotless:apply",
 ], description = "Format using yarn lint/prettier spotless-maven-plugin" }

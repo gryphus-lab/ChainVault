@@ -7,26 +7,17 @@
   "private": true,
   "scripts": {
     "build:admin-ui": "yarn workspace chainvault-admin-ui build",
-    "build:dashboard": "yarn workspace chainvault-dashboard build",
     "dev:admin-ui": "yarn workspace chainvault-admin-ui dev",
-    "dev:dashboard": "yarn workspace chainvault-dashboard dev",
     "lint-fix:admin-ui": "yarn workspace chainvault-admin-ui lint:fix",
-    "lint-fix:dashboard": "yarn workspace chainvault-dashboard lint:fix",
     "lint:admin-ui": "yarn workspace chainvault-admin-ui lint",
-    "lint:dashboard": "yarn workspace chainvault-dashboard lint",
     "prettier-check:admin-ui": "yarn workspace chainvault-admin-ui prettier:check",
-    "prettier-check:dashboard": "yarn workspace chainvault-dashboard prettier:check",
     "prettier:admin-ui": "yarn workspace chainvault-admin-ui prettier",
-    "prettier:dashboard": "yarn workspace chainvault-dashboard prettier",
     "preview:admin-ui": "yarn workspace chainvault-admin-ui preview",
-    "preview:dashboard": "yarn workspace chainvault-dashboard preview",
-    "test:admin-ui": "yarn workspace chainvault-admin-ui test",
-    "test:dashboard": "yarn workspace chainvault-dashboard test"
+    "test:admin-ui": "yarn workspace chainvault-admin-ui test"
   },
   "workspaces": [
     "chainvault-migration",
     "chainvault-orchestration",
-    "chainvault-dashboard",
     "chainvault-admin-ui"
   ]
 }
