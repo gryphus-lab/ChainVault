@@ -43,12 +43,12 @@ JaCoCo HTML report after `mise verify`: `chainvault-report-aggregate/target/site
 
 4 Maven modules (root `pom.xml`) + 1 standalone Yarn workspace:
 
-|            Module             |                                 Purpose                                  |
-|-------------------------------|--------------------------------------------------------------------------|
-| `chainvault-migration`        | Business logic: OCR, PDF, SFTP, hashing. No web dependencies.            |
-| `chainvault-orchestration`    | Spring Boot app: Flowable engine, REST API, SSE, JPA entities, Liquibase |
-| `chainvault-admin-ui`         | React/Vite admin UI — Maven module, output bundled into the Spring Boot JAR |
-| `chainvault-report-aggregate` | JaCoCo coverage aggregation only                                         |
+|            Module             |                                             Purpose                                             |
+|-------------------------------|-------------------------------------------------------------------------------------------------|
+| `chainvault-migration`        | Business logic: OCR, PDF, SFTP, hashing. No web dependencies.                                   |
+| `chainvault-orchestration`    | Spring Boot app: Flowable engine, REST API, SSE, JPA entities, Liquibase                        |
+| `chainvault-admin-ui`         | React/Vite admin UI — Maven module, output bundled into the Spring Boot JAR                     |
+| `chainvault-report-aggregate` | JaCoCo coverage aggregation only                                                                |
 | `chainvault-dashboard`        | React 19 live dashboard (TailwindCSS, TanStack Query) — Yarn workspace only, not a Maven module |
 
 `chainvault-admin-ui` is built by Maven via `frontend-maven-plugin` and its static output is copied into the Spring Boot JAR. The `SpaController` serves `index.html` for all non-API routes.
