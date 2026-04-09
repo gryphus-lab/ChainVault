@@ -4,7 +4,6 @@ WORKDIR /workspace
 # Cache dependencies separately
 COPY pom.xml .
 COPY chainvault-admin-ui ./chainvault-admin-ui
-COPY chainvault-dashboard ./chainvault-dashboard
 COPY chainvault-migration ./chainvault-migration
 COPY chainvault-orchestration ./chainvault-orchestration
 COPY chainvault-report-aggregate ./chainvault-report-aggregate

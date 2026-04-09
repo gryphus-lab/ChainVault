@@ -17,7 +17,6 @@
     <url>https://github.com/gryphus-lab/chainvault</url>
     <modules>
         <module>chainvault-admin-ui</module>
-        <module>chainvault-dashboard</module>
         <module>chainvault-migration</module>
         <module>chainvault-orchestration</module>
         <module>chainvault-report-aggregate</module>
