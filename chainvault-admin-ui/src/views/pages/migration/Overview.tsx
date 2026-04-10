@@ -14,6 +14,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/Ca
 
 type StatusFilter = 'ALL' | 'SUCCESS' | 'FAILED' | 'RUNNING' | 'PENDING'
 
+/**
+ * Render the Overview dashboard that displays live migration events, connection controls, and filter inputs.
+ *
+ * The component shows connection status with reconnect/clear controls, a live events panel when events exist,
+ * and UI controls for searching and filtering migrations by status and date range.
+ *
+ * @returns The React element tree for the Overview dashboard component
+ */
 export default function Overview() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')

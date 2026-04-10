@@ -24,6 +24,12 @@ export default function secureRandomInt(maxExclusive: number): number {
   return array[0] % maxExclusive
 }
 
+/**
+ * Merge multiple class-name inputs into a single class string and resolve Tailwind CSS class conflicts.
+ *
+ * @param inputs - Class value inputs (strings, arrays, objects, or other values accepted by class utilities) to be combined
+ * @returns A single space-separated className string with conflicting Tailwind utility classes resolved
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

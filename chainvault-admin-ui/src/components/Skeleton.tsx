@@ -12,7 +12,13 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Simple animated skeleton loader
+ * Renders an animated skeleton placeholder element.
+ *
+ * Applies the provided `width` and `height` values directly as Tailwind class strings on the element.
+ *
+ * @param width - Optional Tailwind width class (e.g., "w-32", "w-full")
+ * @param height - Optional Tailwind height class (e.g., "h-6", "h-10")
+ * @param className - Additional classes to apply to the element
  */
 export function Skeleton({ className, width, height, ...props }: Readonly<SkeletonProps>) {
   return (
@@ -28,7 +34,15 @@ export function Skeleton({ className, width, height, ...props }: Readonly<Skelet
   )
 }
 
-// Convenience variants for common use cases
+/**
+ * Renders multiple skeleton text lines.
+ *
+ * Each line is rendered as a full-width skeleton bar stacked with vertical spacing.
+ *
+ * @param lines - Number of skeleton lines to render (default: `1`)
+ * @param className - Additional CSS classes applied to the wrapper element
+ * @returns A React element containing the requested number of skeleton lines
+ */
 export function SkeletonText({
   lines = 1,
   className,

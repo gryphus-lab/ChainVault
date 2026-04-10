@@ -29,6 +29,11 @@ export const customRender = (ui: ReactElement) => {
   return render(ui, { wrapper: AllTheProviders })
 }
 
+/**
+ * Resets the Redux store's UI-related state to a deterministic configuration used by tests.
+ *
+ * Sets `sidebarShow` to `true`, `sidebarUnfoldable` to `false`, and `theme` to `"light"`.
+ */
 export function resetStore() {
   store.dispatch({
     type: 'set',
