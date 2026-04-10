@@ -1,10 +1,13 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import {
-  CRow,
-  CCol,
   CCard,
   CCardBody,
   CCardHeader,
+  CCol,
+  CRow,
   CTab,
   CTabContent,
   CTabList,

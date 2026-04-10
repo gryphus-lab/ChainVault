@@ -1,26 +1,8 @@
-/**
- * DefaultLayout Component
- *
- * Main application layout wrapper that composes the primary UI structure
- * for authenticated/protected routes.
- *
- * Layout structure:
- * - AppSidebar: Collapsible navigation sidebar
- * - AppHeader: Top navigation bar with user menu and theme switcher
- * - AppContent: Main content area with route rendering
- * - AppFooter: Footer with links and copyright
- *
- * This layout is used for all routes defined in routes.js, providing
- * a consistent structure across the application.
- *
- * @component
- * @example
- * // Used in App.js for protected routes
- * <Route path="*" element={<DefaultLayout />} />
+/*
+ * Copyright (c) 2026. Gryphus Lab
  */
-
 import React from 'react'
-import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/index'
+import { AppContent, AppFooter, AppHeader, AppSidebar } from '../components/index'
 
 /**
  * DefaultLayout functional component

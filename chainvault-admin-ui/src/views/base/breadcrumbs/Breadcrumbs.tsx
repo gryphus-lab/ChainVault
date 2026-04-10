@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import {
   CBreadcrumb,
@@ -6,8 +9,8 @@ import {
   CCardBody,
   CCardHeader,
   CCol,
-  CRow,
   CLink,
+  CRow,
 } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 

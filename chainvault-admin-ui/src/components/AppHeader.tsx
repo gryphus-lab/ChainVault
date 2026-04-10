@@ -13,8 +13,8 @@ import {
   CHeader,
   CHeaderNav,
   CHeaderToggler,
-  CNavLink,
   CNavItem,
+  CNavLink,
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'

@@ -1,5 +1,8 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
-import { CButton, CCard, CCardBody, CCardHeader, CLink, CTooltip, CRow, CCol } from '@coreui/react'
+import { CButton, CCard, CCardBody, CCardHeader, CCol, CLink, CRow, CTooltip } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 
 const Tooltips = () => {

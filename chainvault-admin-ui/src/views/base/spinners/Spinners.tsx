@@ -1,5 +1,8 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
-import { CButton, CCard, CCardBody, CCardHeader, CCol, CSpinner, CRow } from '@coreui/react'
+import { CButton, CCard, CCardBody, CCardHeader, CCol, CRow, CSpinner } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 
 const Spinners = () => {

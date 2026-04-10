@@ -6,7 +6,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
 
 // routes config
-import { routes, type AppRoute } from '../routes'
+import { type AppRoute, routes } from '../routes'
 
 /**
  * AppContent functional component

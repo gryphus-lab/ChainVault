@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { act, renderHook } from '@testing-library/react'
 import { useMigrationEvents } from './useMigrationEvents'
 
 // --- Mock EventSource ---

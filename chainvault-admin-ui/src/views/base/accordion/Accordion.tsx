@@ -1,14 +1,17 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import {
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
   CCard,
   CCardBody,
   CCardHeader,
   CCol,
   CRow,
-  CAccordion,
-  CAccordionBody,
-  CAccordionHeader,
-  CAccordionItem,
 } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 

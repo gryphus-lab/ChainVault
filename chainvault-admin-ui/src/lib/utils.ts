@@ -2,6 +2,8 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import { format, parseISO } from 'date-fns'
+import clsx, { type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 /**
  * Generates a cryptographically secure random integer in the range [0, maxExclusive).
@@ -22,10 +24,24 @@ export default function secureRandomInt(maxExclusive: number): number {
   return array[0] % maxExclusive
 }
 
-export const safeFormat = (dateStr: string | undefined | null, fallback: string = '—') => {
+/**
+ * Merge multiple class-name inputs into a single class string and resolve Tailwind CSS class conflicts.
+ *
+ * @param inputs - Class value inputs (strings, arrays, objects, or other values accepted by class utilities) to be combined
+ * @returns A single space-separated className string with conflicting Tailwind utility classes resolved
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+export const safeFormat = (
+  dateStr: string | undefined | null,
+  datePattern: string = 'PPp',
+  fallback: string = '—',
+) => {
   if (!dateStr) return fallback
   try {
-    return format(parseISO(dateStr), 'PPp')
+    return format(parseISO(dateStr), datePattern)
   } catch {
     return fallback
   }

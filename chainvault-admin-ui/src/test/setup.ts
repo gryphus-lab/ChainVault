@@ -1,5 +1,9 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import { afterEach, vi } from 'vitest'
 import React from 'react'
+import '@testing-library/jest-dom/vitest'
 
 vi.mock('@coreui/react-chartjs', () => {
   const make = (name: string) => {
@@ -25,8 +29,6 @@ vi.mock('@coreui/react-chartjs', () => {
     CChartScatter: make('CChartScatter'),
   }
 })
-
-import '@testing-library/jest-dom/vitest'
 
 const localStorageMock = (() => {
   let store: Record<string, string> = {}

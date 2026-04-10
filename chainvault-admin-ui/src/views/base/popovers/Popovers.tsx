@@ -1,5 +1,8 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
-import { CButton, CCard, CCardBody, CCardHeader, CPopover, CRow, CCol } from '@coreui/react'
+import { CButton, CCard, CCardBody, CCardHeader, CCol, CPopover, CRow } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 
 const Popovers = () => {

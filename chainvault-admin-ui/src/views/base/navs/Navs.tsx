@@ -1,10 +1,12 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import {
-  CRow,
-  CCol,
   CCard,
   CCardBody,
   CCardHeader,
+  CCol,
   CDropdown,
   CDropdownItem,
   CDropdownMenu,
@@ -12,6 +14,7 @@ import {
   CNav,
   CNavItem,
   CNavLink,
+  CRow,
 } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 

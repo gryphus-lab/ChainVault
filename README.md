@@ -20,7 +20,7 @@ Used by Gryphus Lab to coordinate extraction, transformation, signing, merging a
 |      Aspect       |              Technology              |
 |-------------------|--------------------------------------|
 | Language          | Java 25                              |
-| Framework         | Spring Boot 4, React + Vi            |
+| Framework         | Spring Boot 4, React 19 + Vite       |
 | Orchestration     | Flowable (BPMN 2.0)                  |
 | Database          | PostgreSQL 18 (Docker)               |
 | Schema Migrations | Liquibase (YAML)                     |
@@ -58,7 +58,7 @@ provides observability via Micrometer + Prometheus/Loki.
 - Aggregated JaCoCo coverage across modules (including Docker integration tests)
 - GitHub Actions CI with enforced SonarCloud quality gates and Qodana static analysis
 - Multi-stage Docker builds pushed to GHCR
-- Interactive migration dashboard (React + Vite) with real-time SSE updates, status/date filtering, and search
+- Interactive admin UI (React 19 + CoreUI + Vite) with real-time SSE updates, status/date filtering, and search
 - REST API for migration list, aggregated stats, and per-migration detail
 - SPA routing via `SpaController` (serves the React frontend from Spring Boot)
 
@@ -79,13 +79,12 @@ provides observability via Micrometer + Prometheus/Loki.
 │       └── workflow/service/
 │           ├── AuditEventService.java     # getMigrations / getStats / getDetail
 │           └── SseEmitterService.java     # SSE push (events serialised as JSON)
-├── chainvault-dashboard/           # React + Vite frontend (served by Spring Boot)
+├── chainvault-admin-ui/            # React 19 + CoreUI admin UI (Maven module, bundled into JAR)
 │   └── src/
 │       ├── hooks/useMigrationEvents.ts    # SSE hook with auto-reconnect
-│       ├── pages/
-│       │   ├── Overview.tsx               # Dashboard: stats cards, live feed, table
-│       │   └── MigrationDetailPage.tsx    # Per-migration timeline, OCR info, downloads
-│       └── lib/api.ts                     # getMigrations / getMigrationStats / getMigrationDetail
+│       └── views/pages/migration/
+│           ├── Overview.tsx               # Dashboard: stats cards, live feed, table
+│           └── MigrationDetailPage.tsx    # Per-migration timeline, OCR info, downloads
 ├── chainvault-report-aggregate/    # JaCoCo aggregated coverage reports for CI & SonarCloud
 ├── docker-compose.yml              # Core stack: app + postgres + sftp-test + fake-source-api
 ├── docker-compose-lgtm.yml         # Observability: Prometheus, Loki, Alloy, Grafana
@@ -179,7 +178,7 @@ All responses are JSON. The detail endpoint returns a `MigrationDetail` which ex
 
 ## Dashboard
 
-The React frontend is built by `chainvault-dashboard` (React 18 + Vite + TailwindCSS + TanStack Query) and served
+The React frontend is built by `chainvault-admin-ui` (React 19 + CoreUI + Vite + TanStack Query) and served
 statically by Spring Boot via `SpaController`. All SPA routes (`/`, `/migration/**`, `/dashboard`, `/overview`) are
 forwarded to `index.html`.
 
@@ -189,8 +188,7 @@ forwarded to `index.html`.
 | Migration Detail | `/migration/{id}/detail` | Timeline, OCR breakdown, failure reason, artifact downloads   |
 
 **Live event feed** (`useMigrationEvents` hook): subscribes to `/api/migrations/events` via SSE, buffers up to 100
-events
-in memory, merges live status updates into the migrations table, and auto-reconnects on disconnect (3 s backoff).
+events in memory, merges live status updates into the migrations table, and auto-reconnects on disconnect (3 s backoff).
 
 ## Configuration
 

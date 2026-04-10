@@ -6,12 +6,12 @@ import type { Chart } from 'chart.js'
 import PropTypes from 'prop-types'
 
 import {
-  CRow,
   CCol,
   CDropdown,
-  CDropdownMenu,
   CDropdownItem,
+  CDropdownMenu,
   CDropdownToggle,
+  CRow,
   CWidgetStatsA,
 } from '@coreui/react'
 import { getStyle } from '@coreui/utils'

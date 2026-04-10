@@ -1,5 +1,8 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
-import { CButton, CCard, CCardBody, CCardHeader, CCol, CBadge, CRow } from '@coreui/react'
+import { CBadge, CButton, CCard, CCardBody, CCardHeader, CCol, CRow } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 
 const Badges = () => {

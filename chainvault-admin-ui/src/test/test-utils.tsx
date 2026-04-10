@@ -1,10 +1,40 @@
-import React, { Suspense } from 'react'
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
+import React, { ReactElement, ReactNode, Suspense, useRef } from 'react'
 import { render, type RenderOptions } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 import { CSpinner } from '@coreui/react'
 import store from '../store'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+const AllTheProviders = ({ children }: { children: ReactNode }) => {
+  const queryClientRef = useRef<QueryClient | undefined>(undefined)
+  queryClientRef.current ??= new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        staleTime: Infinity,
+      },
+    },
+  })
+  return (
+    <QueryClientProvider client={queryClientRef.current}>
+      <MemoryRouter>{children}</MemoryRouter>
+    </QueryClientProvider>
+  )
+}
+
+export const customRender = (ui: ReactElement) => {
+  return render(ui, { wrapper: AllTheProviders })
+}
+
+/**
+ * Resets the Redux store's UI-related state to a deterministic configuration used by tests.
+ *
+ * Sets `sidebarShow` to `true`, `sidebarUnfoldable` to `false`, and `theme` to `"light"`.
+ */
 export function resetStore() {
   store.dispatch({
     type: 'set',

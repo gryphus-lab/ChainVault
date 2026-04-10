@@ -1,4 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
+import { beforeEach, describe, expect, it } from 'vitest'
 import store from './store'
 
 describe('Redux store', () => {

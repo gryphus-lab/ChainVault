@@ -1,16 +1,19 @@
-import React, { useRef, useState, type ComponentProps } from 'react'
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
+import React, { type ComponentProps, useRef, useState } from 'react'
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
   CButton,
-  CRow,
+  CCard,
+  CCardBody,
+  CCardHeader,
   CCol,
+  CRow,
   CToast,
   CToastBody,
   CToastClose,
-  CToastHeader,
   CToaster,
+  CToastHeader,
 } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 

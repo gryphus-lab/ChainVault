@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import {
   CAvatar,
@@ -11,8 +14,8 @@ import {
 } from '@coreui/react'
 import {
   cilBell,
-  cilCreditCard,
   cilCommentSquare,
+  cilCreditCard,
   cilEnvelopeOpen,
   cilFile,
   cilLockLocked,

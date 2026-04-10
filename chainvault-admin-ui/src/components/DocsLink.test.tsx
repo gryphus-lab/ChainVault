@@ -1,4 +1,7 @@
-import { describe, it, expect } from 'vitest'
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
+import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import DocsLink from './DocsLink'
 
