@@ -89,7 +89,7 @@ const MiniChart: FC<MiniChartProps> = ({ color, variant = 'bar' }) => {
           backgroundColor: variant === 'bar' ? getStyle(color) : 'transparent',
           borderColor: variant === 'line' ? getStyle(color) : 'transparent',
           borderWidth: variant === 'line' ? 2 : 1,
-          data: generateSeries({ min: 40, max: 100 }),
+          data: generateSeries({ min: 40, max: 100 }, DAYS.length * 3),
         },
       ],
     }),
@@ -171,22 +171,25 @@ const Widgets: FC = () => {
         {/* Stats E (Charts) */}
         <DocsExample href="components/widgets/#cwidgetstatse">
           <CRow xs={{ gutter: 4 }}>
-            {[
-              { color: '--cui-danger', variant: 'bar' },
-              { color: '--cui-primary', variant: 'bar' },
-              { color: '--cui-success', variant: 'bar' },
-              { color: '--cui-danger', variant: 'line' },
-              { color: '--cui-success', variant: 'line' },
-              { color: '--cui-info', variant: 'line' },
-            ].map((item, i) => (
-              <CCol key={`${item.variant}-${i}`} sm={4} md={3} xl={2}>
-                <CWidgetStatsE
-                  chart={<MiniChart color={item.color} variant={item.variant as ChartVariant} />}
-                  title="title"
-                  value="1,123"
-                />
-              </CCol>
-            ))}
+            {(() => {
+              const statsEItems: Array<{ color: string; variant: ChartVariant }> = [
+                { color: '--cui-danger', variant: 'bar' },
+                { color: '--cui-primary', variant: 'bar' },
+                { color: '--cui-success', variant: 'bar' },
+                { color: '--cui-danger', variant: 'line' },
+                { color: '--cui-success', variant: 'line' },
+                { color: '--cui-info', variant: 'line' },
+              ]
+              return statsEItems.map((item, i) => (
+                <CCol key={`${item.variant}-${i}`} sm={4} md={3} xl={2}>
+                  <CWidgetStatsE
+                    chart={<MiniChart color={item.color} variant={item.variant} />}
+                    title="title"
+                    value="1,123"
+                  />
+                </CCol>
+              ))
+            })()}
           </CRow>
         </DocsExample>
 

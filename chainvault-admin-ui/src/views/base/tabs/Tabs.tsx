@@ -20,18 +20,16 @@ import { DocsComponents, DocsExample } from '../../../components'
  * Types
  * ========================= */
 
-type TabKey = string | number
-
-interface TabItem {
-  key: TabKey
+interface TabItem<K extends string | number> {
+  key: K
   label: string
   content: string
   disabled?: boolean
 }
 
-interface TabsExampleProps {
-  tabs: TabItem[]
-  activeKey: TabKey
+interface TabsExampleProps<K extends string | number> {
+  tabs: TabItem<K>[]
+  activeKey: K
   variant?: 'tabs' | 'pills' | 'underline' | 'underline-border'
   panelClassName?: string
   exampleHref: string
@@ -41,15 +39,13 @@ interface TabsExampleProps {
  * Reusable Component
  * ========================= */
 
-const TabsExample: FC<TabsExampleProps> = ({
+const TabsExample = <K extends string | number>({
   tabs,
   activeKey,
   variant,
   panelClassName = 'p-3',
   exampleHref,
-}) => {
-  const isNumeric = typeof activeKey === 'number'
-
+}: TabsExampleProps<K>) => {
   return (
     <DocsExample href={exampleHref}>
       <CTabs activeItemKey={activeKey}>
@@ -57,11 +53,10 @@ const TabsExample: FC<TabsExampleProps> = ({
           {tabs.map(({ key, label, disabled }) => (
             <CTab
               key={key}
+              id={`${key}-tab`}
               itemKey={key}
               disabled={disabled}
-              {...(isNumeric && {
-                'aria-controls': `${key}-tab-pane`,
-              })}
+              aria-controls={`${key}-panel`}
             >
               {label}
             </CTab>
@@ -72,11 +67,10 @@ const TabsExample: FC<TabsExampleProps> = ({
           {tabs.map(({ key, content }) => (
             <CTabPanel
               key={key}
+              id={`${key}-panel`}
               itemKey={key}
               className={panelClassName}
-              {...(isNumeric && {
-                'aria-labelledby': `${key}-tab-pane`,
-              })}
+              aria-labelledby={`${key}-tab`}
             >
               {content}
             </CTabPanel>
@@ -91,14 +85,14 @@ const TabsExample: FC<TabsExampleProps> = ({
  * Data
  * ========================= */
 
-const stringTabs: TabItem[] = [
+const stringTabs: TabItem<string>[] = [
   { key: 'home', label: 'Home', content: 'Home tab content' },
   { key: 'profile', label: 'Profile', content: 'Profile tab content' },
   { key: 'contact', label: 'Contact', content: 'Contact tab content' },
   { key: 'disabled', label: 'Disabled', content: 'Disabled tab content', disabled: true },
 ]
 
-const numberTabs: TabItem[] = [
+const numberTabs: TabItem<number>[] = [
   { key: 1, label: 'Home', content: 'Home tab content' },
   { key: 2, label: 'Profile', content: 'Profile tab content' },
   { key: 3, label: 'Contact', content: 'Contact tab content' },
