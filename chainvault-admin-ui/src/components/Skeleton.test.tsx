@@ -16,14 +16,11 @@ describe('Skeleton Components', () => {
     })
 
     it('applies dynamic width and height classes correctly', () => {
-      // Testing the width/height prop logic: width && `w-${width}`
-      // Note: Passing "w-full" as the prop results in "w-w-full" based on your code logic
-      const { container, rerender } = render(<Skeleton width="48" height="6" />)
+      const { container, rerender } = render(<Skeleton width="w-48" height="h-6" />)
       let skeleton = container.querySelector('div')
       expect(skeleton).toHaveClass('w-48', 'h-6')
 
-      // Verify it handles full Tailwind strings if passed (e.g. width="full")
-      rerender(<Skeleton width="full" />)
+      rerender(<Skeleton width="w-full" />)
       skeleton = container.querySelector('div')
       expect(skeleton).toHaveClass('w-full')
     })

@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { format, parseISO, subDays } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { Clock, Search } from 'lucide-react'
 
 import { getMigrations } from '../../../lib/api'
@@ -19,11 +19,7 @@ export default function Overview() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [dateFilter, setDateFilter] = useState<'all' | '24h' | '7d' | '30d'>('all')
 
-  const {
-    data: allMigrations = [],
-    isLoading: migrationsLoading,
-    error: migrationsError,
-  } = useQuery({
+  useQuery({
     queryKey: ['migrations'],
     queryFn: async () => {
       const data = await getMigrations({ limit: 100 })
@@ -33,75 +29,6 @@ export default function Overview() {
   })
 
   const { events: liveEvents, isConnected, clearEvents, reconnect } = useMigrationEvents()
-
-  // Merge live updates
-  const migrationsWithLive = useMemo(() => {
-    const merged = [...allMigrations]
-    liveEvents.forEach((liveEvent) => {
-      if (!liveEvent?.migrationId) return
-      const index = merged.findIndex((m) => m.id === liveEvent.migrationId)
-      if (index !== -1) {
-        merged[index] = {
-          ...merged[index],
-          updatedAt: liveEvent.timestamp || merged[index].updatedAt,
-        }
-      }
-    })
-    return merged
-  }, [allMigrations, liveEvents])
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const filteredMigrations = useMemo(() => {
-    let result = [...migrationsWithLive]
-
-    if (statusFilter !== 'ALL') {
-      result = result.filter((m) => m.status === statusFilter)
-    }
-
-    if (dateFilter !== 'all') {
-      let days: number
-      switch (dateFilter) {
-        case '7d':
-          days = 7
-          break
-        case '24h':
-          days = 1
-          break
-        default:
-          days = 30
-          break
-      }
-      const cutoff = subDays(new Date(), days)
-      result = result.filter((m) => new Date(m.createdAt || 0) >= cutoff)
-    }
-
-    // Search term (docId or title)
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase().trim()
-      result = result.filter(
-        (m) =>
-          (m.docId || '').toLowerCase().includes(term) ||
-          (m.title || '').toLowerCase().includes(term),
-      )
-    }
-
-    return result.sort(
-      (a, b) =>
-        new Date(b.updatedAt || b.createdAt || 0).getTime() -
-        new Date(a.updatedAt || a.createdAt || 0).getTime(),
-    )
-  }, [migrationsWithLive, statusFilter, dateFilter, searchTerm])
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function getMigrationStatus() {
-    if (migrationsLoading) {
-      return 'Loading migrations...'
-    } else if (migrationsError) {
-      return 'Error loading migrations'
-    } else {
-      return 'No migrations found yet.'
-    }
-  }
 
   return (
     <div className="space-y-8">
@@ -192,7 +119,7 @@ export default function Overview() {
 
         <select
           value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value as any)}
+          onChange={(e) => setDateFilter(e.target.value as 'all' | '24h' | '7d' | '30d')}
           className="px-5 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">All Time</option>
@@ -201,25 +128,6 @@ export default function Overview() {
           <option value="30d">Last 30 days</option>
         </select>
       </div>
-
-      {/* Migrations Table
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Recent Migrations{/* no space
-            <span className="text-sm font-normal text-gray-500 ml-2">
-              ({filteredMigrations.length} shown)
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {filteredMigrations.length > 0 ? (
-            <MigrationDataGrid data={filteredMigrations} />
-          ) : (
-            <div>{getMigrationStatus()}</div>
-          )}
-        </CardContent>
-      </Card>*/}
     </div>
   )
 }

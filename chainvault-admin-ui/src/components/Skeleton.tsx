@@ -5,13 +5,9 @@ import { cn } from '../lib/utils'
 import * as React from 'react'
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
-  /**
-   * Optional width (e.g. "w-32", "w-full")
-   */
+  /** Tailwind width class, e.g. "w-32", "w-full", "w-3/4" */
   width?: string
-  /**
-   * Optional height (e.g. "h-6", "h-10")
-   */
+  /** Tailwind height class, e.g. "h-6", "h-10" */
   height?: string
 }
 
@@ -23,8 +19,8 @@ export function Skeleton({ className, width, height, ...props }: Readonly<Skelet
     <div
       className={cn(
         'animate-pulse rounded-md bg-gray-200 dark:bg-gray-700',
-        width && `w-${width}`,
-        height && `h-${height}`,
+        width,
+        height,
         className,
       )}
       {...props}
@@ -43,7 +39,7 @@ export function SkeletonText({
   return (
     <div className={cn('space-y-2', className)}>
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton key={i.toLocaleString()} height="h-4" className="w-full" />
+        <Skeleton key={i} height="h-4" className="w-full" />
       ))}
     </div>
   )

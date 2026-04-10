@@ -13,6 +13,13 @@ import { Badge } from '../../../components/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/Card'
 import { safeFormat } from '../../../lib/utils'
 
+const STATUS_CLASSES: Record<string, string> = {
+  SUCCESS: 'bg-green-100 text-green-800',
+  FAILED: 'bg-red-100 text-red-800',
+  RUNNING: 'bg-blue-100 text-blue-800',
+  PENDING: 'bg-gray-100 text-gray-800',
+}
+
 export default function MigrationDetailPage() {
   const { id } = useParams<{ id: string }>()
 
@@ -46,13 +53,7 @@ export default function MigrationDetailPage() {
     )
   }
 
-  const statusClass =
-    {
-      SUCCESS: 'bg-green-100 text-green-800',
-      FAILED: 'bg-red-100 text-red-800',
-      RUNNING: 'bg-blue-100 text-blue-800',
-      PENDING: 'bg-gray-100 text-gray-800',
-    }[migration.status] || 'bg-gray-100 text-gray-800'
+  const statusClass = STATUS_CLASSES[migration.status] ?? 'bg-gray-100 text-gray-800'
 
   return (
     <div className="space-y-8">
@@ -71,7 +72,7 @@ export default function MigrationDetailPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-gray-500">Document ID</CardTitle>

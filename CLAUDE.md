@@ -41,15 +41,14 @@ JaCoCo HTML report after `mise verify`: `chainvault-report-aggregate/target/site
 
 ## Module Structure
 
-4 Maven modules (root `pom.xml`) + 1 standalone Yarn workspace:
+4 Maven modules (root `pom.xml`), also a Yarn workspace:
 
-|            Module             |                                             Purpose                                             |
-|-------------------------------|-------------------------------------------------------------------------------------------------|
-| `chainvault-migration`        | Business logic: OCR, PDF, SFTP, hashing. No web dependencies.                                   |
-| `chainvault-orchestration`    | Spring Boot app: Flowable engine, REST API, SSE, JPA entities, Liquibase                        |
-| `chainvault-admin-ui`         | React/Vite admin UI — Maven module, output bundled into the Spring Boot JAR                     |
-| `chainvault-report-aggregate` | JaCoCo coverage aggregation only                                                                |
-| `chainvault-dashboard`        | React 19 live dashboard (TailwindCSS, TanStack Query) — Yarn workspace only, not a Maven module |
+|            Module             |                                      Purpose                                       |
+|-------------------------------|------------------------------------------------------------------------------------|
+| `chainvault-migration`        | Business logic: OCR, PDF, SFTP, hashing. No web dependencies.                      |
+| `chainvault-orchestration`    | Spring Boot app: Flowable engine, REST API, SSE, JPA entities, Liquibase           |
+| `chainvault-admin-ui`         | React 19 + CoreUI admin UI — Maven module, output bundled into the Spring Boot JAR |
+| `chainvault-report-aggregate` | JaCoCo coverage aggregation only                                                   |
 
 `chainvault-admin-ui` is built by Maven via `frontend-maven-plugin` and its static output is copied into the Spring Boot JAR. The `SpaController` serves `index.html` for all non-API routes.
 
@@ -81,7 +80,7 @@ PostgreSQL 18 with Liquibase migrations in `chainvault-orchestration/src/main/re
 
 ### SSE / Live Dashboard
 
-`SseEmitterService` pushes events to connected dashboard clients. The dashboard's `useMigrationEvents` hook (`chainvault-dashboard/src/hooks/useMigrationEvents.ts`) subscribes to `/api/migrations/events` with 3s auto-reconnect backoff.
+`SseEmitterService` pushes events to connected dashboard clients. The dashboard's `useMigrationEvents` hook (`chainvault-admin-ui/src/hooks/useMigrationEvents.ts`) subscribes to `/api/migrations/events` with 3s auto-reconnect backoff.
 
 ## Key Configuration
 
@@ -101,7 +100,7 @@ PostgreSQL 18 with Liquibase migrations in `chainvault-orchestration/src/main/re
 - Integration tests: `*IT.java` (Failsafe, may require Docker)
 - Docker integration tests live in `src/test/java/docker/` and require a running Docker daemon
 - ArchUnit architecture tests live in `src/test/java/arch/`
-- Frontend tests use Vitest: `yarn workspace chainvault-dashboard test`
+- Frontend tests use Vitest: `yarn workspace chainvault-admin-ui test` (or `yarn test:admin-ui`)
 
 ## Code Formatting
 
