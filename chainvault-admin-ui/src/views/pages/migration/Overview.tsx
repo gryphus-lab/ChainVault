@@ -1,10 +1,9 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
-import { Clock, Search } from 'lucide-react'
+import { Clock } from 'lucide-react'
 
 import { getMigrations } from '../../../lib/api'
 import { useMigrationEvents } from '../../../hooks/useMigrationEvents'
@@ -12,20 +11,14 @@ import { useMigrationEvents } from '../../../hooks/useMigrationEvents'
 import { Badge } from '../../../components/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/Card'
 
-type StatusFilter = 'ALL' | 'SUCCESS' | 'FAILED' | 'RUNNING' | 'PENDING'
-
 /**
- * Render the Overview dashboard that displays live migration events, connection controls, and filter inputs.
+ * Render the Overview dashboard that displays live migration events and connection controls.
  *
- * The component shows connection status with reconnect/clear controls, a live events panel when events exist,
- * and UI controls for searching and filtering migrations by status and date range.
+ * The component shows connection status with reconnect/clear controls and a live events panel when events exist.
  *
  * @returns The React element tree for the Overview dashboard component
  */
 export default function Overview() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
-  const [dateFilter, setDateFilter] = useState<'all' | '24h' | '7d' | '30d'>('all')
 
   useQuery({
     queryKey: ['migrations'],
@@ -99,43 +92,6 @@ export default function Overview() {
           </CardContent>
         </Card>
       )}
-
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by Doc ID or Title..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className="px-5 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="SUCCESS">Success</option>
-          <option value="FAILED">Failed</option>
-          <option value="RUNNING">Running</option>
-          <option value="PENDING">Pending</option>
-        </select>
-
-        <select
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value as 'all' | '24h' | '7d' | '30d')}
-          className="px-5 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">All Time</option>
-          <option value="24h">Last 24h</option>
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-        </select>
-      </div>
     </div>
   )
 }

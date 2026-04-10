@@ -4,6 +4,8 @@
 import { cn } from '../lib/utils'
 import * as React from 'react'
 
+const MAX_SKELETON_LINES = 10
+
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Tailwind width class, e.g. "w-32", "w-full", "w-3/4" */
   width?: string
@@ -30,6 +32,8 @@ export function Skeleton({ className, width, height, ...props }: Readonly<Skelet
         height,
         className,
       )}
+      aria-hidden="true"
+      role="presentation"
       {...props}
     />
   )
@@ -51,9 +55,10 @@ export function SkeletonText({
   lines?: number
   className?: string
 }>) {
+  const cappedLines = Math.max(0, Math.min(Number(lines) || 0, MAX_SKELETON_LINES))
   return (
     <div className={cn('space-y-2', className)}>
-      {Array.from({ length: lines }).map((_, i) => (
+      {Array.from({ length: cappedLines }).map((_, i) => (
         <Skeleton key={i} height="h-4" className="w-full" />
       ))}
     </div>
