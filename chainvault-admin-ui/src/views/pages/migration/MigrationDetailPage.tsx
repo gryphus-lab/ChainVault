@@ -21,11 +21,7 @@ const STATUS_CLASSES: Record<string, string> = {
 }
 
 /**
- * Render a page that loads and displays migration details for the `id` route parameter.
- *
- * Loads migration data by `id` and conditionally renders a loading state, an error message,
- * or the detailed migration UI (header with status, stats grid, timeline, OCR/processing info,
- * optional failure reason, and optional download links).
+ * Renders the migration detail page for the route `id`, loading migration data and showing a loading state, an error message, or the full migration UI (header with status, stats grid, timeline, OCR/processing info, optional failure reason, and optional download links).
  *
  * @returns The rendered React element for the migration detail page.
  */
