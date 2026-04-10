@@ -4,7 +4,7 @@
 import React, { ReactElement, ReactNode, Suspense } from 'react'
 import { render, type RenderOptions } from '@testing-library/react'
 import { Provider } from 'react-redux'
-import { BrowserRouter, MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { CSpinner } from '@coreui/react'
 import store from '../store'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -20,7 +20,7 @@ const AllTheProviders = ({ children }: { children: ReactNode }) => {
   })
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      <MemoryRouter>{children}</MemoryRouter>
     </QueryClientProvider>
   )
 }

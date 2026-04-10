@@ -16,7 +16,7 @@ const Timeline = ({ events }: TimelineProps) => {
 
   const sortedEvents = [...events]
     .filter((e) => e?.timestamp)
-    .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp))
+    .sort((a, b) => parseISO(a.timestamp).getTime() - parseISO(b.timestamp).getTime())
 
   return (
     <div className="flow-root">

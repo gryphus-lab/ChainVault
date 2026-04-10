@@ -2,7 +2,7 @@
  * Copyright (c) 2026. Gryphus Lab
  */
 import { format, parseISO } from 'date-fns'
-import clsx, { ClassValue } from 'clsx'
+import clsx, { type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 /**

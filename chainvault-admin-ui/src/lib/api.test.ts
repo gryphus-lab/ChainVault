@@ -34,10 +34,7 @@ describe('API Service', () => {
 
   it('getMigrationStats calls the stats endpoint', async () => {
     const mockStats = { total: 5 }
-    const spy = vi
-      .spyOn(api, 'get')
-
-      .mockReturnValue(mockJsonResponse(mockStats) as any)
+    const spy = vi.spyOn(api, 'get').mockReturnValue(mockJsonResponse(mockStats) as any)
 
     const result = await getMigrationStats()
 
@@ -47,10 +44,7 @@ describe('API Service', () => {
 
   it('getMigrationDetail calls the specific ID endpoint', async () => {
     const mockDetail = { id: '123', status: 'completed' }
-    const spy = vi
-      .spyOn(api, 'get')
-
-      .mockReturnValue(mockJsonResponse(mockDetail) as any)
+    const spy = vi.spyOn(api, 'get').mockReturnValue(mockJsonResponse(mockDetail) as any)
 
     const result = await getMigrationDetail('123')
 
@@ -60,10 +54,7 @@ describe('API Service', () => {
 
   it('getMigrationEvents calls the events sub-resource', async () => {
     const mockEvents = [{ event: 'started' }]
-    const spy = vi
-      .spyOn(api, 'get')
-
-      .mockReturnValue(mockJsonResponse(mockEvents) as any)
+    const spy = vi.spyOn(api, 'get').mockReturnValue(mockJsonResponse(mockEvents) as any)
 
     const result = await getMigrationEvents('abc')
 
