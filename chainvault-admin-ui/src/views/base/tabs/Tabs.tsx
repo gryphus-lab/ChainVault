@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import React from 'react'
+import React, { FC } from 'react'
 import {
   CCard,
   CCardBody,
@@ -16,217 +16,182 @@ import {
 } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
 
-const Navs = () => {
+/* =========================
+ * Types
+ * ========================= */
+
+type TabKey = string | number
+
+interface TabItem {
+  key: TabKey
+  label: string
+  content: string
+  disabled?: boolean
+}
+
+interface TabsExampleProps {
+  tabs: TabItem[]
+  activeKey: TabKey
+  variant?: 'tabs' | 'pills' | 'underline' | 'underline-border'
+  panelClassName?: string
+  exampleHref: string
+}
+
+/* =========================
+ * Reusable Component
+ * ========================= */
+
+const TabsExample: FC<TabsExampleProps> = ({
+  tabs,
+  activeKey,
+  variant,
+  panelClassName = 'p-3',
+  exampleHref,
+}) => {
+  const isNumeric = typeof activeKey === 'number'
+
+  return (
+    <DocsExample href={exampleHref}>
+      <CTabs activeItemKey={activeKey}>
+        <CTabList {...(variant ? { variant } : {})}>
+          {tabs.map(({ key, label, disabled }) => (
+            <CTab
+              key={key}
+              itemKey={key}
+              disabled={disabled}
+              {...(isNumeric && {
+                'aria-controls': `${key}-tab-pane`,
+              })}
+            >
+              {label}
+            </CTab>
+          ))}
+        </CTabList>
+
+        <CTabContent>
+          {tabs.map(({ key, content }) => (
+            <CTabPanel
+              key={key}
+              itemKey={key}
+              className={panelClassName}
+              {...(isNumeric && {
+                'aria-labelledby': `${key}-tab-pane`,
+              })}
+            >
+              {content}
+            </CTabPanel>
+          ))}
+        </CTabContent>
+      </CTabs>
+    </DocsExample>
+  )
+}
+
+/* =========================
+ * Data
+ * ========================= */
+
+const stringTabs: TabItem[] = [
+  { key: 'home', label: 'Home', content: 'Home tab content' },
+  { key: 'profile', label: 'Profile', content: 'Profile tab content' },
+  { key: 'contact', label: 'Contact', content: 'Contact tab content' },
+  { key: 'disabled', label: 'Disabled', content: 'Disabled tab content', disabled: true },
+]
+
+const numberTabs: TabItem[] = [
+  { key: 1, label: 'Home', content: 'Home tab content' },
+  { key: 2, label: 'Profile', content: 'Profile tab content' },
+  { key: 3, label: 'Contact', content: 'Contact tab content' },
+  { key: 4, label: 'Disabled', content: 'Disabled tab content', disabled: true },
+]
+
+/* =========================
+ * Main Component
+ * ========================= */
+
+const Navs: FC = () => {
   return (
     <CRow>
       <CCol xs={12}>
         <DocsComponents href="components/tabs/" />
+
+        {/* Tabs */}
         <CCard className="mb-4">
           <CCardHeader>
             <strong>React Tabs</strong>
           </CCardHeader>
           <CCardBody>
             <p className="text-body-secondary small">
-              The basic React tabs example uses the <code>variant=&#34;tabs&#34;</code> props to
-              generate a tabbed interface.
+              Basic tabs using <code>variant="tabs"</code>.
             </p>
-            <DocsExample href="components/tabs/#example">
-              <CTabs activeItemKey="profile">
-                <CTabList variant="tabs">
-                  <CTab itemKey="home">Home</CTab>
-                  <CTab itemKey="profile">Profile</CTab>
-                  <CTab itemKey="contact">Contact</CTab>
-                  <CTab disabled itemKey="disabled">
-                    Disabled
-                  </CTab>
-                </CTabList>
-                <CTabContent>
-                  <CTabPanel className="p-3" itemKey="home">
-                    Home tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" itemKey="profile">
-                    Profile tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" itemKey="contact">
-                    Contact tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" itemKey="disabled">
-                    Disabled tab content
-                  </CTabPanel>
-                </CTabContent>
-              </CTabs>
-            </DocsExample>
+            <TabsExample
+              tabs={stringTabs}
+              activeKey="profile"
+              variant="tabs"
+              exampleHref="components/tabs/#example"
+            />
           </CCardBody>
         </CCard>
-      </CCol>
-      <CCol xs={12}>
+
+        {/* Unstyled */}
         <CCard className="mb-4">
           <CCardHeader>
             <strong>React Tabs</strong> <small>Unstyled</small>
           </CCardHeader>
           <CCardBody>
-            <p className="text-body-secondary small">
-              If you don’t provide the <code>variant</code> prop, the component will default to a
-              basic style.
-            </p>
-            <DocsExample href="components/tabs/#unstyled">
-              <CTabs activeItemKey="profile">
-                <CTabList>
-                  <CTab itemKey="home">Home</CTab>
-                  <CTab itemKey="profile">Profile</CTab>
-                  <CTab itemKey="contact">Contact</CTab>
-                  <CTab disabled itemKey="disabled">
-                    Disabled
-                  </CTab>
-                </CTabList>
-                <CTabContent>
-                  <CTabPanel className="p-3" itemKey="home">
-                    Home tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" itemKey="profile">
-                    Profile tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" itemKey="contact">
-                    Contact tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" itemKey="disabled">
-                    Disabled tab content
-                  </CTabPanel>
-                </CTabContent>
-              </CTabs>
-            </DocsExample>
+            <p className="text-body-secondary small">Default styling without specifying variant.</p>
+            <TabsExample
+              tabs={stringTabs}
+              activeKey="profile"
+              exampleHref="components/tabs/#unstyled"
+            />
           </CCardBody>
         </CCard>
-      </CCol>
-      <CCol xs={12}>
+
+        {/* Pills */}
         <CCard className="mb-4">
           <CCardHeader>
             <strong>React Tabs</strong> <small>Pills</small>
           </CCardHeader>
           <CCardBody>
-            <p className="text-body-secondary small">
-              Take that same code, but use <code>variant=&#34;pills&#34;</code> instead:
-            </p>
-            <DocsExample href="components/tabs/#unstyled">
-              <CTabs activeItemKey={2}>
-                <CTabList variant="pills">
-                  <CTab aria-controls="home-tab-pane" itemKey={1}>
-                    Home
-                  </CTab>
-                  <CTab aria-controls="profile-tab-pane" itemKey={2}>
-                    Profile
-                  </CTab>
-                  <CTab aria-controls="contact-tab-pane" itemKey={3}>
-                    Contact
-                  </CTab>
-                  <CTab aria-controls="disabled-tab-pane" disabled itemKey={4}>
-                    Disabled
-                  </CTab>
-                </CTabList>
-                <CTabContent>
-                  <CTabPanel className="p-3" aria-labelledby="home-tab-pane" itemKey={1}>
-                    Home tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" aria-labelledby="profile-tab-pane" itemKey={2}>
-                    Profile tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" aria-labelledby="contact-tab-pane" itemKey={3}>
-                    Contact tab content
-                  </CTabPanel>
-                  <CTabPanel className="p-3" aria-labelledby="disabled-tab-pane" itemKey={4}>
-                    Disabled tab content
-                  </CTabPanel>
-                </CTabContent>
-              </CTabs>
-            </DocsExample>
+            <TabsExample
+              tabs={numberTabs}
+              activeKey={2}
+              variant="pills"
+              exampleHref="components/tabs/#pills"
+            />
           </CCardBody>
         </CCard>
-      </CCol>
-      <CCol xs={12}>
+
+        {/* Underline */}
         <CCard className="mb-4">
           <CCardHeader>
             <strong>React Tabs</strong> <small>Underline</small>
           </CCardHeader>
           <CCardBody>
-            <p className="text-body-secondary small">
-              Take that same code, but use <code>variant=&#34;underline&#34;</code> instead:
-            </p>
-            <DocsExample href="components/tabs/#unstyled">
-              <CTabs activeItemKey={2}>
-                <CTabList variant="underline">
-                  <CTab aria-controls="home-tab-pane" itemKey={1}>
-                    Home
-                  </CTab>
-                  <CTab aria-controls="profile-tab-pane" itemKey={2}>
-                    Profile
-                  </CTab>
-                  <CTab aria-controls="contact-tab-pane" itemKey={3}>
-                    Contact
-                  </CTab>
-                  <CTab aria-controls="disabled-tab-pane" disabled itemKey={4}>
-                    Disabled
-                  </CTab>
-                </CTabList>
-                <CTabContent>
-                  <CTabPanel className="py-3" aria-labelledby="home-tab-pane" itemKey={1}>
-                    Home tab content
-                  </CTabPanel>
-                  <CTabPanel className="py-3" aria-labelledby="profile-tab-pane" itemKey={2}>
-                    Profile tab content
-                  </CTabPanel>
-                  <CTabPanel className="py-3" aria-labelledby="contact-tab-pane" itemKey={3}>
-                    Contact tab content
-                  </CTabPanel>
-                  <CTabPanel className="py-3" aria-labelledby="disabled-tab-pane" itemKey={4}>
-                    Disabled tab content
-                  </CTabPanel>
-                </CTabContent>
-              </CTabs>
-            </DocsExample>
+            <TabsExample
+              tabs={numberTabs}
+              activeKey={2}
+              variant="underline"
+              panelClassName="py-3"
+              exampleHref="components/tabs/#underline"
+            />
           </CCardBody>
         </CCard>
-      </CCol>
-      <CCol xs={12}>
+
+        {/* Underline Border */}
         <CCard className="mb-4">
           <CCardHeader>
             <strong>React Tabs</strong> <small>Underline border</small>
           </CCardHeader>
           <CCardBody>
-            <p className="text-body-secondary small">
-              Take that same code, but use <code>variant=&#34;underline-border&#34;</code> instead:
-            </p>
-            <DocsExample href="components/tabs/#unstyled">
-              <CTabs activeItemKey={2}>
-                <CTabList variant="underline-border">
-                  <CTab aria-controls="home-tab-pane" itemKey={1}>
-                    Home
-                  </CTab>
-                  <CTab aria-controls="profile-tab-pane" itemKey={2}>
-                    Profile
-                  </CTab>
-                  <CTab aria-controls="contact-tab-pane" itemKey={3}>
-                    Contact
-                  </CTab>
-                  <CTab aria-controls="disabled-tab-pane" disabled itemKey={4}>
-                    Disabled
-                  </CTab>
-                </CTabList>
-                <CTabContent>
-                  <CTabPanel className="py-3" aria-labelledby="home-tab-pane" itemKey={1}>
-                    Home tab content
-                  </CTabPanel>
-                  <CTabPanel className="py-3" aria-labelledby="profile-tab-pane" itemKey={2}>
-                    Profile tab content
-                  </CTabPanel>
-                  <CTabPanel className="py-3" aria-labelledby="contact-tab-pane" itemKey={3}>
-                    Contact tab content
-                  </CTabPanel>
-                  <CTabPanel className="py-3" aria-labelledby="disabled-tab-pane" itemKey={4}>
-                    Disabled tab content
-                  </CTabPanel>
-                </CTabContent>
-              </CTabs>
-            </DocsExample>
+            <TabsExample
+              tabs={numberTabs}
+              activeKey={2}
+              variant="underline-border"
+              panelClassName="py-3"
+              exampleHref="components/tabs/#underline-border"
+            />
           </CCardBody>
         </CCard>
       </CCol>
