@@ -63,14 +63,24 @@ function querySuccess(data: MigrationDetail = mockMigration) {
 describe('MigrationDetailPage', () => {
   it('shows the loading state', () => {
     queryLoading()
-    render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+    render(
+      <MemoryRouter>
+        <MigrationDetailPage />
+      </MemoryRouter>,
+    )
     expect(screen.getByText('Loading migration details...')).toBeInTheDocument()
   })
 
   it('shows the error state with a back link', () => {
     queryError()
-    render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
-    expect(screen.getByText(/Failed to load migration details for ID: test-123/)).toBeInTheDocument()
+    render(
+      <MemoryRouter>
+        <MigrationDetailPage />
+      </MemoryRouter>,
+    )
+    expect(
+      screen.getByText(/Failed to load migration details for ID: test-123/),
+    ).toBeInTheDocument()
     const backLink = screen.getByRole('link', { name: /back to dashboard/i })
     expect(backLink).toHaveAttribute('href', '/')
   })
@@ -78,7 +88,11 @@ describe('MigrationDetailPage', () => {
   describe('success state', () => {
     it('renders the migration id, title, and status badge', () => {
       querySuccess()
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.getByText('Migration test-123')).toBeInTheDocument()
       expect(screen.getByText('Test Migration')).toBeInTheDocument()
       expect(screen.getByText('SUCCESS')).toBeInTheDocument()
@@ -86,7 +100,11 @@ describe('MigrationDetailPage', () => {
 
     it('renders the stats grid with docId, created date, and traceId', () => {
       querySuccess()
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.getByText('doc-abc')).toBeInTheDocument()
       expect(screen.getByText('trace-xyz')).toBeInTheDocument()
       expect(screen.getByText('Document ID')).toBeInTheDocument()
@@ -95,14 +113,22 @@ describe('MigrationDetailPage', () => {
 
     it('renders the migration timeline with events', () => {
       querySuccess()
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.getByText('Migration Timeline')).toBeInTheDocument()
       expect(screen.getByText('SftpUpload')).toBeInTheDocument()
     })
 
     it('renders OCR details section', () => {
       querySuccess()
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.getByText('OCR & Processing')).toBeInTheDocument()
       expect(screen.getByText(/OCR Attempted/)).toBeInTheDocument()
       expect(screen.getByText(/Pages Processed/)).toBeInTheDocument()
@@ -111,13 +137,21 @@ describe('MigrationDetailPage', () => {
 
     it('renders failure reason when present', () => {
       querySuccess({ ...mockMigration, status: 'FAILED', failureReason: 'SFTP timeout' })
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.getByText(/SFTP timeout/)).toBeInTheDocument()
     })
 
     it('does not render failure reason section when absent', () => {
       querySuccess()
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.queryByText('Failure Reason')).not.toBeInTheDocument()
     })
 
@@ -127,7 +161,11 @@ describe('MigrationDetailPage', () => {
         chainZipUrl: 'http://example.com/chain.zip',
         pdfUrl: 'http://example.com/output.pdf',
       })
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.getByText('Downloads')).toBeInTheDocument()
       expect(screen.getByRole('link', { name: /chain zip/i })).toHaveAttribute(
         'href',
@@ -141,14 +179,22 @@ describe('MigrationDetailPage', () => {
 
     it('renders only the available download link when one URL is missing', () => {
       querySuccess({ ...mockMigration, chainZipUrl: 'http://example.com/chain.zip' })
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.getByRole('link', { name: /chain zip/i })).toBeInTheDocument()
       expect(screen.queryByRole('link', { name: /merged pdf/i })).not.toBeInTheDocument()
     })
 
     it('hides the downloads section when no URLs are present', () => {
       querySuccess()
-      render(<MemoryRouter><MigrationDetailPage /></MemoryRouter>)
+      render(
+        <MemoryRouter>
+          <MigrationDetailPage />
+        </MemoryRouter>,
+      )
       expect(screen.queryByText('Downloads')).not.toBeInTheDocument()
     })
   })
