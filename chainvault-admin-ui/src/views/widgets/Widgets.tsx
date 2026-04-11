@@ -59,15 +59,18 @@ const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const generateSeries = (min: number, max: number, length = 15): number[] =>
   Array.from({ length }, () => secureRandomInt(max - min + 1) + min)
 
+// Shared base options for both 'bar' and 'line' chart variants used in MiniChart.
+// `satisfies` validates the shape against ChartOptions<'line'> at compile time
+// while keeping the inferred literal type for reuse across chart variants.
 const baseChartOptions = {
   maintainAspectRatio: false,
   plugins: { legend: { display: false } },
   scales: { x: { display: false }, y: { display: false } },
-}
+} satisfies ChartOptions<'line'>
 
 const lineExtras = {
   elements: { line: { tension: 0.4 }, point: { radius: 0 } },
-}
+} as const
 
 const WidgetGrid = ({
   children,
@@ -116,42 +119,53 @@ const MiniChart: FC<MiniChartProps> = ({ color, variant = 'bar' }) => {
   )
 
   const style = { height: '40px', width: '80px' }
-  const barOptions: ChartOptions<'bar'> = baseChartOptions
-  const lineOptions: ChartOptions<'line'> = { ...baseChartOptions, ...lineExtras }
 
   if (variant === 'bar') {
-    return <CChartBar className="mx-auto" style={style} data={data} options={barOptions} />
+    return <CChartBar className="mx-auto" style={style} data={data} options={baseChartOptions} />
   }
-  return <CChartLine className="mx-auto" style={style} data={data} options={lineOptions} />
+  return (
+    <CChartLine
+      className="mx-auto"
+      style={style}
+      data={data}
+      options={{ ...baseChartOptions, ...lineExtras }}
+    />
+  )
 }
 
 /* -------------------------------------------------------------------------- */
 /* MAIN COMPONENT                              */
 /* -------------------------------------------------------------------------- */
 
+const statsBData = [
+  { value: '89.9%', color: 'success' as const },
+  { value: '12.124', color: 'info' as const },
+  { value: '$98.111,00', color: 'warning' as const },
+  { value: '2 TB', color: 'primary' as const },
+]
+
+const statsFData = [
+  { icon: cilSettings, color: 'primary' as const, title: 'settings' },
+  { icon: cilUser, color: 'info' as const, title: 'users' },
+  { icon: cilMoon, color: 'warning' as const, title: 'dark mode' },
+  { icon: cilBell, color: 'danger' as const, title: 'alerts' },
+]
+
+const statsCData = [
+  { icon: cilPeople, value: '87.500', title: 'Visitors', color: 'info' as const },
+  { icon: cilUserFollow, value: '385', title: 'New Clients', color: 'success' as const },
+  { icon: cilBasket, value: '1238', title: 'Products sold', color: 'warning' as const },
+  { icon: cilChartPie, value: '28%', title: 'Returning Visitors', color: 'primary' as const },
+  { icon: cilSpeedometer, value: '5:34:11', title: 'Avg. Time', color: 'danger' as const },
+]
+
+/**
+ * Returns the appropriate icon for a widget, using cilLaptop for 'info' color when footer is present
+ */
+const getWidgetIcon = (hasFooter: boolean, color: string, defaultIcon: string | string[]) =>
+  hasFooter && color === 'info' ? cilLaptop : defaultIcon
+
 const Widgets: FC = () => {
-  // Static Data definitions
-  const statsBData = [
-    { value: '89.9%', color: 'success' as const },
-    { value: '12.124', color: 'info' as const },
-    { value: '$98.111,00', color: 'warning' as const },
-    { value: '2 TB', color: 'primary' as const },
-  ]
-
-  const statsFData = [
-    { icon: cilSettings, color: 'primary' as const, title: 'settings' },
-    { icon: cilUser, color: 'info' as const, title: 'users' },
-    { icon: cilMoon, color: 'warning' as const, title: 'dark mode' },
-    { icon: cilBell, color: 'danger' as const, title: 'alerts' },
-  ]
-
-  const statsCData = [
-    { icon: cilPeople, value: '87.500', title: 'Visitors', color: 'info' as const },
-    { icon: cilUserFollow, value: '385', title: 'New Clients', color: 'success' as const },
-    { icon: cilBasket, value: '1238', title: 'Products sold', color: 'warning' as const },
-    { icon: cilChartPie, value: '28%', title: 'Returning Visitors', color: 'primary' as const },
-    { icon: cilSpeedometer, value: '5:34:11', title: 'Avg. Time', color: 'danger' as const },
-  ]
 
   return (
     <CCard className="mb-4">
@@ -209,10 +223,7 @@ const Widgets: FC = () => {
               <CCol key={item.color} xs={12} sm={6} xl={4} xxl={3}>
                 <CWidgetStatsF
                   icon={
-                    <CIcon
-                      width={24}
-                      icon={hasFooter && item.color === 'info' ? cilLaptop : item.icon}
-                    />
+                    <CIcon width={24} icon={getWidgetIcon(hasFooter, item.color, item.icon)} />
                   }
                   title={item.title}
                   value="$1.999,50"
