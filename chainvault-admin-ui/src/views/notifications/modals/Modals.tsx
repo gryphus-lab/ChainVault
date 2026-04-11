@@ -1,37 +1,34 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import React, { useState } from 'react'
+import React, { ComponentProps, useState } from 'react'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCarousel,
-  CCarouselItem,
-  CCarouselCaption,
   CCol,
   CRow,
-  CNav,
-  CNavItem,
-  CNavLink,
   CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CWidgetStatsD,
 } from '@coreui/react'
-import { CChart } from '@coreui/react-chartjs'
-import CIcon from '@coreui/icons-react'
-import { cibFacebook, cibTwitter, cibLinkedin } from '@coreui/icons'
+import { DocsComponents, DocsExample } from '../../../components'
+
+// =========================
+// 🔁 TYPE DEFINITIONS
+// =========================
+
+interface AppModalProps extends Omit<ComponentProps<typeof CModal>, 'visible' | 'onClose'> {
+  title: string
+  trigger: React.ReactNode
+  children: React.ReactNode
+}
 
 // =========================
 // 🔁 REUSABLE COMPONENTS
 // =========================
 
-// Modal
-const AppModal = ({ title, trigger, children, ...props }: any) => {
+const AppModal = ({ title, trigger, children, ...props }: AppModalProps) => {
   const [visible, setVisible] = useState(false)
 
   return (
@@ -56,180 +53,61 @@ const AppModal = ({ title, trigger, children, ...props }: any) => {
   )
 }
 
-// Chart
-const ChartWidget = ({ data }: { data: number[] }) => {
-  const options = {
-    elements: { line: { tension: 0.4 }, point: { radius: 0 } },
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { x: { display: false }, y: { display: false } },
-  }
-
-  return (
-    <CChart
-      className="position-absolute w-100 h-100"
-      type="line"
-      data={{
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-        datasets: [
-          {
-            backgroundColor: 'rgba(255,255,255,.1)',
-            borderColor: 'rgba(255,255,255,.55)',
-            borderWidth: 2,
-            data,
-            fill: true,
-          },
-        ],
-      }}
-      options={options}
-    />
-  )
-}
-
-// Widget
-const BrandWidget = ({ icon, values, color, chartData }: any) => (
-  <CWidgetStatsD
-    icon={icon}
-    values={values}
-    {...(chartData && { chart: <ChartWidget data={chartData} /> })}
-    style={color ? ({ '--cui-card-cap-bg': color } as React.CSSProperties) : undefined}
-  />
-)
-
-// Carousel
-const AppCarousel = ({ items, withCaption, ...props }: any) => (
-  <CCarousel {...props}>
-    {items.map((item: any, i: number) => (
-      <CCarouselItem key={item.src || `${item.title}-${i}`}>
-        <img className="d-block w-100" src={item.src} alt={`slide ${i}`} />
-        {withCaption && (
-          <CCarouselCaption>
-            <h5>{item.title}</h5>
-            <p>{item.text}</p>
-          </CCarouselCaption>
-        )}
-      </CCarouselItem>
-    ))}
-  </CCarousel>
-)
-
-// Nav
-const AppNav = ({ items, ...props }: any) => (
-  <CNav {...props}>
-    {items.map((item: any) => (
-      <CNavItem key={item.label}>
-        <CNavLink active={item.active} disabled={item.disabled}>
-          {item.label}
-        </CNavLink>
-      </CNavItem>
-    ))}
-  </CNav>
-)
-
 // =========================
 // 🚀 MAIN COMPONENT
 // =========================
 
-const DashboardDemo = () => {
-  const navItems = [
-    { label: 'Active', active: true },
-    { label: 'Link' },
-    { label: 'Disabled', disabled: true },
-  ]
-
-  const carouselItems = [
-    { src: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23777%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22monospace%22%20font-size%3D%2226px%22%20fill%3D%22%23fff%22%3EFirst%20slide%3C%2Ftext%3E%3C%2Fsvg%3E', title: 'First', text: 'First slide' },
-    { src: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23666%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22monospace%22%20font-size%3D%2226px%22%20fill%3D%22%23fff%22%3ESecond%20slide%3C%2Ftext%3E%3C%2Fsvg%3E', title: 'Second', text: 'Second slide' },
-    { src: 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23555%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22monospace%22%20font-size%3D%2226px%22%20fill%3D%22%23fff%22%3EThird%20slide%3C%2Ftext%3E%3C%2Fsvg%3E', title: 'Third', text: 'Third slide' },
-  ]
-
+const Modals = () => {
   return (
     <CRow>
-      {/* NAV */}
       <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>Nav</CCardHeader>
-          <CCardBody>
-            <AppNav items={navItems} />
-            <AppNav items={navItems} className="justify-content-center mt-3" />
-            <AppNav items={navItems} variant="tabs" className="mt-3" />
-          </CCardBody>
-        </CCard>
-      </CCol>
+        <DocsComponents href="components/modal/" />
 
-      {/* CAROUSEL */}
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>Carousel</CCardHeader>
-          <CCardBody>
-            <AppCarousel items={carouselItems} controls indicators />
-            <AppCarousel items={carouselItems} withCaption className="mt-4" />
-          </CCardBody>
-        </CCard>
-      </CCol>
+        <DocsExample href="components/modal/">
+          <AppModal title="Modal title" trigger="Launch demo modal">
+            <p>
+              Woohoo, you&apos;re reading this text in a modal! This demonstrates the basic modal
+              functionality.
+            </p>
+          </AppModal>
+        </DocsExample>
 
-      {/* WIDGETS */}
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>Widgets</CCardHeader>
-          <CCardBody>
-            <CRow>
-              <CCol md={4}>
-                <BrandWidget
-                  icon={<CIcon icon={cibFacebook} height={40} />}
-                  values={[{ title: 'friends', value: '89K' }]}
-                  color="#3b5998"
-                  chartData={[65, 59, 84, 84, 51, 55, 40]}
-                />
-              </CCol>
+        <DocsExample href="components/modal/#vertically-centered">
+          <AppModal title="Vertically centered modal" trigger="Vertically centered" alignment="center">
+            <p>This modal is vertically centered on the page for better visual focus.</p>
+          </AppModal>
+        </DocsExample>
 
-              <CCol md={4}>
-                <BrandWidget
-                  icon={<CIcon icon={cibTwitter} height={40} />}
-                  values={[{ title: 'followers', value: '973K' }]}
-                  color="#00aced"
-                  chartData={[1, 13, 9, 17, 34, 41, 38]}
-                />
-              </CCol>
+        <DocsExample href="components/modal/#scrollable">
+          <AppModal title="Scrollable modal" trigger="Scrollable modal" scrollable>
+            <p>
+              This modal has a scrollable body when the content exceeds the viewport height. You can
+              add as much content as needed and the modal body will scroll independently.
+            </p>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+            <p>
+              Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+              nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+              officia deserunt mollit anim id est laborum.
+            </p>
+          </AppModal>
+        </DocsExample>
 
-              <CCol md={4}>
-                <BrandWidget
-                  icon={<CIcon icon={cibLinkedin} height={40} />}
-                  values={[{ title: 'contacts', value: '500' }]}
-                  color="#4875b4"
-                  chartData={[78, 81, 80, 45, 34, 12, 40]}
-                />
-              </CCol>
-            </CRow>
-          </CCardBody>
-        </CCard>
-      </CCol>
-
-      {/* MODALS */}
-      <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardHeader>Modals</CCardHeader>
-          <CCardBody>
-            <AppModal title="Basic Modal" trigger="Open Modal">
-              Simple modal content
-            </AppModal>
-
-            <AppModal title="Scrollable Modal" trigger="Scrollable" scrollable>
-              Long content here...
-            </AppModal>
-
-            <AppModal title="Centered Modal" trigger="Centered" alignment="center">
-              Centered modal
-            </AppModal>
-
-            <AppModal title="Fullscreen Modal" trigger="Fullscreen" fullscreen>
-              Fullscreen modal
-            </AppModal>
-          </CCardBody>
-        </CCard>
+        <DocsExample href="components/modal/#fullscreen-modal">
+          <AppModal title="Fullscreen modal" trigger="Fullscreen modal" fullscreen>
+            <p>
+              This modal takes up the entire viewport, providing maximum space for content. Great for
+              complex forms or detailed information.
+            </p>
+          </AppModal>
+        </DocsExample>
       </CCol>
     </CRow>
   )
 }
 
-export default DashboardDemo
+export default Modals

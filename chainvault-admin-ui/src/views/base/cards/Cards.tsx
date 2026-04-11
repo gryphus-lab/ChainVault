@@ -33,6 +33,7 @@ interface BasicCardProps {
   header?: ReactNode
   image?: boolean
   links?: string[]
+  width?: string
 }
 
 interface ListCardProps {
@@ -58,8 +59,9 @@ const BasicCard = ({
   header,
   image,
   links,
+  width,
 }: BasicCardProps) => (
-  <CCard style={{ width: '18rem' }} className="mb-3">
+  <CCard style={width ? { width } : undefined} className="mb-3">
     {image && <CCardImage orientation="top" src={ReactImg} />}
     {header && <CCardHeader>{header}</CCardHeader>}
     <CCardBody>
@@ -162,15 +164,15 @@ const Cards = () => {
 
         {/* Fixed TS2741 by adding required href to DocsExample */}
         <DocsExample href={examplePath}>
-          <BasicCard image />
+          <BasicCard image width="18rem" />
         </DocsExample>
 
         <DocsExample href={`${examplePath}/#body`}>
-          <BasicCard title={undefined} text="This is some text within a card body." />
+          <BasicCard title={null} text="This is some text within a card body." width="18rem" />
         </DocsExample>
 
         <DocsExample href={`${examplePath}/#titles-text-and-links`}>
-          <BasicCard links={['Card link', 'Another link']} />
+          <BasicCard links={['Card link', 'Another link']} width="18rem" />
         </DocsExample>
 
         <DocsExample href={`${examplePath}/#list-groups`}>
@@ -197,7 +199,7 @@ const Cards = () => {
         <DocsExample href={`${examplePath}/#card-groups`}>
           <CCardGroup>
             {[1, 2, 3].map((i) => (
-              <BasicCard key={i} image footer="Last updated 3 mins ago" />
+              <BasicCard key={i} image footer="Last updated 3 mins ago" width="18rem" />
             ))}
           </CCardGroup>
         </DocsExample>
@@ -206,7 +208,7 @@ const Cards = () => {
           <CRow xs={{ cols: 1 }} md={{ cols: 2 }}>
             {[1, 2, 3, 4].map((i) => (
               <CCol key={i}>
-                <BasicCard image footer="Last updated" />
+                <BasicCard image footer="Last updated" width="18rem" />
               </CCol>
             ))}
           </CRow>

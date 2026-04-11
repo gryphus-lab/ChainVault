@@ -29,6 +29,24 @@ const slidesLight = [
   'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23d5d5d5%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22monospace%22%20font-size%3D%2226px%22%20fill%3D%22%23777%22%3EThird%20slide%3C%2Ftext%3E%3C%2Fsvg%3E',
 ]
 
+/**
+ * Reusable slide images
+ */
+const frameworkImages = [
+  { src: ReactImg, alt: 'React slide' },
+  { src: AngularImg, alt: 'Angular slide' },
+  { src: VueImg, alt: 'Vue slide' },
+]
+
+/**
+ * Slide component for carousels
+ */
+const Slide = ({ src, alt }: { src: string; alt: string }) => (
+  <CCarouselItem>
+    <img className="d-block w-100" src={src} alt={alt} />
+  </CCarouselItem>
+)
+
 const Carousels = () => {
   return (
     <CRow>
@@ -47,15 +65,9 @@ const Carousels = () => {
             </p>
             <DocsExample href="components/carousel">
               <CCarousel>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={ReactImg} alt="React slide" />
-                </CCarouselItem>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={AngularImg} alt="Angular slide" />
-                </CCarouselItem>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={VueImg} alt="Vue slide" />
-                </CCarouselItem>
+                {frameworkImages.map(({ src, alt }) => (
+                  <Slide key={alt} src={src} alt={alt} />
+                ))}
               </CCarousel>
             </DocsExample>
           </CCardBody>
@@ -72,15 +84,9 @@ const Carousels = () => {
             <p className="text-body-secondary small">Adds previous/next navigation controls.</p>
             <DocsExample href="components/carousel/#with-controls">
               <CCarousel controls>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={ReactImg} alt="React slide" />
-                </CCarouselItem>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={AngularImg} alt="Angular slide" />
-                </CCarouselItem>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={VueImg} alt="Vue slide" />
-                </CCarouselItem>
+                {frameworkImages.map(({ src, alt }) => (
+                  <Slide key={alt} src={src} alt={alt} />
+                ))}
               </CCarousel>
             </DocsExample>
           </CCardBody>
@@ -97,15 +103,9 @@ const Carousels = () => {
             <p className="text-body-secondary small">Adds slide indicators alongside controls.</p>
             <DocsExample href="components/carousel/#with-indicators">
               <CCarousel controls indicators>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={ReactImg} alt="React slide" />
-                </CCarouselItem>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={AngularImg} alt="Angular slide" />
-                </CCarouselItem>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={VueImg} alt="Vue slide" />
-                </CCarouselItem>
+                {frameworkImages.map(({ src, alt }) => (
+                  <Slide key={alt} src={src} alt={alt} />
+                ))}
               </CCarousel>
             </DocsExample>
           </CCardBody>
@@ -127,8 +127,22 @@ const Carousels = () => {
                 <CCarouselItem>
                   <img className="d-block w-100" src={ReactImg} alt="React slide" />
                   <CCarouselCaption className="d-none d-md-block">
-                    <h5>First slide</h5>
-                    <p>Example caption text.</p>
+                    <h5>React Framework</h5>
+                    <p>A JavaScript library for building user interfaces.</p>
+                  </CCarouselCaption>
+                </CCarouselItem>
+                <CCarouselItem>
+                  <img className="d-block w-100" src={AngularImg} alt="Angular slide" />
+                  <CCarouselCaption className="d-none d-md-block">
+                    <h5>Angular Framework</h5>
+                    <p>Platform for building mobile and desktop web applications.</p>
+                  </CCarouselCaption>
+                </CCarouselItem>
+                <CCarouselItem>
+                  <img className="d-block w-100" src={VueImg} alt="Vue slide" />
+                  <CCarouselCaption className="d-none d-md-block">
+                    <h5>Vue Framework</h5>
+                    <p>The progressive JavaScript framework for building UIs.</p>
                   </CCarouselCaption>
                 </CCarouselItem>
               </CCarousel>
@@ -147,12 +161,9 @@ const Carousels = () => {
             <p className="text-body-secondary small">Uses fade transition instead of sliding.</p>
             <DocsExample href="components/carousel/#crossfade">
               <CCarousel controls transition="crossfade">
-                <CCarouselItem>
-                  <img className="d-block w-100" src={ReactImg} alt="React slide" />
-                </CCarouselItem>
-                <CCarouselItem>
-                  <img className="d-block w-100" src={AngularImg} alt="Angular slide" />
-                </CCarouselItem>
+                {frameworkImages.slice(0, 2).map(({ src, alt }) => (
+                  <Slide key={alt} src={src} alt={alt} />
+                ))}
               </CCarousel>
             </DocsExample>
           </CCardBody>
