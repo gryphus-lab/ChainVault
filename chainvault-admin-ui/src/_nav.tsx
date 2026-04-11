@@ -79,7 +79,7 @@ const BADGES = {
 const createItem = (
   name: string,
   to: string,
-  iconName?: any,
+  iconName?: string | string[],
   badgeKey?: keyof typeof BADGES,
 ): NavItem => ({
   component: CNavItem,
