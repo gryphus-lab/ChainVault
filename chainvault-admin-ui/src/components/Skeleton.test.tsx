@@ -7,31 +7,30 @@ import { Skeleton, SkeletonCard, SkeletonText } from './Skeleton'
 
 describe('Skeleton Components', () => {
   describe('Skeleton', () => {
-    it('renders as an img with base animation and styling', () => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { container } = render(<Skeleton data-testid="skeleton" />)
+    it('renders as a div with base animation and styling', () => {
+      render(<Skeleton data-testid="skeleton" />)
       const skeleton = screen.getByTestId('skeleton')
 
-      // Updated: Check for img tag and alt attribute for accessibility
-      expect(skeleton.tagName).toBe('IMG')
-      expect(skeleton).toHaveAttribute('alt', '')
+      // Check for div tag and ARIA attributes for accessibility
+      expect(skeleton.tagName).toBe('DIV')
+      expect(skeleton).toHaveAttribute('role', 'status')
+      expect(skeleton).toHaveAttribute('aria-label', 'Loading')
       expect(skeleton).toHaveClass('animate-pulse', 'bg-gray-200', 'rounded-md')
     })
 
     it('applies dynamic width and height classes correctly', () => {
-      // Updated: Selector changed from 'div' to 'img'
       const { container, rerender } = render(<Skeleton width="w-48" height="h-6" />)
-      let skeleton = container.querySelector('img')
+      let skeleton = container.querySelector('div')
       expect(skeleton).toHaveClass('w-48', 'h-6')
 
       rerender(<Skeleton width="w-full" />)
-      skeleton = container.querySelector('img')
+      skeleton = container.querySelector('div')
       expect(skeleton).toHaveClass('w-full')
     })
 
     it('merges custom className without losing base animation', () => {
       const { container } = render(<Skeleton className="rounded-full bg-blue-100" />)
-      const skeleton = container.querySelector('img')
+      const skeleton = container.querySelector('div')
 
       expect(skeleton).toHaveClass('animate-pulse', 'rounded-full', 'bg-blue-100')
     })

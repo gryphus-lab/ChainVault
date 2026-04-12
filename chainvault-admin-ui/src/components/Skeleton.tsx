@@ -14,18 +14,19 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Renders an animated skeleton placeholder as an `<img>` element.
+ * Renders an animated skeleton placeholder as a `<div>` element.
  *
  * @param width - Optional Tailwind width class (e.g., "w-32", "w-full")
  * @param height - Optional Tailwind height class (e.g., "h-6", "h-10")
  * @param className - Additional CSS class names to merge onto the element
- * @param props - Additional props forwarded to the underlying `<img>` element
- * @returns The rendered `<img>` element acting as a skeleton loader
+ * @param props - Additional props forwarded to the underlying `<div>` element
+ * @returns The rendered `<div>` element acting as a skeleton loader
  */
 export function Skeleton({ className, width, height, ...props }: Readonly<SkeletonProps>) {
   return (
-    <img
-      alt=""
+    <div
+      role="status"
+      aria-label="Loading"
       className={cn(
         'animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 block',
         width,
@@ -56,8 +57,8 @@ export function SkeletonText({
   const cappedLines = Math.max(0, Math.min(Number(lines) || 0, MAX_SKELETON_LINES))
   return (
     <div className={cn('space-y-2', className)}>
-      {Array.from({ length: cappedLines }).map((value, i) => (
-        <Skeleton key={`${value}-${i}`} height="h-4" className="w-full" />
+      {Array.from({ length: cappedLines }).map((_, i) => (
+        <Skeleton key={`skeleton-${i}`} height="h-4" className="w-full" />
       ))}
     </div>
   )
