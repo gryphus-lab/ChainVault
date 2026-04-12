@@ -7,27 +7,31 @@ import { Skeleton, SkeletonCard, SkeletonText } from './Skeleton'
 
 describe('Skeleton Components', () => {
   describe('Skeleton', () => {
-    it('renders with base animation and styling', () => {
+    it('renders as an img with base animation and styling', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { container } = render(<Skeleton data-testid="skeleton" />)
       const skeleton = screen.getByTestId('skeleton')
 
-      expect(container.firstChild).toBe(skeleton)
+      // Updated: Check for img tag and alt attribute for accessibility
+      expect(skeleton.tagName).toBe('IMG')
+      expect(skeleton).toHaveAttribute('alt', '')
       expect(skeleton).toHaveClass('animate-pulse', 'bg-gray-200', 'rounded-md')
     })
 
     it('applies dynamic width and height classes correctly', () => {
+      // Updated: Selector changed from 'div' to 'img'
       const { container, rerender } = render(<Skeleton width="w-48" height="h-6" />)
-      let skeleton = container.querySelector('div')
+      let skeleton = container.querySelector('img')
       expect(skeleton).toHaveClass('w-48', 'h-6')
 
       rerender(<Skeleton width="w-full" />)
-      skeleton = container.querySelector('div')
+      skeleton = container.querySelector('img')
       expect(skeleton).toHaveClass('w-full')
     })
 
     it('merges custom className without losing base animation', () => {
       const { container } = render(<Skeleton className="rounded-full bg-blue-100" />)
-      const skeleton = container.querySelector('div')
+      const skeleton = container.querySelector('img')
 
       expect(skeleton).toHaveClass('animate-pulse', 'rounded-full', 'bg-blue-100')
     })
@@ -36,6 +40,7 @@ describe('Skeleton Components', () => {
   describe('SkeletonText', () => {
     it('renders the default single line', () => {
       const { container } = render(<SkeletonText />)
+      // Works with any tag as long as it has the animation class
       const lines = container.querySelectorAll('.animate-pulse')
       expect(lines).toHaveLength(1)
     })
@@ -56,11 +61,11 @@ describe('Skeleton Components', () => {
     it('renders a card structure with a header and text lines', () => {
       const { container } = render(<SkeletonCard />)
 
-      // Should have 1 header skeleton + 3 text skeletons (from SkeletonText)
+      // Should have 1 header skeleton + 3 text skeletons
       const skeletons = container.querySelectorAll('.animate-pulse')
       expect(skeletons).toHaveLength(4)
 
-      // Verify card container styling
+      // Verify card container styling (this remains a div usually)
       expect(container.firstChild).toHaveClass('rounded-lg', 'border', 'bg-white', 'p-6')
     })
 

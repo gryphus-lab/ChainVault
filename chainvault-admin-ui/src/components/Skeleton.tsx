@@ -21,19 +21,19 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
  * @param width - Optional Tailwind width class (e.g., "w-32", "w-full")
  * @param height - Optional Tailwind height class (e.g., "h-6", "h-10")
  * @param className - Additional class names to merge onto the element
+ * @param props
  * @returns The rendered `<div>` element acting as a skeleton loader
  */
 export function Skeleton({ className, width, height, ...props }: Readonly<SkeletonProps>) {
   return (
-    <div
+    <img
+      alt=""
       className={cn(
-        'animate-pulse rounded-md bg-gray-200 dark:bg-gray-700',
+        'animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 block',
         width,
         height,
         className,
       )}
-      aria-hidden="true"
-      role="presentation"
       {...props}
     />
   )
@@ -58,8 +58,8 @@ export function SkeletonText({
   const cappedLines = Math.max(0, Math.min(Number(lines) || 0, MAX_SKELETON_LINES))
   return (
     <div className={cn('space-y-2', className)}>
-      {Array.from({ length: cappedLines }).map((_, i) => (
-        <Skeleton key={i} height="h-4" className="w-full" />
+      {Array.from({ length: cappedLines }).map((value, i) => (
+        <Skeleton key={`${value}-${i}`} height="h-4" className="w-full" />
       ))}
     </div>
   )

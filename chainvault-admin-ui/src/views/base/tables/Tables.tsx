@@ -103,13 +103,17 @@ const TableRenderer = ({
 
     <CTableBody>
       {rows.map((row, i) => (
-        <CTableRow key={`${row}-${i}`} color={row.color} active={row.active}>
+        <CTableRow key={`${row.header}-${i}`} color={row.color} active={row.active}>
           {row.header !== undefined && (
             <CTableHeaderCell scope="row">{row.header}</CTableHeaderCell>
           )}
 
           {row.cells.map((cell, j) => (
-            <CTableDataCell key={`${cell.value}-${j}`} colSpan={cell.colSpan} active={cell.active}>
+            <CTableDataCell
+              key={`${cell.colSpan}-${j}`}
+              colSpan={cell.colSpan}
+              active={cell.active}
+            >
               {cell.value}
             </CTableDataCell>
           ))}
@@ -133,7 +137,7 @@ const TableSection = ({ title, subtitle, description, href, tables }: TableSecti
         {description && <p className="text-body-secondary small">{description}</p>}
 
         {tables.map((table, i) => (
-          <DocsExample key={`${table}-${i}`} href={href}>
+          <DocsExample key={`${table.caption}-${i}`} href={href}>
             <TableRenderer
               head={table.head}
               rows={table.rows}
