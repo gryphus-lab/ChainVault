@@ -109,11 +109,7 @@ const TableRenderer = ({
           )}
 
           {row.cells.map((cell, j) => (
-            <CTableDataCell
-              key={`cell-${i}-${j}`}
-              colSpan={cell.colSpan}
-              active={cell.active}
-            >
+            <CTableDataCell key={`cell-${i}-${j}`} colSpan={cell.colSpan} active={cell.active}>
               {cell.value}
             </CTableDataCell>
           ))}
