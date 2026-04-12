@@ -25,8 +25,6 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Skeleton({ className, width, height, ...props }: Readonly<SkeletonProps>) {
   return (
     <div
-      role="status"
-      aria-label="Loading"
       className={cn(
         'animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 block',
         width,
@@ -56,7 +54,22 @@ export function SkeletonText({
 }>) {
   const cappedLines = Math.max(0, Math.min(Number(lines) || 0, MAX_SKELETON_LINES))
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn('space-y-2', className)} aria-live="polite" aria-atomic="true">
+      <span
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        Loading
+      </span>
       {Array.from({ length: cappedLines }).map((_, i) => (
         <Skeleton key={`skeleton-${i}`} height="h-4" className="w-full" />
       ))}
@@ -66,7 +79,26 @@ export function SkeletonText({
 
 export function SkeletonCard({ className }: Readonly<{ className?: string }>) {
   return (
-    <div className={cn('rounded-lg border bg-white p-6 shadow', className)}>
+    <div
+      className={cn('rounded-lg border bg-white p-6 shadow', className)}
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        Loading
+      </span>
       <Skeleton height="h-6" width="w-3/4" className="mb-4" />
       <SkeletonText lines={3} />
     </div>
