@@ -77,6 +77,14 @@ export function SkeletonText({
   )
 }
 
+/**
+ * Renders a card-shaped skeleton placeholder used to indicate loading content.
+ *
+ * The container exposes loading semantics to assistive technologies.
+ *
+ * @param className - Additional CSS classes to merge into the root container
+ * @returns A JSX element representing a card-style skeleton placeholder
+ */
 export function SkeletonCard({ className }: Readonly<{ className?: string }>) {
   return (
     <div
