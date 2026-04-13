@@ -6,6 +6,7 @@ Used by Gryphus Lab to coordinate extraction, transformation, signing, merging a
 [![Java 25](https://img.shields.io/badge/Java-25-orange?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/25/)
 [![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4.0+-6DB33F?logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Maven](https://img.shields.io/badge/Maven-3.9+-C71A36?logo=apache-maven&logoColor=white)](https://maven.apache.org/)
+[![React](https://img.shields.io/badge/React-19+-2496ED?logo=react&logoColor=white)](https://react.dev/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Liquibase](https://img.shields.io/badge/Liquibase-managed-2962FF)](https://www.liquibase.org/)
@@ -19,7 +20,7 @@ Used by Gryphus Lab to coordinate extraction, transformation, signing, merging a
 
 |      Aspect       |              Technology              |
 |-------------------|--------------------------------------|
-| Language          | Java 25                              |
+| Language          | Java 25, Typescript 5.9.3            |
 | Framework         | Spring Boot 4, React 19 + Vite       |
 | Orchestration     | Flowable (BPMN 2.0)                  |
 | Database          | PostgreSQL 18 (Docker)               |
@@ -64,7 +65,7 @@ provides observability via Micrometer + Prometheus/Loki.
 
 ## Project Structure
 
-```
+```text
 .
 ├── chainvault-migration/           # Core business logic: extraction, transformation, signing, merging, SFTP upload
 ├── chainvault-orchestration/       # Flowable BPMN engine, REST API, main application, delegates
@@ -125,9 +126,9 @@ mise dev
 
 After startup check:
 
-* Health:          http://localhost:8085/actuator/health
-* Swagger UI:      http://localhost:8085/swagger-ui.html
-* Dashboard (SPA): http://localhost:8085/
+- Health:          <http://localhost:8085/actuator/health>
+- Swagger UI:      <http://localhost:8085/swagger-ui.html>
+- Dashboard (SPA): <http://localhost:8085/>
 
 ## Local Development
 
@@ -157,9 +158,9 @@ docker compose -f docker-compose-lgtm.yml up -d
 
 Access:
 
-* Grafana:     http://localhost:3000  (admin/admin by default)
-* Prometheus:  http://localhost:9090
-* Loki:        http://localhost:3100  (via Grafana datasource)
+- Grafana:     <http://localhost:3000>  (admin/admin by default)
+- Prometheus:  <http://localhost:9090>
+- Loki:        <http://localhost:3100>  (via Grafana datasource)
 
 ## REST API
 
@@ -199,13 +200,13 @@ mounted secrets — never commit them.
 
 ## Database & Migrations
 
-* Engine: PostgreSQL 18 (containerized via docker-compose.yml)
-* Host: localhost:5432
-* Database: configured in application.yml / application-local.yml
-* Migrations: Liquibase YAML
-  * Location: chainvault-orchestration/src/main/resources/db/changelog/
-  * Master: db.changelog-master.yaml
-  * Auto-applied on startup in local profile
+- Engine: PostgreSQL 18 (containerized via docker-compose.yml)
+- Host: localhost:5432
+- Database: configured in application.yml / application-local.yml
+- Migrations: Liquibase YAML
+  - Location: chainvault-orchestration/src/main/resources/db/changelog/
+  - Master: db.changelog-master.yaml
+  - Auto-applied on startup in local profile
 
 ## Testing & Coverage
 
@@ -267,7 +268,7 @@ mise compose-down-full
 The `chainvault` BPMN process (`chainvault-orchestration/src/main/resources/processes/chainvault.bpmn`) follows this
 execution path:
 
-![](img/bpmn_process.png "Chainvault BPMN Process")
+!["Chainvault BPMN Process"](img/bpmn_process.png)
 
 Each task has a boundary error event that routes failures to the Handle Error task, terminating with End (Failed).
 
