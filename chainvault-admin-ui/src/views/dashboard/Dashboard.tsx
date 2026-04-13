@@ -13,10 +13,12 @@ import {
   CTableRow,
   CWidgetStatsB,
 } from '@coreui/react'
-import { getMigrationStats } from '../../lib/api'
-import { MigrationStats } from '../../types'
+import { getMigrations, getMigrationStats } from '../../lib/api'
+import { Migration, MigrationStats } from '../../types'
+import { safeFormat } from '../../lib/utils'
 
 const Dashboard = () => {
+  const [migrations, setMigrations] = useState<Migration[]>([])
   const [migrationStats, setMigrationStats] = useState<MigrationStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -36,7 +38,18 @@ const Dashboard = () => {
       }
     }
 
+    const fetchMigrations = async () => {
+      try {
+        const data = await getMigrations()
+        setMigrations(data)
+      } catch (err) {
+        console.error('Failed to fetch migrations:', err)
+        // Optionally set an error state for migrations
+      }
+    }
+
     fetchStats()
+    fetchMigrations()
   }, [])
 
   const getDisplayValue = (value: number | undefined) => {
@@ -96,12 +109,26 @@ const Dashboard = () => {
           </CTableRow>
         </CTableHead>
         <CTableBody>
-          {/* TODO: Populate with actual data from getMigrations */}
-          <CTableRow>
-            <CTableDataCell colSpan={7} className="text-center text-muted py-4">
-              No documents available
-            </CTableDataCell>
-          </CTableRow>
+          {migrations.length === 0 && (
+            <CTableRow>
+              <CTableDataCell colSpan={7} className="text-center text-muted">
+                No documents available
+              </CTableDataCell>
+            </CTableRow>
+          )}
+          {migrations.map((migration) => (
+            <CTableRow key={migration.id}>
+              <CTableDataCell>{migration.id}</CTableDataCell>
+              <CTableDataCell>{migration.docId}</CTableDataCell>
+              <CTableDataCell>{migration.title}</CTableDataCell>
+              <CTableDataCell>{migration.status}</CTableDataCell>
+              <CTableDataCell>{safeFormat(migration.createdAt)}</CTableDataCell>
+              <CTableDataCell>{safeFormat(migration.updatedAt)}</CTableDataCell>
+              <CTableDataCell>
+                <button className="btn btn-link">View Details</button>
+              </CTableDataCell>
+            </CTableRow>
+          ))}
         </CTableBody>
       </CTable>
     </>
