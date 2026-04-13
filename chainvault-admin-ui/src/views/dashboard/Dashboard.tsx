@@ -17,9 +17,6 @@ import { getMigrations, getMigrationStats } from '../../lib/api'
 import { Migration, MigrationStats } from '../../types'
 import { safeFormat } from '../../lib/utils'
 import { Link } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-const queryClient = new QueryClient()
 
 const Dashboard = () => {
   const [migrations, setMigrations] = useState<Migration[] | null>(null)
@@ -65,7 +62,7 @@ const Dashboard = () => {
   const inProgress = (migrationStats?.pending ?? 0) + (migrationStats?.running ?? 0)
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <CRow>
         <CCol xs={6}>
           <CWidgetStatsB
@@ -136,7 +133,11 @@ const Dashboard = () => {
               <CTableDataCell>{safeFormat(migration.createdAt)}</CTableDataCell>
               <CTableDataCell>{safeFormat(migration.updatedAt)}</CTableDataCell>
               <CTableDataCell>
-                <Link to={`/migration/${migration.id}`} className="btn btn-link">
+                <Link
+                  to={`/migration/${migration.id}`}
+                  className="btn btn-link"
+                  aria-label={`View details for migration ${migration.docId}`}
+                >
                   View Details
                 </Link>
               </CTableDataCell>
@@ -144,7 +145,7 @@ const Dashboard = () => {
           ))}
         </CTableBody>
       </CTable>
-    </QueryClientProvider>
+    </>
   )
 }
 
