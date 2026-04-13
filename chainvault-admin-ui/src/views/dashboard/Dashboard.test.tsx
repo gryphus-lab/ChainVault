@@ -13,12 +13,13 @@ vi.mock('../../lib/api', () => ({
   getMigrationStats: vi.fn(),
 }))
 
-const mockStats = {
+const mockStats: MigrationStats = {
   total: 10,
   pending: 2,
   running: 1,
   success: 5,
   failed: 2,
+  last24h: 7,
 }
 
 const mockMigrations = [
@@ -53,7 +54,7 @@ describe('Dashboard Component', () => {
   })
 
   it('renders stats and table data successfully', async () => {
-    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats as MigrationStats)
+    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats)
     vi.mocked(api.getMigrations).mockResolvedValue(mockMigrations)
 
     render(<Dashboard />)
@@ -75,7 +76,7 @@ describe('Dashboard Component', () => {
   })
 
   it('renders empty state when no migrations are returned', async () => {
-    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats as MigrationStats)
+    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats)
     vi.mocked(api.getMigrations).mockResolvedValue([])
 
     render(<Dashboard />)
@@ -102,12 +103,15 @@ describe('Dashboard Component', () => {
   })
 
   it('calculates "In Progress" as sum of pending and running', async () => {
-    vi.mocked(api.getMigrationStats).mockResolvedValue({
-      last24h: 0,
-      ...mockStats,
+    const customStats: MigrationStats = {
+      total: 20,
       pending: 10,
       running: 5,
-    })
+      success: 3,
+      failed: 2,
+      last24h: 12,
+    }
+    vi.mocked(api.getMigrationStats).mockResolvedValue(customStats)
     vi.mocked(api.getMigrations).mockResolvedValue([])
 
     render(<Dashboard />)
