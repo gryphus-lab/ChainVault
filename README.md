@@ -268,7 +268,7 @@ mise compose-down-full
 The `chainvault` BPMN process (`chainvault-orchestration/src/main/resources/processes/chainvault.bpmn`) follows this
 execution path:
 
-!["Chainvault BPMN Process"](img/bpmn_process.png)
+![Chainvault BPMN Process](img/bpmn_process.png)
 
 Each task has a boundary error event that routes failures to the Handle Error task, terminating with End (Failed).
 
