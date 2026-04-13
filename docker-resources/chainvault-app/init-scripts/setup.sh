@@ -4,8 +4,9 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 readonly LEPT_VERSION="1.86.0"
 readonly LEPT_URL="https://github.com/DanBloomberg/leptonica/releases/download/${LEPT_VERSION}/leptonica-${LEPT_VERSION}.tar.gz"
+
 # SHA256 checksum for leptonica-1.86.0.tar.gz (verified from official GitHub release)
-readonly LEPT_SHA256="b7fb3c6eb5e30380bbb0f2aa1e2e70e6e8d7b084c77df8307ce01b55d73ab3c8"
+readonly LEPT_SHA256="1fa08e40bb37fd45802d5e6e7b43927449a5c47d4608ef99d3bd3f0fa76baedc"
 readonly PREFIX="/usr/local"
 
 main() {
