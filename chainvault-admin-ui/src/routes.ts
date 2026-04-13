@@ -12,9 +12,7 @@ export type AppRoute = {
 
 // Dashboard
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const MigrationDetailPage = React.lazy(
-  () => import('./views/pages/migration/MigrationDetailPage'),
-)
+const MigrationDetailPage = React.lazy(() => import('./views/pages/migration/MigrationDetailPage'))
 
 /**
  * Array of route configuration objects
