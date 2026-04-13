@@ -56,6 +56,6 @@ const createItem = (
   ...(badgeKey && { badge: BADGES[badgeKey] }),
 })
 
-const _nav: NavNode[] = [createItem('Dashboard', '/dashboard', cilSpeedometer, 'NEW')]
+const _nav: NavNode[] = [createItem('Dashboard', '/dashboard', cilSpeedometer)]
 
 export default _nav
