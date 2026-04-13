@@ -14,26 +14,23 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Renders an animated placeholder div used as a skeleton loader.
- *
- * Applies provided `width` and `height` as Tailwind class strings directly.
+ * Renders an animated skeleton placeholder as a `<div>` element.
  *
  * @param width - Optional Tailwind width class (e.g., "w-32", "w-full")
  * @param height - Optional Tailwind height class (e.g., "h-6", "h-10")
- * @param className - Additional class names to merge onto the element
+ * @param className - Additional CSS class names to merge onto the element
+ * @param props - Additional props forwarded to the underlying `<div>` element
  * @returns The rendered `<div>` element acting as a skeleton loader
  */
 export function Skeleton({ className, width, height, ...props }: Readonly<SkeletonProps>) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-gray-200 dark:bg-gray-700',
+        'animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 block',
         width,
         height,
         className,
       )}
-      aria-hidden="true"
-      role="presentation"
       {...props}
     />
   )
@@ -57,17 +54,59 @@ export function SkeletonText({
 }>) {
   const cappedLines = Math.max(0, Math.min(Number(lines) || 0, MAX_SKELETON_LINES))
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn('space-y-2', className)} aria-live="polite" aria-atomic="true">
+      <span
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        Loading
+      </span>
       {Array.from({ length: cappedLines }).map((_, i) => (
-        <Skeleton key={i} height="h-4" className="w-full" />
+        <Skeleton key={`skeleton-${i}`} height="h-4" className="w-full" />
       ))}
     </div>
   )
 }
 
+/**
+ * Renders a card-shaped skeleton placeholder used to indicate loading content.
+ *
+ * The container exposes loading semantics to assistive technologies.
+ *
+ * @param className - Additional CSS classes to merge into the root container
+ * @returns A JSX element representing a card-style skeleton placeholder
+ */
 export function SkeletonCard({ className }: Readonly<{ className?: string }>) {
   return (
-    <div className={cn('rounded-lg border bg-white p-6 shadow', className)}>
+    <div
+      className={cn('rounded-lg border bg-white p-6 shadow', className)}
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        Loading
+      </span>
       <Skeleton height="h-6" width="w-3/4" className="mb-4" />
       <SkeletonText lines={3} />
     </div>
