@@ -1,27 +1,10 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilCalculator,
-  cilChartPie,
-  cilCursor,
-  cilDescription,
-  cilDrop,
-  cilExternalLink,
-  cilNotes,
-  cilPencil,
-  cilPuzzle,
-  cilSpeedometer,
-  cilStar,
-} from '@coreui/icons'
+import { cilSpeedometer } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
-
-/* -------------------------------------------------------------------------- */
-/*                                   TYPES                                    */
-/* -------------------------------------------------------------------------- */
 
 type Badge = { color: string; text: string }
 
@@ -48,30 +31,12 @@ type NavTitle = {
 
 export type NavNode = NavItem | NavGroup | NavTitle
 
-/* -------------------------------------------------------------------------- */
-/*                                  HELPERS                                   */
-/* -------------------------------------------------------------------------- */
-
 const navIcon = (name: string | string[]) => <CIcon icon={name} customClassName="nav-icon" />
-
-/**
- * Appends an external link icon to labels
- */
-const extLabel = (label: string): ReactNode => (
-  <>
-    {label}
-    <CIcon icon={cilExternalLink} size="sm" className="ms-2" />
-  </>
-)
 
 const BADGES = {
   PRO: { color: 'danger', text: 'PRO' },
   NEW: { color: 'info', text: 'NEW' },
 }
-
-/* -------------------------------------------------------------------------- */
-/* FACTORY FUNCTIONS                            */
-/* -------------------------------------------------------------------------- */
 
 /**
  * Creates a standard Nav Item
@@ -91,9 +56,6 @@ const createItem = (
   ...(badgeKey && { badge: BADGES[badgeKey] }),
 })
 
-
-const _nav: NavNode[] = [
-  createItem('Dashboard', '/dashboard', cilSpeedometer, 'NEW'),
-]
+const _nav: NavNode[] = [createItem('Dashboard', '/dashboard', cilSpeedometer, 'NEW')]
 
 export default _nav

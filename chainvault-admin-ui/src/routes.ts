@@ -32,7 +32,7 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
  */
 export const routes: AppRoute[] = [
   { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard }
+  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
 ]
 
 export default routes
