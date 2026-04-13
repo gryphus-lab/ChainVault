@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import React from 'react'
 import { CCard, CCardBody, CCardHeader, CCol, CRow } from '@coreui/react'
 import {
   CChartBar,
