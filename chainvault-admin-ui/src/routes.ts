@@ -1,18 +1,6 @@
-/**
- * Application Routes Configuration
- *
- * Defines all protected routes in the application using React lazy loading
- * for code splitting and performance optimization.
- *
- * Each route object contains:
- * - path: URL path for the route
- * - name: Human-readable name for breadcrumbs
- * - element: Lazy-loaded React component
- * - exact: (optional) Requires exact path match
- *
- * @module routes
+/*
+ * Copyright (c) 2026. Gryphus Lab
  */
-
 import React, { type ComponentType, type LazyExoticComponent } from 'react'
 
 export type AppRoute = {
