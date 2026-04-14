@@ -66,6 +66,10 @@ function getTableRows(currentMigrations: Migration[]) {
   )
 }
 
+function getSortOrder(sortDir: 'asc' | 'desc' | null) {
+  return sortDir === 'asc' ? 'ascending' : 'descending'
+}
+
 const Dashboard = () => {
   // Data State
   const [migrations, setMigrations] = useState<Migration[] | null>(null)
@@ -231,7 +235,7 @@ const Dashboard = () => {
             <CTableRow>
               <CTableHeaderCell
                 style={{ width: '10%' }}
-                aria-sort={sortKey === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                aria-sort={sortKey === 'id' ? getSortOrder(sortDir) : 'none'}
               >
                 <button
                   type="button"
@@ -243,9 +247,7 @@ const Dashboard = () => {
                   ID {getSortIcon('id')}
                 </button>
               </CTableHeaderCell>
-              <CTableHeaderCell
-                aria-sort={sortKey === 'docId' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
-              >
+              <CTableHeaderCell aria-sort={sortKey === 'docId' ? getSortOrder(sortDir) : 'none'}>
                 <button
                   type="button"
                   onClick={() => handleSort('docId')}
@@ -256,9 +258,7 @@ const Dashboard = () => {
                   Doc ID {getSortIcon('docId')}
                 </button>
               </CTableHeaderCell>
-              <CTableHeaderCell
-                aria-sort={sortKey === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
-              >
+              <CTableHeaderCell aria-sort={sortKey === 'status' ? getSortOrder(sortDir) : 'none'}>
                 <button
                   type="button"
                   onClick={() => handleSort('status')}
@@ -270,7 +270,7 @@ const Dashboard = () => {
                 </button>
               </CTableHeaderCell>
               <CTableHeaderCell
-                aria-sort={sortKey === 'createdAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                aria-sort={sortKey === 'createdAt' ? getSortOrder(sortDir) : 'none'}
               >
                 <button
                   type="button"
@@ -283,7 +283,7 @@ const Dashboard = () => {
                 </button>
               </CTableHeaderCell>
               <CTableHeaderCell
-                aria-sort={sortKey === 'updatedAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                aria-sort={sortKey === 'updatedAt' ? getSortOrder(sortDir) : 'none'}
               >
                 <button
                   type="button"
