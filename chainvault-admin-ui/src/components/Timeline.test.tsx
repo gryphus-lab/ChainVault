@@ -7,7 +7,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import MigrationDetailPage from '../views/pages/migration/MigrationDetailPage'
 import * as api from '../lib/api'
-import type { Migration, MigrationDetail } from '../types'
+import type { MigrationDetail } from '../types'
 
 // Mock the API module
 vi.mock('../lib/api', () => ({
@@ -45,6 +45,7 @@ const mockMigrationData: MigrationDetail = {
       taskType: 'Initialization',
       message: 'Starting migration...',
       createdAt: '2026-01-01T10:00:00Z',
+      timestamp: '2026-01-01T10:00:00Z',
     },
     {
       id: 'evt-2',
@@ -53,6 +54,7 @@ const mockMigrationData: MigrationDetail = {
       taskType: 'OCR Processing',
       message: 'OCR finished successfully',
       createdAt: '2026-01-01T10:05:00Z',
+      timestamp: '2026-01-01T10:05:00Z',
     },
   ],
   pdfUrl: 'https://example.com/file.pdf',
