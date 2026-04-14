@@ -121,7 +121,7 @@ public class AuditEventService {
      * Record the provided exception on the supplied tracing span, mark the related migration audit as failed, and throw a BPMN error.
      *
      * @param ex        the exception that occurred
-     * @param span      the OpenTelemetry span to update with error status, recorded exception, and a "<taskType>.failed" event
+     * @param span      the OpenTelemetry span to update with error status, recorded exception, and a "{@code taskType}.failed" event
      * @param piKey     the process-instance key identifying the migration audit to update
      * @param errorCode the error code to store on the audit event and to use for the thrown BPMN error
      * @param taskType  the task identifier used for the span event name and audit event
@@ -179,7 +179,7 @@ public class AuditEventService {
 
     /**
      * Updates a MigrationAudit with status and supplemental details derived from the provided context and variables.
-     *
+     * <p>
      * Sets the audit's status, applies failure metadata when status is FAILED, extracts and applies context hashes
      * from the "migrationContext" entry, applies OCR-derived results from the map, and optionally sets
      * outputFileKey and chainOfCustodyZip if present.
@@ -248,7 +248,7 @@ public class AuditEventService {
 
     /**
      * Copies payload and PDF hash values from the migration context into the audit when present.
-     *
+     * <p>
      * If `context` is null nothing is changed; otherwise `context.getPayloadHash()` is set to
      * `audit.inputPayloadHash` and `context.getPdfHash()` is set to `audit.mergedPdfHash` when those values are non-null.
      *
