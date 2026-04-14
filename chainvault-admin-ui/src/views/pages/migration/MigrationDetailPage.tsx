@@ -20,6 +20,12 @@ const STATUS_CLASSES: Record<string, string> = {
   PENDING: 'bg-gray-100 text-gray-800',
 }
 
+/**
+ * Provide a user-facing label that indicates whether OCR succeeded for a migration.
+ *
+ * @param migration - The migration record whose OCR result will be used
+ * @returns `"✅ Yes"` when `migration.ocrSuccess` is `true`, `"❌ No"` otherwise
+ */
 function getOcrSuccessLabel(migration: MigrationDetail) {
   return migration.ocrSuccess ? '✅ Yes' : '❌ No'
 }
