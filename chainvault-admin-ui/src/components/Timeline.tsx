@@ -26,7 +26,7 @@ const Timeline = ({ events }: TimelineProps) => {
         const duration = prevTime ? differenceInSeconds(currTime, prevTime) : 0
 
         return (
-          <div key={event.id || index} className="position-relative mb-0">
+          <div key={event.id} className="position-relative mb-0">
             {/* Vertical Line Connector */}
             {!isLast && (
               <span
@@ -53,7 +53,7 @@ const Timeline = ({ events }: TimelineProps) => {
                 )}
                 {event.eventType === 'TASK_FAILED' && <XCircle size={20} className="text-danger" />}
                 {event.eventType === 'TASK_STARTED' && (
-                  <Clock size={20} className="text-info opacity-75 animate-pulse" />
+                  <Clock size={20} className="text-info opacity-75" />
                 )}
               </div>
 
