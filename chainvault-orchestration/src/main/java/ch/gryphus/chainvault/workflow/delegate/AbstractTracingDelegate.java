@@ -101,7 +101,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
             sendSseEvent(processInstanceId, span, status);
 
             auditService.updateAuditEventEnd(
-                    processInstanceId, status, null, null, taskType, "Success", outputMap);
+                    processInstanceId, status, null, null, taskType, "Success", outputMap, span);
 
             log.info("{} finished", taskType);
         } catch (Exception e) {

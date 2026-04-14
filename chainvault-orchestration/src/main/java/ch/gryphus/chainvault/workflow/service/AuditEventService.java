@@ -75,6 +75,7 @@ public class AuditEventService {
      * @param taskType the task type
      * @param msg      the msg
      * @param varMap   the var map
+     * @param span     the span
      */
     public void updateAuditEventEnd(
             String piKey,
@@ -83,9 +84,10 @@ public class AuditEventService {
             String error,
             String taskType,
             String msg,
-            Map<String, Object> varMap) {
+            Map<String, Object> varMap,
+            Span span) {
         var audit = findAudit(piKey);
-        String traceId = Span.current().getSpanContext().getTraceId();
+        String traceId = span.getSpanContext().getTraceId();
 
         updateAuditDetails(audit, status, code, error, taskType, varMap);
         audit.setCompletedAt(Instant.now());
@@ -138,7 +140,8 @@ public class AuditEventService {
                 ExceptionUtils.getStackTrace(ex),
                 taskType,
                 message,
-                Collections.emptyMap());
+                Collections.emptyMap(),
+                span);
 
         throw new BpmnError(errorCode, message);
     }
@@ -201,8 +204,21 @@ public class AuditEventService {
         audit.setOcrAttempted(true);
         audit.setOcrSuccess(true);
         audit.setOcrCompletedAt(Instant.now());
-        audit.setOcrResultReference(
-                StringUtils.abbreviate(varMap.get("ocrResults").toString(), 512));
+
+        // Properly serialize the List<String> instead of calling toString()
+        Object ocrResultsObj = varMap.get("ocrResults");
+        String ocrResultsText;
+        if (ocrResultsObj instanceof List<?> ocrResultsList) {
+            // Join list entries with newline separator for stable preview
+            ocrResultsText = String.join("\n", ocrResultsList.stream()
+                    .map(String::valueOf)
+                    .toList());
+        } else {
+            // Fallback for unexpected types
+            ocrResultsText = String.valueOf(ocrResultsObj);
+        }
+
+        audit.setOcrResultReference(StringUtils.abbreviate(ocrResultsText, 512));
 
         if (varMap.get("ocrPageCount") instanceof Integer count) audit.setOcrPageCount(count);
         if (varMap.get("ocrTextLength") instanceof Long length) audit.setOcrTotalTextLength(length);

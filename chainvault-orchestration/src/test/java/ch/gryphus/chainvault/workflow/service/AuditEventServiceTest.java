@@ -119,6 +119,7 @@ class AuditEventServiceTest {
     @Test
     void testUpdateAuditEventEnd() {
         // Setup
+        Span span = Span.current();
         migrationContext.setPayloadHash("payloadHash");
         migrationContext.setPdfHash("pdfHash");
         Map<String, Object> varMap =
@@ -163,7 +164,8 @@ class AuditEventServiceTest {
                 null,
                 "eventTaskType",
                 "eventMsg",
-                varMap);
+                varMap,
+                span);
 
         // Verify the results
         verify(mockAuditRepo).save(any(MigrationAudit.class));
@@ -176,6 +178,7 @@ class AuditEventServiceTest {
     @Test
     void testUpdateAuditEventEnd_MigrationAuditRepositoryFindByProcessInstanceKeyReturnsAbsent() {
         // Setup
+        Span span = Span.current();
         Map<String, Object> varMap = Map.ofEntries(Map.entry("value", "value"));
         when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(Optional.empty());
 
@@ -189,7 +192,8 @@ class AuditEventServiceTest {
                                         "errorMsg",
                                         "eventTaskType",
                                         "eventMsg",
-                                        varMap))
+                                        varMap,
+                                        span))
                 .isInstanceOf(IllegalStateException.class);
     }
 
