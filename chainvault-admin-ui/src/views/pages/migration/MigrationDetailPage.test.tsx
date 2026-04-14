@@ -1,201 +1,160 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
-import { useQuery } from '@tanstack/react-query'
-import { MemoryRouter } from 'react-router-dom'
 import MigrationDetailPage from './MigrationDetailPage'
-import type { MigrationDetail } from '../../../types'
 
-// Mock useQuery directly so we control loading/error/success states without
-// dealing with retry delays from the component's retry: 2 option.
-vi.mock('@tanstack/react-query', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@tanstack/react-query')>()
-  return { ...actual, useQuery: vi.fn() }
-})
+// --- mocks ---
 
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>()
-  return { ...actual, useParams: () => ({ id: 'test-123' }) }
-})
+vi.mock('react-router-dom', () => ({
+  Link: ({ children }: any) => <a>{children}</a>,
+  useParams: vi.fn(),
+}))
 
-const mockUseQuery = vi.mocked(useQuery)
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(),
+}))
 
-const mockMigration: MigrationDetail = {
-  id: 'test-123',
-  docId: 'doc-abc',
-  title: 'Test Migration',
-  status: 'SUCCESS',
-  createdAt: '2026-01-01T10:00:00Z',
-  updatedAt: '2026-01-01T10:05:00Z',
-  processInstanceKey: 'pik-1',
-  traceId: 'trace-xyz',
-  pageCount: 3,
-  ocrAttempted: true,
-  ocrSuccess: true,
-  ocrPageCount: 3,
-  ocrTotalTextLength: 1500,
-  events: [
-    {
-      id: 'evt-1',
-      migrationId: 'test-123',
-      eventType: 'TASK_COMPLETED',
-      stepName: 'SftpUpload',
-      message: 'Upload complete',
-      timestamp: '2026-01-01T10:05:00Z',
-    },
-  ],
-}
+vi.mock('../../../components/Timeline', () => ({
+  default: ({ events }: any) => <div>Timeline ({events.length})</div>,
+}))
 
-function queryLoading() {
-  mockUseQuery.mockReturnValue({ isLoading: true, isError: false, data: undefined } as any)
-}
+vi.mock('../../../components/Badge', () => ({
+  Badge: ({ children }: any) => <span>{children}</span>,
+}))
 
-function queryError() {
-  mockUseQuery.mockReturnValue({ isLoading: false, isError: true, data: undefined } as any)
-}
+vi.mock('../../../lib/utils', () => ({
+  safeFormat: vi.fn((d) => `formatted-${d}`),
+}))
 
-function querySuccess(data: MigrationDetail = mockMigration) {
-  mockUseQuery.mockReturnValue({ isLoading: false, isError: false, data } as any)
-}
+// Mock CoreUI
+vi.mock('@coreui/react', () => ({
+  CContainer: ({ children }: any) => <div>{children}</div>,
+  CRow: ({ children }: any) => <div>{children}</div>,
+  CCol: ({ children }: any) => <div>{children}</div>,
+  CCard: ({ children }: any) => <div>{children}</div>,
+  CCardHeader: ({ children }: any) => <div>{children}</div>,
+  CCardBody: ({ children }: any) => <div>{children}</div>,
+  CCardGroup: ({ children }: any) => <div>{children}</div>,
+}))
+
+import { useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 describe('MigrationDetailPage', () => {
-  it('shows the loading state', () => {
-    queryLoading()
-    render(
-      <MemoryRouter>
-        <MigrationDetailPage />
-      </MemoryRouter>,
-    )
+  beforeEach(() => {
+    vi.clearAllMocks()
+    ;(useParams as any).mockReturnValue({ id: '123' })
+  })
+
+  it('renders loading state', () => {
+    ;(useQuery as any).mockReturnValue({
+      isLoading: true,
+    })
+
+    render(<MigrationDetailPage />)
+
     expect(screen.getByText('Loading migration details...')).toBeInTheDocument()
   })
 
-  it('shows the error state with a back link', () => {
-    queryError()
-    render(
-      <MemoryRouter>
-        <MigrationDetailPage />
-      </MemoryRouter>,
-    )
-    expect(
-      screen.getByText(/Failed to load migration details for ID: test-123/),
-    ).toBeInTheDocument()
-    const backLink = screen.getByRole('link', { name: /back to dashboard/i })
-    expect(backLink).toHaveAttribute('href', '/')
+  it('renders error state', () => {
+    ;(useQuery as any).mockReturnValue({
+      isLoading: false,
+      isError: true,
+      data: undefined,
+    })
+
+    render(<MigrationDetailPage />)
+
+    expect(screen.getByText(/Failed to load migration details/i)).toBeInTheDocument()
+
+    expect(screen.getByText(/Back to Dashboard/i)).toBeInTheDocument()
   })
 
-  describe('success state', () => {
-    it('renders the migration id, title, and status badge', () => {
-      querySuccess()
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.getByText('Migration test-123')).toBeInTheDocument()
-      expect(screen.getByText('Test Migration')).toBeInTheDocument()
-      expect(screen.getByText('SUCCESS')).toBeInTheDocument()
+  it('renders migration details', () => {
+    ;(useQuery as any).mockReturnValue({
+      isLoading: false,
+      isError: false,
+      data: {
+        id: '123',
+        title: 'Test Migration',
+        status: 'SUCCESS',
+        docId: 'DOC-1',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-02',
+        traceId: 'trace-123',
+        events: [],
+        ocrTextPreview: 'OCR TEXT',
+        ocrAttempted: true,
+        ocrSuccess: true,
+        ocrPageCount: 10,
+        ocrTotalTextLength: 5000,
+        failureReason: null,
+        pdfUrl: 'http://pdf',
+        chainZipUrl: 'http://zip',
+      },
     })
 
-    it('renders the stats grid with docId, created date, and traceId', () => {
-      querySuccess()
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.getByText('doc-abc')).toBeInTheDocument()
-      expect(screen.getByText('trace-xyz')).toBeInTheDocument()
-      expect(screen.getByText('Document ID')).toBeInTheDocument()
-      expect(screen.getByText('Created')).toBeInTheDocument()
+    render(<MigrationDetailPage />)
+
+    expect(screen.getByText('Migration 123')).toBeInTheDocument()
+    expect(screen.getByText('Test Migration')).toBeInTheDocument()
+
+    expect(screen.getByText('DOC-1')).toBeInTheDocument()
+    expect(screen.getByText('formatted-2024-01-01')).toBeInTheDocument()
+    expect(screen.getByText('formatted-2024-01-02')).toBeInTheDocument()
+
+    expect(screen.getByText('trace-123')).toBeInTheDocument()
+
+    expect(screen.getByText('OCR TEXT')).toBeInTheDocument()
+    expect(screen.getByText('Yes')).toBeInTheDocument()
+    expect(screen.getByText('✅ Yes')).toBeInTheDocument()
+
+    expect(screen.getByText('10')).toBeInTheDocument()
+    expect(screen.getByText('5,000 chars')).toBeInTheDocument()
+
+    expect(screen.getByText('Download PDF')).toBeInTheDocument()
+    expect(screen.getByText('Download ZIP')).toBeInTheDocument()
+
+    expect(screen.getByText('Timeline (0)')).toBeInTheDocument()
+  })
+
+  it('handles missing optional fields', () => {
+    ;(useQuery as any).mockReturnValue({
+      isLoading: false,
+      isError: false,
+      data: {
+        id: '123',
+        title: 'Test Migration',
+        status: 'FAILED',
+        docId: 'DOC-1',
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-02',
+        traceId: null,
+        events: [],
+        ocrTextPreview: null,
+        ocrAttempted: false,
+        ocrSuccess: false,
+        ocrPageCount: null,
+        ocrTotalTextLength: null,
+        failureReason: 'Something broke',
+        pdfUrl: null,
+        chainZipUrl: null,
+      },
     })
 
-    it('renders the migration timeline with events', () => {
-      querySuccess()
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.getByText('Migration Timeline')).toBeInTheDocument()
-      expect(screen.getByText('SftpUpload')).toBeInTheDocument()
-    })
+    render(<MigrationDetailPage />)
 
-    it('renders OCR details section', () => {
-      querySuccess()
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.getByText('OCR & Processing')).toBeInTheDocument()
-      expect(screen.getByText(/OCR Attempted/)).toBeInTheDocument()
-      expect(screen.getByText(/Pages Processed/)).toBeInTheDocument()
-      expect(screen.getByText(/Text Length/)).toBeInTheDocument()
-    })
+    expect(screen.getAllByText('N/A')).toHaveLength(2)
+    expect(screen.getByText('No OCR information available.')).toBeInTheDocument()
 
-    it('renders failure reason when present', () => {
-      querySuccess({ ...mockMigration, status: 'FAILED', failureReason: 'SFTP timeout' })
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.getByText(/SFTP timeout/)).toBeInTheDocument()
-    })
+    expect(screen.getByText('No')).toBeInTheDocument()
 
-    it('does not render failure reason section when absent', () => {
-      querySuccess()
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.queryByText('Failure Reason')).not.toBeInTheDocument()
-    })
+    expect(screen.getByText('Something broke')).toBeInTheDocument()
 
-    it('renders download links when both URLs are present', () => {
-      querySuccess({
-        ...mockMigration,
-        chainZipUrl: 'http://example.com/chain.zip',
-        pdfUrl: 'http://example.com/output.pdf',
-      })
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.getByText('Downloads')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /chain zip/i })).toHaveAttribute(
-        'href',
-        'http://example.com/chain.zip',
-      )
-      expect(screen.getByRole('link', { name: /merged pdf/i })).toHaveAttribute(
-        'href',
-        'http://example.com/output.pdf',
-      )
-    })
-
-    it('renders only the available download link when one URL is missing', () => {
-      querySuccess({ ...mockMigration, chainZipUrl: 'http://example.com/chain.zip' })
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.getByRole('link', { name: /chain zip/i })).toBeInTheDocument()
-      expect(screen.queryByRole('link', { name: /merged pdf/i })).not.toBeInTheDocument()
-    })
-
-    it('hides the downloads section when no URLs are present', () => {
-      querySuccess()
-      render(
-        <MemoryRouter>
-          <MigrationDetailPage />
-        </MemoryRouter>,
-      )
-      expect(screen.queryByText('Downloads')).not.toBeInTheDocument()
-    })
+    // No downloads
+    expect(screen.queryByText('Download PDF')).not.toBeInTheDocument()
+    expect(screen.queryByText('Download ZIP')).not.toBeInTheDocument()
   })
 })

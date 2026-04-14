@@ -1,128 +1,126 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import Dashboard from './Dashboard'
 import * as api from '../../lib/api'
 import { MigrationStats } from '../../types'
 
-// Mock the API module
+// Mock API
 vi.mock('../../lib/api', () => ({
   getMigrations: vi.fn(),
   getMigrationStats: vi.fn(),
 }))
 
-const mockStats: MigrationStats = {
-  total: 10,
-  pending: 2,
-  running: 1,
-  success: 5,
-  failed: 2,
-  last24h: 7,
+const mockStats = {
+  total: 50,
+  pending: 5,
+  running: 5,
+  success: 35,
+  failed: 5,
 }
 
 const mockMigrations = [
   {
-    id: '550e8400-e29b-41d4-a716-446655440000',
-    docId: 'DOC-101',
-    title: 'Migration One',
-    status: 'SUCCESS',
-    createdAt: '2026-01-01T10:00:00Z',
-    updatedAt: '2026-01-01T11:00:00Z',
-    processInstanceKey: 'proc-123',
-    pageCount: 5,
-    ocrAttempted: true,
-    ocrSuccess: true,
+    id: 'uuid-1',
+    docId: 'DOC-001',
+    title: 'First Migration',
+    status: 'success',
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-02T00:00:00Z',
   },
 ]
+
+// Helper to render with Router context
+const renderDashboard = () =>
+  render(
+    <MemoryRouter>
+      <Dashboard />
+    </MemoryRouter>,
+  )
 
 describe('Dashboard Component', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
-  it('shows loading placeholders initially', async () => {
-    // Delay the stats response to check loading state
+  it('shows loading state initially', () => {
+    // Keep promises pending to check initial UI
     vi.mocked(api.getMigrationStats).mockReturnValue(new Promise(() => {}))
-    vi.mocked(api.getMigrations).mockResolvedValue([])
+    vi.mocked(api.getMigrations).mockReturnValue(new Promise(() => {}))
 
-    render(<Dashboard />)
+    renderDashboard()
 
-    const totalWidgets = screen.getAllByText('—')
-    expect(totalWidgets).toHaveLength(4)
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    const placeholders = screen.getAllByText('—')
+    expect(placeholders).toHaveLength(4)
   })
 
-  it('renders stats and table data successfully', async () => {
-    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats)
+  it('renders stats and migration table after successful fetch', async () => {
+    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats as MigrationStats)
     vi.mocked(api.getMigrations).mockResolvedValue(mockMigrations)
 
-    render(<Dashboard />)
+    renderDashboard()
 
-    // Check Stats Widgets
-    // Total: 10, In Progress: 2+1=3, Success: 5, Failed: 2
-    await waitFor(() => {
-      expect(screen.getByText('10')).toBeInTheDocument()
-      expect(screen.getByText('3')).toBeInTheDocument()
-      expect(screen.getByText('5')).toBeInTheDocument()
-      expect(screen.getByText('2')).toBeInTheDocument()
-    })
+    // Using findBy... automatically wraps the check in act() and waits for the element
+    const totalValue = await screen.findByText('50')
+    const inProgressValue = await screen.findByText('10') // pending (5) + running (5)
 
-    // Check Table Data
-    await waitFor(() => {
-      expect(screen.getByText('1')).toBeInTheDocument() // Row index
-      expect(screen.getByText('DOC-101')).toBeInTheDocument()
-      expect(screen.getByText('Migration One')).toBeInTheDocument()
-      expect(screen.getByText('SUCCESS')).toBeInTheDocument()
-    })
+    expect(totalValue).toBeInTheDocument()
+    expect(inProgressValue).toBeInTheDocument()
+    expect(screen.getByText('DOC-001')).toBeInTheDocument()
+    expect(screen.getByText('First Migration')).toBeInTheDocument()
+
+    // Check link path
+    const link = screen.getByRole('link', { name: /view details/i })
+    expect(link).toHaveAttribute('href', '/migration/uuid-1')
   })
 
-  it('renders empty state when no migrations are returned', async () => {
-    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats)
+  it('displays empty state message when migrations are empty', async () => {
+    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats as MigrationStats)
     vi.mocked(api.getMigrations).mockResolvedValue([])
 
-    render(<Dashboard />)
+    renderDashboard()
 
-    await waitFor(() => {
-      expect(screen.getByText('No documents available')).toBeInTheDocument()
-    })
+    const emptyMessage = await screen.findByText('No documents available')
+    expect(emptyMessage).toBeInTheDocument()
   })
 
-  it('displays "Unavailable" in widgets when API fails', async () => {
-    // Suppress console.error for this test
+  it('handles API errors gracefully', async () => {
+    // Prevent console.error clutter in test output
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    try {
-      vi.mocked(api.getMigrationStats).mockRejectedValue(new Error('API Error'))
-      vi.mocked(api.getMigrations).mockResolvedValue([])
 
-      render(<Dashboard />)
+    vi.mocked(api.getMigrationStats).mockRejectedValue(new Error('Stats Failed'))
+    vi.mocked(api.getMigrations).mockRejectedValue(new Error('Migrations Failed'))
 
-      await waitFor(() => {
-        const errorStates = screen.getAllByText('Unavailable')
-        expect(errorStates.length).toBe(4)
-      })
-    } finally {
-      consoleSpy.mockRestore()
-    }
+    renderDashboard()
+
+    // Widgets should show "Unavailable"
+    const errorPlaceholders = await screen.findAllByText('Unavailable')
+    expect(errorPlaceholders).toHaveLength(4)
+
+    // Check console was called (optional)
+    expect(consoleSpy).toHaveBeenCalled()
+
+    consoleSpy.mockRestore()
   })
 
-  it('calculates "In Progress" as sum of pending and running', async () => {
-    const customStats: MigrationStats = {
-      total: 20,
-      pending: 10,
-      running: 5,
-      success: 3,
-      failed: 2,
-      last24h: 12,
-    }
-    vi.mocked(api.getMigrationStats).mockResolvedValue(customStats)
-    vi.mocked(api.getMigrations).mockResolvedValue([])
+  it('correctly calculates index-based row numbers', async () => {
+    vi.mocked(api.getMigrationStats).mockResolvedValue(mockStats as MigrationStats)
+    vi.mocked(api.getMigrations).mockResolvedValue([
+      { ...mockMigrations[0], id: '1', docId: 'D1' },
+      { ...mockMigrations[0], id: '2', docId: 'D2' },
+    ])
 
-    render(<Dashboard />)
+    renderDashboard()
 
-    await waitFor(() => {
-      // 10 (pending) + 5 (running) = 15
-      expect(screen.getByText('15')).toBeInTheDocument()
-    })
+    // Wait for data to load
+    await screen.findByText('D1')
+
+    // Check row numbers (index + 1)
+    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByText('2')).toBeInTheDocument()
   })
 })

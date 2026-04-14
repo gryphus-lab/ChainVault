@@ -1,28 +1,19 @@
-/**
- * App Component
- *
- * Root application component that sets up routing, theme management,
- * and lazy-loaded page components with suspense boundaries.
- *
- * Features:
- * - Client-side routing with HashRouter
- * - Theme detection from URL parameters and Redux state
- * - Lazy loading for all routes with loading spinner fallback
- * - Public routes (login, register, error pages)
- * - Protected routes wrapped in DefaultLayout
- *
- * @module App
+/*
+ * Copyright (c) 2026. Gryphus Lab
  */
-
 import React, { Suspense, useEffect } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useAppSelector } from './hooks'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 
 // We use those styles to show code examples, you should remove them in your application.
 import './scss/examples.scss'
+
+// QueryClient instance for React Query
+const queryClient = new QueryClient()
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -75,23 +66,25 @@ const App = (): React.ReactElement => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <HashRouter>
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
-      >
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/404" element={<Page404 />} />
-          <Route path="/500" element={<Page500 />} />
-          <Route path="*" element={<DefaultLayout />} />
-        </Routes>
-      </Suspense>
-    </HashRouter>
+    <QueryClientProvider client={queryClient}>
+      <HashRouter>
+        <Suspense
+          fallback={
+            <div className="pt-3 text-center">
+              <CSpinner color="primary" variant="grow" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/404" element={<Page404 />} />
+            <Route path="/500" element={<Page500 />} />
+            <Route path="*" element={<DefaultLayout />} />
+          </Routes>
+        </Suspense>
+      </HashRouter>
+    </QueryClientProvider>
   )
 }
 
