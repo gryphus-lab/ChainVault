@@ -87,7 +87,6 @@ export default function MigrationDetailPage() {
       <CRow className="justify-content-start">
         <CCol md={8}>
           <CCard className="mb-4">
-            <CCardHeader />
             <CCardBody>
               <CCardGroup className="mb-4">
                 <CCard>
@@ -112,10 +111,10 @@ export default function MigrationDetailPage() {
                 <CCard>
                   <CCardHeader>
                     <FileText className="inline-block mr-2" />
-                    OCR Info
+                    OCR Text Preview
                   </CCardHeader>
                   <CCardBody>
-                    {migration.ocrTextPreview || 'No OCR information available.'}
+                    <p>{migration.ocrTextPreview || 'No OCR information available.'}</p>
                   </CCardBody>
                 </CCard>
                 <CCard>
@@ -155,24 +154,28 @@ export default function MigrationDetailPage() {
                     </CCardHeader>
                     <CCardBody>
                       {migration.pdfUrl && (
-                        <a
-                          href={migration.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-primary me-2"
-                        >
-                          Download PDF
-                        </a>
+                        <p>
+                          <a
+                            href={migration.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary me-2"
+                          >
+                            Download PDF
+                          </a>
+                        </p>
                       )}
                       {migration.chainZipUrl && (
-                        <a
-                          href={migration.chainZipUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-primary"
-                        >
-                          Download ZIP
-                        </a>
+                        <p>
+                          <a
+                            href={migration.chainZipUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary"
+                          >
+                            Download ZIP
+                          </a>
+                        </p>
                       )}
                     </CCardBody>
                   </CCard>
