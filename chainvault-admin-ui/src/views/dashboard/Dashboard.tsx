@@ -296,6 +296,13 @@ const Dashboard = () => {
           </div>
         )}
 
+        {sortKey && sortDir && totalPages > 1 && (
+          <div className="alert alert-info mb-3 py-2 small" role="status">
+            <strong>Note:</strong> Sorting applies to the current page only ({pageSize} records).
+            Results are not sorted across all {totalMigrations} migrations.
+          </div>
+        )}
+
         <CTable align="middle" responsive hover striped className="mb-0">
           <CTableHead>
             <CTableRow>
