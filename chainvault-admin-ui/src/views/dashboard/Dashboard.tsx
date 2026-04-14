@@ -71,7 +71,8 @@ const Dashboard = () => {
   const [migrations, setMigrations] = useState<Migration[] | null>(null)
   const [migrationStats, setMigrationStats] = useState<MigrationStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [statsError, setStatsError] = useState<string | null>(null)
+  const [migrationsError, setMigrationsError] = useState<string | null>(null)
 
   // Pagination & Sort State
   const [currentPage, setCurrentPage] = useState(1)
@@ -81,26 +82,37 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        // Parallel fetch for dashboard performance
-        const [stats, data] = await Promise.all([getMigrationStats(), getMigrations()])
-        setMigrationStats(stats)
-        setMigrations(data)
-      } catch (err) {
-        console.error('Dashboard data fetch error:', err)
-        setError('Failed to load dashboard data. Please try again later.')
-      } finally {
-        setIsLoading(false)
+      setIsLoading(true)
+      setStatsError(null)
+      setMigrationsError(null)
+
+      // Fetch endpoints independently so one failure doesn't discard the other result
+      const results = await Promise.allSettled([getMigrationStats(), getMigrations()])
+
+      // Handle stats result
+      if (results[0].status === 'fulfilled') {
+        setMigrationStats(results[0].value)
+      } else {
+        console.error('Migration stats fetch error:', results[0].reason)
+        setStatsError('Failed to load migration statistics.')
       }
+
+      // Handle migrations result
+      if (results[1].status === 'fulfilled') {
+        setMigrations(results[1].value)
+      } else {
+        console.error('Migrations fetch error:', results[1].reason)
+        setMigrationsError('Failed to load migration records.')
+      }
+
+      setIsLoading(false)
     }
     fetchData()
   }, [])
 
   const getDisplayValue = (value: number | undefined) => {
     if (isLoading) return '—'
-    if (error) return 'Unavailable'
+    if (statsError) return 'Unavailable'
     return value?.toString() ?? '0'
   }
 
@@ -200,9 +212,14 @@ const Dashboard = () => {
 
       {/* Main Table Container */}
       <div>
-        {error && (
+        {statsError && (
           <div className="alert alert-danger mb-4" role="alert">
-            {error}
+            {statsError}
+          </div>
+        )}
+        {migrationsError && (
+          <div className="alert alert-danger mb-4" role="alert">
+            {migrationsError}
           </div>
         )}
 
@@ -210,39 +227,70 @@ const Dashboard = () => {
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell
-                onClick={() => handleSort('id')}
-                style={{ cursor: 'pointer', width: '10%' }}
-                className="user-select-none"
+                style={{ width: '10%' }}
+                aria-sort={sortKey === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
               >
-                ID {getSortIcon('id')}
+                <button
+                  type="button"
+                  onClick={() => handleSort('id')}
+                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+                  className="user-select-none"
+                  aria-label="Sort by ID"
+                >
+                  ID {getSortIcon('id')}
+                </button>
               </CTableHeaderCell>
               <CTableHeaderCell
-                onClick={() => handleSort('docId')}
-                style={{ cursor: 'pointer' }}
-                className="user-select-none"
+                aria-sort={sortKey === 'docId' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
               >
-                Doc ID {getSortIcon('docId')}
+                <button
+                  type="button"
+                  onClick={() => handleSort('docId')}
+                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+                  className="user-select-none"
+                  aria-label="Sort by Document ID"
+                >
+                  Doc ID {getSortIcon('docId')}
+                </button>
               </CTableHeaderCell>
               <CTableHeaderCell
-                onClick={() => handleSort('status')}
-                style={{ cursor: 'pointer' }}
-                className="user-select-none"
+                aria-sort={sortKey === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
               >
-                Status {getSortIcon('status')}
+                <button
+                  type="button"
+                  onClick={() => handleSort('status')}
+                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+                  className="user-select-none"
+                  aria-label="Sort by Status"
+                >
+                  Status {getSortIcon('status')}
+                </button>
               </CTableHeaderCell>
               <CTableHeaderCell
-                onClick={() => handleSort('createdAt')}
-                style={{ cursor: 'pointer' }}
-                className="user-select-none"
+                aria-sort={sortKey === 'createdAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
               >
-                Created At {getSortIcon('createdAt')}
+                <button
+                  type="button"
+                  onClick={() => handleSort('createdAt')}
+                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+                  className="user-select-none"
+                  aria-label="Sort by Created At"
+                >
+                  Created At {getSortIcon('createdAt')}
+                </button>
               </CTableHeaderCell>
               <CTableHeaderCell
-                onClick={() => handleSort('updatedAt')}
-                style={{ cursor: 'pointer' }}
-                className="user-select-none"
+                aria-sort={sortKey === 'updatedAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
               >
-                Updated At {getSortIcon('updatedAt')}
+                <button
+                  type="button"
+                  onClick={() => handleSort('updatedAt')}
+                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+                  className="user-select-none"
+                  aria-label="Sort by Updated At"
+                >
+                  Updated At {getSortIcon('updatedAt')}
+                </button>
               </CTableHeaderCell>
               <CTableHeaderCell className="text-center">Action</CTableHeaderCell>
             </CTableRow>
