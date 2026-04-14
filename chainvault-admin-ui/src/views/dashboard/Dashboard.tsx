@@ -70,6 +70,48 @@ function getSortOrder(sortDir: 'asc' | 'desc' | null) {
   return sortDir === 'asc' ? 'ascending' : 'descending'
 }
 
+function computePaginationPages(
+  totalPages: number,
+  currentPage: number,
+  maxPagesToShow: number,
+): (number | string)[] {
+  const pages: (number | string)[] = []
+
+  if (totalPages <= maxPagesToShow) {
+    // Show all pages if total is small
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Always show first page
+    pages.push(1)
+
+    // Calculate range around current page
+    const leftBound = Math.max(2, currentPage - 1)
+    const rightBound = Math.min(totalPages - 1, currentPage + 1)
+
+    // Add left ellipsis if needed
+    if (leftBound > 2) {
+      pages.push('ellipsis-left')
+    }
+
+    // Add pages around current page
+    for (let i = leftBound; i <= rightBound; i++) {
+      pages.push(i)
+    }
+
+    // Add right ellipsis if needed
+    if (rightBound < totalPages - 1) {
+      pages.push('ellipsis-right')
+    }
+
+    // Always show last page
+    pages.push(totalPages)
+  }
+
+  return pages
+}
+
 const Dashboard = () => {
   // Data State
   const [migrations, setMigrations] = useState<Migration[] | null>(null)
@@ -83,6 +125,30 @@ const Dashboard = () => {
   const [sortKey, setSortKey] = useState<keyof Migration | null>('createdAt')
   const [sortDir, setSortDir] = useState<SortDirection>('desc')
   const pageSize = 10
+
+  // Sortable header component
+  const renderSortableHeader = (
+    sortKeyName: keyof Migration,
+    label: string,
+    style?: React.CSSProperties,
+  ) => {
+    return (
+      <CTableHeaderCell
+        style={style}
+        aria-sort={sortKey === sortKeyName ? getSortOrder(sortDir) : 'none'}
+      >
+        <button
+          type="button"
+          onClick={() => handleSort(sortKeyName)}
+          style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+          className="user-select-none"
+          aria-label={`Sort by ${label}`}
+        >
+          {label} {getSortIcon(sortKeyName)}
+        </button>
+      </CTableHeaderCell>
+    )
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -233,68 +299,11 @@ const Dashboard = () => {
         <CTable align="middle" responsive hover striped className="mb-0">
           <CTableHead>
             <CTableRow>
-              <CTableHeaderCell
-                style={{ width: '10%' }}
-                aria-sort={sortKey === 'id' ? getSortOrder(sortDir) : 'none'}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleSort('id')}
-                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
-                  className="user-select-none"
-                  aria-label="Sort by ID"
-                >
-                  ID {getSortIcon('id')}
-                </button>
-              </CTableHeaderCell>
-              <CTableHeaderCell aria-sort={sortKey === 'docId' ? getSortOrder(sortDir) : 'none'}>
-                <button
-                  type="button"
-                  onClick={() => handleSort('docId')}
-                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
-                  className="user-select-none"
-                  aria-label="Sort by Document ID"
-                >
-                  Doc ID {getSortIcon('docId')}
-                </button>
-              </CTableHeaderCell>
-              <CTableHeaderCell aria-sort={sortKey === 'status' ? getSortOrder(sortDir) : 'none'}>
-                <button
-                  type="button"
-                  onClick={() => handleSort('status')}
-                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
-                  className="user-select-none"
-                  aria-label="Sort by Status"
-                >
-                  Status {getSortIcon('status')}
-                </button>
-              </CTableHeaderCell>
-              <CTableHeaderCell
-                aria-sort={sortKey === 'createdAt' ? getSortOrder(sortDir) : 'none'}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleSort('createdAt')}
-                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
-                  className="user-select-none"
-                  aria-label="Sort by Created At"
-                >
-                  Created At {getSortIcon('createdAt')}
-                </button>
-              </CTableHeaderCell>
-              <CTableHeaderCell
-                aria-sort={sortKey === 'updatedAt' ? getSortOrder(sortDir) : 'none'}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleSort('updatedAt')}
-                  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
-                  className="user-select-none"
-                  aria-label="Sort by Updated At"
-                >
-                  Updated At {getSortIcon('updatedAt')}
-                </button>
-              </CTableHeaderCell>
+              {renderSortableHeader('id', 'ID', { width: '10%' })}
+              {renderSortableHeader('docId', 'Doc ID')}
+              {renderSortableHeader('status', 'Status')}
+              {renderSortableHeader('createdAt', 'Created At')}
+              {renderSortableHeader('updatedAt', 'Updated At')}
               <CTableHeaderCell className="text-center">Action</CTableHeaderCell>
             </CTableRow>
           </CTableHead>
@@ -306,9 +315,9 @@ const Dashboard = () => {
                   Loading migration records...
                 </CTableDataCell>
               </CTableRow>
-            ) : (
+            ) : !migrationsError ? (
               getTableRows(currentMigrations)
-            )}
+            ) : null}
           </CTableBody>
         </CTable>
 
@@ -329,63 +338,26 @@ const Dashboard = () => {
                 Previous
               </CPaginationItem>
 
-              {(() => {
-                const maxPagesToShow = 7
-                const pages: (number | string)[] = []
-
-                if (totalPages <= maxPagesToShow) {
-                  // Show all pages if total is small
-                  for (let i = 1; i <= totalPages; i++) {
-                    pages.push(i)
-                  }
-                } else {
-                  // Always show first page
-                  pages.push(1)
-
-                  // Calculate range around current page
-                  const leftBound = Math.max(2, currentPage - 1)
-                  const rightBound = Math.min(totalPages - 1, currentPage + 1)
-
-                  // Add left ellipsis if needed
-                  if (leftBound > 2) {
-                    pages.push('ellipsis-left')
-                  }
-
-                  // Add pages around current page
-                  for (let i = leftBound; i <= rightBound; i++) {
-                    pages.push(i)
-                  }
-
-                  // Add right ellipsis if needed
-                  if (rightBound < totalPages - 1) {
-                    pages.push('ellipsis-right')
-                  }
-
-                  // Always show last page
-                  pages.push(totalPages)
-                }
-
-                return pages.map((page) => {
-                  if (typeof page === 'string') {
-                    // Render ellipsis as non-clickable
-                    return (
-                      <CPaginationItem key={page} disabled>
-                        ...
-                      </CPaginationItem>
-                    )
-                  }
+              {computePaginationPages(totalPages, currentPage, 7).map((page) => {
+                if (typeof page === 'string') {
+                  // Render ellipsis as non-clickable
                   return (
-                    <CPaginationItem
-                      key={page}
-                      active={currentPage === page}
-                      onClick={() => setCurrentPage(page)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {page}
+                    <CPaginationItem key={page} disabled>
+                      ...
                     </CPaginationItem>
                   )
-                })
-              })()}
+                }
+                return (
+                  <CPaginationItem
+                    key={page}
+                    active={currentPage === page}
+                    onClick={() => setCurrentPage(page)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {page}
+                  </CPaginationItem>
+                )
+              })}
 
               <CPaginationItem
                 disabled={currentPage === totalPages}
