@@ -1,8 +1,10 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
+import React from 'react'
 import { differenceInSeconds, format, isValid, parseISO } from 'date-fns'
 import { CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { CAlert, CBadge } from '@coreui/react'
 import type { MigrationEvent } from '../types'
 
 interface TimelineProps {
@@ -11,7 +13,9 @@ interface TimelineProps {
 
 const Timeline = ({ events }: TimelineProps) => {
   if (events.length === 0) {
-    return <div className="py-12 text-center text-gray-500">No timeline events available yet.</div>
+    return (
+      <div className="py-5 text-center text-medium-emphasis">No timeline events available yet.</div>
+    )
   }
 
   const sortedEvents = [...events]
@@ -20,72 +24,84 @@ const Timeline = ({ events }: TimelineProps) => {
     .sort((a, b) => a.parsedTime.getTime() - b.parsedTime.getTime())
 
   return (
-    <div className="flow-root">
-      <ul className="-mb-8">
-        {sortedEvents.map((event, index) => {
-          const isLast = index === sortedEvents.length - 1
-          const prevTime = index > 0 ? sortedEvents[index - 1].parsedTime : null
-          const currTime = event.parsedTime
-          const duration = prevTime ? differenceInSeconds(currTime, prevTime) : 0
+    <div className="timeline-wrapper pt-3" style={{ minHeight: '100px' }}>
+      {' '}
+      {sortedEvents.map((event, index) => {
+        const isLast = index === sortedEvents.length - 1
+        const prevTime = index > 0 ? sortedEvents[index - 1].parsedTime : null
+        const currTime = event.parsedTime
+        const duration = prevTime ? differenceInSeconds(currTime, prevTime) : 0
 
-          return (
-            <li key={event.id}>
-              <div className="relative pb-8">
-                {!isLast && (
-                  <span
-                    className="absolute left-5 top-8 -ml-px h-full w-0.5 bg-gray-200"
-                    aria-hidden="true"
-                  />
+        return (
+          <div key={event.id || index} className="position-relative mb-0">
+            {/* Vertical Line Connector */}
+            {!isLast && (
+              <span
+                className="position-absolute"
+                style={{
+                  left: '19px',
+                  top: '40px',
+                  bottom: '-10px',
+                  width: '2px',
+                  backgroundColor: '#ebedef', // CoreUI border color
+                  zIndex: 0,
+                }}
+              />
+            )}
+
+            <div className="d-flex align-items-start pb-4 position-relative" style={{ zIndex: 1 }}>
+              {/* Icon Section */}
+              <div
+                className="d-flex align-items-center justify-content-center bg-white rounded-circle border shadow-sm"
+                style={{ width: '40px', height: '40px', flexShrink: 0 }}
+              >
+                {event.eventType === 'TASK_COMPLETED' && (
+                  <CheckCircle2 size={20} className="text-success" />
                 )}
+                {event.eventType === 'TASK_FAILED' && <XCircle size={20} className="text-danger" />}
+                {event.eventType === 'TASK_STARTED' && (
+                  <Clock size={20} className="text-info opacity-75 animate-pulse" />
+                )}
+              </div>
 
-                <div className="relative flex items-start space-x-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-8 ring-white">
-                    {event.eventType === 'TASK_COMPLETED' && (
-                      <CheckCircle2 className="h-6 w-6 text-green-600" />
-                    )}
-                    {event.eventType === 'TASK_FAILED' && (
-                      <XCircle className="h-6 w-6 text-red-600" />
-                    )}
-                    {event.eventType === 'TASK_STARTED' && (
-                      <Clock className="h-6 w-6 text-blue-600 animate-pulse" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1 pt-1.5">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          {event.stepName || event.eventType.replace('_', ' ')}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-0.5">{event.message}</p>
-                      </div>
-
-                      <div className="text-right text-sm text-gray-500 whitespace-nowrap">
-                        {format(currTime, 'HH:mm:ss')}
-                        {duration > 0 && (
-                          <span className="ml-2 text-xs text-gray-400">+{duration}s</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {event.errorMessage && (
-                      <div className="mt-3 text-sm bg-red-50 border border-red-100 p-3 rounded text-red-700">
-                        {event.errorMessage}
-                      </div>
-                    )}
-
-                    {event.traceId && (
-                      <p className="mt-2 text-xs font-mono text-gray-500">
-                        Trace ID: {event.traceId}
-                      </p>
+              {/* Content Section */}
+              <div className="ms-3 flex-grow-1">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0 fw-bold text-dark">
+                    {event.stepName || event.eventType.replace(/_/g, ' ')}
+                  </h6>
+                  <div className="text-end">
+                    <small className="text-medium-emphasis fw-semibold">
+                      {format(currTime, 'HH:mm:ss')}
+                    </small>
+                    {duration > 0 && (
+                      <CBadge color="light" className="ms-2 text-dark border">
+                        +{duration}s
+                      </CBadge>
                     )}
                   </div>
                 </div>
+
+                <p className="text-medium-emphasis mb-1 mt-1" style={{ fontSize: '0.9rem' }}>
+                  {event.message}
+                </p>
+
+                {event.errorMessage && (
+                  <CAlert color="danger" className="py-2 px-3 mt-2 mb-2 small">
+                    <strong>Error:</strong> {event.errorMessage}
+                  </CAlert>
+                )}
+
+                {event.traceId && (
+                  <div className="font-monospace text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                    Trace ID: {event.traceId}
+                  </div>
+                )}
               </div>
-            </li>
-          )
-        })}
-      </ul>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

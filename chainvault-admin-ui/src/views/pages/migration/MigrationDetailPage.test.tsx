@@ -20,10 +20,6 @@ vi.mock('../../../components/Timeline', () => ({
   default: ({ events }: any) => <div>Timeline ({events.length})</div>,
 }))
 
-vi.mock('../../../components/Badge', () => ({
-  Badge: ({ children }: any) => <span>{children}</span>,
-}))
-
 vi.mock('../../../lib/utils', () => ({
   safeFormat: vi.fn((d) => `formatted-${d}`),
 }))
@@ -73,7 +69,7 @@ describe('MigrationDetailPage', () => {
     expect(screen.getByText(/Back to Dashboard/i)).toBeInTheDocument()
   })
 
-  it('renders migration details', () => {
+  it('renders migration details with no events', () => {
     ;(useQuery as any).mockReturnValue({
       isLoading: false,
       isError: false,
@@ -116,7 +112,8 @@ describe('MigrationDetailPage', () => {
     expect(screen.getByText('Download PDF')).toBeInTheDocument()
     expect(screen.getByText('Download ZIP')).toBeInTheDocument()
 
-    expect(screen.getByText('Timeline (0)')).toBeInTheDocument()
+    expect(screen.getByText('Timeline')).toBeInTheDocument()
+    expect(screen.getByText('No events recorded for this migration.')).toBeInTheDocument()
   })
 
   it('handles missing optional fields', () => {

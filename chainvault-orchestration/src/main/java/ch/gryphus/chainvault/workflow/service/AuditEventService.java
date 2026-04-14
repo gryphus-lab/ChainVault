@@ -210,9 +210,8 @@ public class AuditEventService {
         String ocrResultsText;
         if (ocrResultsObj instanceof List<?> ocrResultsList) {
             // Join list entries with newline separator for stable preview
-            ocrResultsText = String.join("\n", ocrResultsList.stream()
-                    .map(String::valueOf)
-                    .toList());
+            ocrResultsText =
+                    String.join("\n", ocrResultsList.stream().map(String::valueOf).toList());
         } else {
             // Fallback for unexpected types
             ocrResultsText = String.valueOf(ocrResultsObj);

@@ -41,7 +41,7 @@ function isSafeUrl(urlString: string | null | undefined): boolean {
   }
 
   try {
-    const url = new URL(urlString, window.location.origin)
+    const url = new URL(urlString, globalThis.location.origin)
     const safeSchemes = ['http:', 'https:', 'blob:']
     return safeSchemes.includes(url.protocol)
   } catch {
@@ -148,15 +148,18 @@ export default function MigrationDetailPage() {
                   </CCardBody>
                 </CCard>
               </CCardGroup>
-              <CCardGroup className="mb-4">
-                <CCard>
-                  <CCardHeader>Timeline</CCardHeader>
-                  <CCardBody>
-                    {' '}
+              <CCard className="mb-4 shadow-sm">
+                <CCardHeader className="fw-bold">Timeline</CCardHeader>
+                <CCardBody>
+                  {migration.events && migration.events.length > 0 ? (
                     <Timeline events={migration.events} />
-                  </CCardBody>
-                </CCard>
-              </CCardGroup>
+                  ) : (
+                    <div className="text-center py-4 text-muted">
+                      No events recorded for this migration.
+                    </div>
+                  )}
+                </CCardBody>
+              </CCard>
               <CCardGroup className="mt-4">
                 <CCard>
                   <CCardHeader>
