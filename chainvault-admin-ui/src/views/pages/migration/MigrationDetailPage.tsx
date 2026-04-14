@@ -71,14 +71,15 @@ export default function MigrationDetailPage() {
   }
 
   const statusClass = STATUS_CLASSES[migration.status] ?? 'bg-gray-100 text-gray-800'
-  const traceIDUrl =
-    'http://localhost:3000/explore?schemaVersion=1&panes=%7B%224b3%22:%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22' +
-    migration.traceId +
-    '%22,%22queryType%22:%22traceql%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22tempo%22%7D,%22refId%22:%22A%22,%22limit%22:20,' +
-    '%22tableType%22:%22traces%22,%22metricsQueryType%22:%22range%22,%22serviceMapUseNativeHistograms%22:false%7D%5D,%22range%22:%7B%22from%22:' +
-    '%22now-1h%22,%22to%22:%22now%22%7D,%22panelsState%22:%7B%22trace%22:%7B%22spanFilters%22:%7B%22spanNameOperator%22:%22%3D%22,%22' +
-    'serviceNameOperator%22:%22%3D%22,%22fromOperator%22:%22%3E%22,%22toOperator%22:%22%3C%22,%22tags%22:%5B%7B%22id%22:%229d72bfd7-86e%22,' +
-    '%22operator%22:%22%3D%22%7D%5D%7D%7D%7D,%22compact%22:false%7D%7D&orgId=1'
+  const tempoExploreUrlTemplate =
+    import.meta.env.VITE_TEMPO_EXPLORE_URL ||
+    'http://localhost:3000/explore?schemaVersion=1&panes=%7B%224b3%22:%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22query%22:%22{traceId}%22,%22queryType%22:%22traceql%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22tempo%22%7D,%22refId%22:%22A%22,%22limit%22:20,%22tableType%22:%22traces%22,%22metricsQueryType%22:%22range%22,%22serviceMapUseNativeHistograms%22:false%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D,%22panelsState%22:%7B%22trace%22:%7B%22spanFilters%22:%7B%22spanNameOperator%22:%22%3D%22,%22serviceNameOperator%22:%22%3D%22,%22fromOperator%22:%22%3E%22,%22toOperator%22:%22%3C%22,%22tags%22:%5B%7B%22id%22:%229d72bfd7-86e%22,%22operator%22:%22%3D%22%7D%5D%7D%7D%7D,%22compact%22:false%7D%7D&orgId=1'
+  const traceIDUrl = migration.traceId
+    ? tempoExploreUrlTemplate.replace(
+        '{traceId}',
+        encodeURIComponent(migration.traceId),
+      )
+    : null
   return (
     <CContainer>
       <CRow className="justify-content-start">
@@ -111,9 +112,13 @@ export default function MigrationDetailPage() {
                 <CCard>
                   <CCardHeader>Trace Id</CCardHeader>
                   <CCardBody>
-                    <a href={traceIDUrl} target="_blank" rel="noopener noreferrer">
-                      {migration.traceId || 'N/A'}
-                    </a>
+                    {migration.traceId && traceIDUrl ? (
+                      <a href={traceIDUrl} target="_blank" rel="noopener noreferrer">
+                        {migration.traceId}
+                      </a>
+                    ) : (
+                      'N/A'
+                    )}
                   </CCardBody>
                 </CCard>
               </CCardGroup>
