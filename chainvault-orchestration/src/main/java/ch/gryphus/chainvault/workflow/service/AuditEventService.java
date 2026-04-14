@@ -211,7 +211,11 @@ public class AuditEventService {
             audit.setErrorCode(null);
         }
 
-        applyContextHashes(audit, (MigrationContext) varMap.get("migrationContext"));
+        // Safely apply context hashes only if the variable is a valid MigrationContext
+        Object migrationContextObj = varMap.get("migrationContext");
+        if (migrationContextObj instanceof MigrationContext context) {
+            applyContextHashes(audit, context);
+        }
         applyOcrResults(audit, varMap);
 
         Optional.ofNullable(varMap.get("outputFileKey"))
@@ -290,7 +294,8 @@ public class AuditEventService {
         audit.setOcrResultReference(StringUtils.abbreviate(ocrResultsText, 512));
 
         if (varMap.get("ocrPageCount") instanceof Integer count) audit.setOcrPageCount(count);
-        if (varMap.get("ocrTextLength") instanceof Long length) audit.setOcrTotalTextLength(length);
+        if (varMap.get("ocrTextLength") instanceof Number number)
+            audit.setOcrTotalTextLength(number.longValue());
     }
 
     /**
