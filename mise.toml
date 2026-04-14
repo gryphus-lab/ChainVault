@@ -44,10 +44,11 @@ test = { run = "mvn integration-test", description = "Run unit and integration T
 test-docker = { run = "mvn failsafe:integration-test -Dtest=Docker*", description = "Run integration Tests - Docker only" }
 
 dev = { run = [
+  "mvn clean install -DskipTests",
   "docker compose up -d postgres",
   "sleep 5",
   "docker compose exec -T postgres pg_isready -U postgres -t 30 || exit 1",
-  "cd chainvault-orchestration && mvn spring-boot:run -am -Dspring.profiles.active=local",
+  "java -jar chainvault-orchestration/target/*.jar --spring.profiles.active=local",
 ], description = "Run Dev" }
 
 package = { run = "mvn clean package -DskipTests -am", description = "Package the executable JAR" }

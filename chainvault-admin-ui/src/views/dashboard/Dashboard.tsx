@@ -16,6 +16,7 @@ import {
 import { getMigrations, getMigrationStats } from '../../lib/api'
 import { Migration, MigrationStats } from '../../types'
 import { safeFormat } from '../../lib/utils'
+import { Link } from 'react-router-dom'
 
 const Dashboard = () => {
   const [migrations, setMigrations] = useState<Migration[] | null>(null)
@@ -132,7 +133,13 @@ const Dashboard = () => {
               <CTableDataCell>{safeFormat(migration.createdAt)}</CTableDataCell>
               <CTableDataCell>{safeFormat(migration.updatedAt)}</CTableDataCell>
               <CTableDataCell>
-                <button className="btn btn-link">View Details</button>
+                <Link
+                  to={`/migration/${migration.id}`}
+                  className="btn btn-link"
+                  aria-label={`View details for migration ${migration.docId}`}
+                >
+                  View Details
+                </Link>
               </CTableDataCell>
             </CTableRow>
           ))}
