@@ -133,12 +133,16 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
     private void sendSseEvent(
             String piKey, @NonNull Span span, MigrationAudit.MigrationStatus status) {
         log.info("{} sending SSE event", taskType);
+        String message =
+                status == MigrationAudit.MigrationStatus.FAILED
+                        ? "%s failed".formatted(taskType)
+                        : "%s completed successfully".formatted(taskType);
         MigrationEventDto event = new MigrationEventDto();
         event.setId(UUID.randomUUID().toString());
         event.setMigrationId(piKey);
         event.setEventType(taskType);
         event.setStepName(taskType);
-        event.setMessage("%s completed successfully".formatted(taskType));
+        event.setMessage(message);
         event.setStatus(String.valueOf(status));
         event.setTimestamp(Instant.now());
         event.setTraceId(span.getSpanContext().getTraceId());

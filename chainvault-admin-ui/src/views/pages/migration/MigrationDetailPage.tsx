@@ -153,7 +153,7 @@ export default function MigrationDetailPage() {
                     OCR Text Preview
                   </CCardHeader>
                   <CCardBody>
-                    <p>{migration.ocrTextPreview ?? 'No OCR information available.'}</p>{' '}
+                    <p>{migration.ocrTextPreview ?? 'No OCR information available.'}</p>
                   </CCardBody>
                 </CCard>
                 <CCard>
