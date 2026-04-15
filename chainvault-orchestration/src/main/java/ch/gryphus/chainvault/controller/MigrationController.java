@@ -101,15 +101,4 @@ public class MigrationController {
         return new ResponseEntity<>(
                 objectMapper.writeValueAsString(auditEventService.getDetail(id)), HttpStatus.OK);
     }
-
-    /**
-     * Subscribe to real-time migration events via Server-Sent Events.
-     *
-     * @return an SseEmitter that pushes migration events to the client
-     */
-    @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribeToMigrationEvents() {
-        String clientId = UUID.randomUUID().toString();
-        return sseEmitterService.createEmitter(clientId);
-    }
 }
