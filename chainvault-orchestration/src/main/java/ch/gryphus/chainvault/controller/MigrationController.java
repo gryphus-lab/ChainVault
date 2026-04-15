@@ -30,9 +30,7 @@ public class MigrationController {
      * @param auditEventService the audit event service
      * @param objectMapper      the object mapper
      */
-    public MigrationController(
-            AuditEventService auditEventService,
-            ObjectMapper objectMapper) {
+    public MigrationController(AuditEventService auditEventService, ObjectMapper objectMapper) {
         this.auditEventService = auditEventService;
         this.objectMapper = objectMapper;
     }
