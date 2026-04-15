@@ -252,10 +252,12 @@ describe('Dashboard Component', () => {
     })
 
     // Assert ascending order: DOC-ABC should appear before DOC-XYZ
-    const rows = screen.getAllByRole('row')
-    const docIds = rows.map((row) => within(row).queryByText(/^DOC-/)).filter(Boolean)
-    const firstDocId = docIds[0]?.textContent
-    expect(firstDocId).toBe('DOC-ABC')
+    await waitFor(() => {
+      const rows = screen.getAllByRole('row')
+      const docIds = rows.map((row) => within(row).queryByText(/^DOC-/)).filter(Boolean)
+      const firstDocId = docIds[0]?.textContent
+      expect(firstDocId).toBe('DOC-ABC')
+    })
 
     // 2nd Click: Descending - should trigger server-side sort
     fireEvent.click(sortBtn)
