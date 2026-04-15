@@ -69,11 +69,6 @@ public class AuditEventService {
                     "ocrResultReference",
                     "ocrCompletedAt");
 
-    private static final Map<String, String> SORT_KEY_ALIASES =
-            Map.of(
-                    "docId", "documentId",
-                    "updatedAt", "lastUpdatedAt");
-
     private final MigrationAuditRepository auditRepo;
     private final MigrationEventRepository eventRepo;
 
@@ -302,14 +297,14 @@ public class AuditEventService {
     }
 
     /**
-     * Applies OCR-derived results from the provided variables map to the given audit, recording attempt and success flags, completion time, a truncated OCR text preview, and optional page/count metrics.
+     * Apply OCR results from the provided variables to the given audit, marking OCR as attempted and successful, recording completion time, storing a truncated text preview, and optionally setting page count and total text length.
      *
      * @param audit the MigrationAudit to update
      * @param varMap a map that may contain:
      *               <ul>
      *                 <li><code>"ocrResults"</code>: a List or other object used to generate the OCR preview (list entries are joined with '\n');</li>
      *                 <li><code>"ocrPageCount"</code>: an Integer to set the page count;</li>
-     *                 <li><code>"ocrTextLength"</code>: a Long to set the total OCR text length.</li>
+     *                 <li><code>"ocrTextLength"</code>: a Number to set the total OCR text length.</li>
      *               </ul>
      */
     private void applyOcrResults(MigrationAudit audit, Map<String, Object> varMap) {
@@ -355,9 +350,7 @@ public class AuditEventService {
         String normalizedSortKey =
                 (sortKey != null && !sortKey.isBlank()) ? sortKey.trim() : "createdAt";
         String resolvedSortKey =
-                SORT_KEY_ALIASES.getOrDefault(normalizedSortKey, normalizedSortKey);
-        resolvedSortKey =
-                ALLOWED_SORT_KEYS.contains(resolvedSortKey) ? resolvedSortKey : "createdAt";
+                ALLOWED_SORT_KEYS.contains(normalizedSortKey) ? normalizedSortKey : "createdAt";
         Sort.Direction direction =
                 "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
@@ -405,10 +398,14 @@ public class AuditEventService {
     }
 
     /**
-     * Retrieve detailed migration information for the audit with the given id.
+     * Return detailed migration metadata for the audit identified by the given id.
      *
-     * @param id the audit id as a decimal string
-     * @return a MigrationDetail populated with audit metadata (id, status, document id, created/updated timestamps), OCR fields (page count, attempted, success, total text length, text preview), trace id, associated events, chain-of-custody zip URL, and output PDF URL
+     * The returned detail includes audit identifiers and timestamps, migration status,
+     * document id, OCR metrics and preview, trace id, associated migration events,
+     * chain-of-custody zip URL, and output PDF URL.
+     *
+     * @param id the audit id represented as a decimal string
+     * @return a MigrationDetail populated with the audit's metadata, OCR information, events, and related file URLs
      * @throws EntityNotFoundException if no audit exists for the provided id
      */
     public MigrationDetail getDetail(String id) {

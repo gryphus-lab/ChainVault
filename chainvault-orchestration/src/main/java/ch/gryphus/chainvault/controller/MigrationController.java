@@ -36,13 +36,17 @@ public class MigrationController {
     }
 
     /**
-     * Gets migrations.
+     * Retrieve a paginated, optionally sorted list of migrations.
      *
-     * @param limit   the page size (default 100)
-     * @param offset  the zero-based record offset (default 0)
-     * @param sortKey the field to sort by (default "createdAt")
-     * @param sortDir the sort direction: "asc" or "desc" (default "desc")
-     * @return a paginated response containing the matching migrations and the total count
+     * If `limit` is less than or equal to 0 or `offset` is negative, the method responds
+     * with HTTP 400 and a JSON error message.
+     *
+     * @param limit   page size; default 100; must be greater than 0
+     * @param offset  zero-based record offset; default 0; must be greater than or equal to 0
+     * @param sortKey optional field to sort by (default "createdAt")
+     * @param sortDir optional sort direction, either "asc" or "desc" (default "desc")
+     * @return a ResponseEntity containing a JSON string with the matching migrations and the total count,
+     *         or a JSON error message when input validation fails
      */
     @GetMapping
     public ResponseEntity<String> getMigrations(
@@ -80,10 +84,10 @@ public class MigrationController {
     }
 
     /**
-     * Gets detail.
+     * Retrieve detailed information for a migration by its identifier.
      *
-     * @param id the id
-     * @return the detail
+     * @param id the migration identifier
+     * @return ResponseEntity containing a JSON string with the migration detail and HTTP 200 (OK) status
      */
     @GetMapping("/{id}/detail")
     public ResponseEntity<String> getDetail(@PathVariable String id) {

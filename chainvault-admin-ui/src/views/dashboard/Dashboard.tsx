@@ -25,10 +25,10 @@ import { safeFormat } from '../../lib/utils'
 type SortDirection = 'asc' | 'desc' | null
 
 /**
- * Map a migration's status to the corresponding Bootstrap badge CSS classes.
+ * Selects the CSS class string for a migration status badge.
  *
- * @param m - The migration object whose `status` determines the badge styling.
- * @returns A space-separated CSS class string for the badge that matches the migration's status.
+ * @param m - The migration object whose `status` determines the badge color.
+ * @returns The CSS class pair (background and text) corresponding to `m.status`: `bg-success-light text-success` for `SUCCESS`, `bg-danger-light text-danger` for `FAILED`, `bg-warning-light text-warning` for `PENDING`, `bg-info-light text-info` for `RUNNING`, and `bg-light text-dark` for any other status.
  */
 function getBadgeColor(m: Migration) {
   switch (m.status) {
@@ -46,10 +46,12 @@ function getBadgeColor(m: Migration) {
 }
 
 /**
- * Render table rows for the provided migrations or a single empty-state row when none exist.
+ * Produce table row elements for the migrations table.
  *
- * @param currentMigrations - The migrations to render (expected to be the current page of results).
- * @returns A JSX element (single row) or an array of JSX elements (one row per migration). When `currentMigrations` is empty, returns a single table row spanning six columns with the message "No migration data found."
+ * Renders a single centered empty-state row when `currentMigrations` is empty; otherwise returns a row per migration containing id, document id, status badge, formatted created/updated timestamps, and a "View Details" action.
+ *
+ * @param currentMigrations - List of migrations to render as table rows
+ * @returns A JSX node: a single empty-state `CTableRow` when the list is empty, or an array of `CTableRow` elements for each migration
  */
 function getTableRows(currentMigrations: Migration[]) {
   return currentMigrations.length === 0 ? (
@@ -79,10 +81,10 @@ function getTableRows(currentMigrations: Migration[]) {
 }
 
 /**
- * Map a sort direction token to the corresponding `aria-sort` string.
+ * Convert a sort direction into the corresponding ARIA `aria-sort` value.
  *
- * @param sortDir - The sort direction (`'asc'`, `'desc'`, or `null`)
- * @returns `'ascending'` when `sortDir` is `'asc'`, `'descending'` otherwise
+ * @param sortDir - The sort direction: `'asc'`, `'desc'`, or `null` to indicate no sorting
+ * @returns The ARIA sort order: `'none'` if `sortDir` is `null`, `'ascending'` for `'asc'`, or `'descending'` for `'desc'`
  */
 function getSortOrder(sortDir: 'asc' | 'desc' | null) {
   if (sortDir === null) return 'none'
@@ -90,12 +92,12 @@ function getSortOrder(sortDir: 'asc' | 'desc' | null) {
 }
 
 /**
- * Build a pagination sequence containing page numbers and optional ellipsis markers for compact display.
+ * Produces an ordered list of page identifiers for pagination controls, including numeric pages and ellipsis markers where ranges are collapsed.
  *
- * @param totalPages - Total number of pages available (must be >= 1)
+ * @param totalPages - Total number of pages available
  * @param currentPage - Currently active page (1-based)
- * @param maxPagesToShow - Maximum number of numeric page buttons to display before using ellipses
- * @returns An array of page entries where numeric values represent visible page buttons and the strings `'ellipsis-left'` or `'ellipsis-right'` indicate omitted page ranges
+ * @param maxPagesToShow - Maximum number of numeric pages to display before inserting ellipses
+ * @returns An array of page identifiers: page numbers and the strings `'ellipsis-left'` / `'ellipsis-right'` used to render collapsed ranges
  */
 function computePaginationPages(
   totalPages: number,
