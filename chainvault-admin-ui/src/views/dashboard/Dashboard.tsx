@@ -195,6 +195,7 @@ const SortableHeader = memo<SortableHeaderProps>(
     )
   },
 )
+SortableHeader.displayName = 'SortableHeader'
 
 const Dashboard = () => {
   // Data State
@@ -297,10 +298,6 @@ const Dashboard = () => {
 
   const totalMigrations = migrations?.total ?? migrationStats?.total ?? sortedMigrations.length
   const totalPages = Math.ceil(totalMigrations / pageSize)
-  const currentMigrations = useMemo(() => {
-    // Server-side pagination: display the fetched page as-is after client-side sorting
-    return sortedMigrations
-  }, [sortedMigrations])
 
   // Handlers
   const handleSort = (key: keyof Migration) => {
@@ -427,7 +424,7 @@ const Dashboard = () => {
                 </CTableDataCell>
               </CTableRow>
             ) : (
-              getTableContent(migrationsError, currentMigrations)
+              getTableContent(migrationsError, sortedMigrations)
             )}
           </CTableBody>
         </CTable>
