@@ -24,6 +24,12 @@ import { safeFormat } from '../../lib/utils'
 
 type SortDirection = 'asc' | 'desc' | null
 
+/**
+ * Selects the CSS class string for a migration status badge.
+ *
+ * @param m - The migration object whose `status` determines the badge color.
+ * @returns The CSS class pair (background and text) corresponding to `m.status`: `bg-success-light text-success` for `SUCCESS`, `bg-danger-light text-danger` for `FAILED`, `bg-warning-light text-warning` for `PENDING`, `bg-info-light text-info` for `RUNNING`, and `bg-light text-dark` for any other status.
+ */
 function getBadgeColor(m: Migration) {
   switch (m.status) {
     case 'SUCCESS':
@@ -39,6 +45,14 @@ function getBadgeColor(m: Migration) {
   }
 }
 
+/**
+ * Produce table row elements for the migrations table.
+ *
+ * Renders a single centered empty-state row when `currentMigrations` is empty; otherwise returns a row per migration containing id, document id, status badge, formatted created/updated timestamps, and a "View Details" action.
+ *
+ * @param currentMigrations - List of migrations to render as table rows
+ * @returns A JSX node: a single empty-state `CTableRow` when the list is empty, or an array of `CTableRow` elements for each migration
+ */
 function getTableRows(currentMigrations: Migration[]) {
   return currentMigrations.length === 0 ? (
     <CTableRow>
@@ -66,11 +80,25 @@ function getTableRows(currentMigrations: Migration[]) {
   )
 }
 
+/**
+ * Convert a sort direction into the corresponding ARIA `aria-sort` value.
+ *
+ * @param sortDir - The sort direction: `'asc'`, `'desc'`, or `null` to indicate no sorting
+ * @returns The ARIA sort order: `'none'` if `sortDir` is `null`, `'ascending'` for `'asc'`, or `'descending'` for `'desc'`
+ */
 function getSortOrder(sortDir: 'asc' | 'desc' | null) {
   if (sortDir === null) return 'none'
   return sortDir === 'asc' ? 'ascending' : 'descending'
 }
 
+/**
+ * Produces an ordered list of page identifiers for pagination controls, including numeric pages and ellipsis markers where ranges are collapsed.
+ *
+ * @param totalPages - Total number of pages available
+ * @param currentPage - Currently active page (1-based)
+ * @param maxPagesToShow - Maximum number of numeric pages to display before inserting ellipses
+ * @returns An array of page identifiers: page numbers and the strings `'ellipsis-left'` / `'ellipsis-right'` used to render collapsed ranges
+ */
 function computePaginationPages(
   totalPages: number,
   currentPage: number,
