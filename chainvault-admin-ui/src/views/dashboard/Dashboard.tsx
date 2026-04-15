@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026. Gryphus Lab
  */
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   CCol,
@@ -145,6 +145,57 @@ function getTableContent(migrationsError: string | null, currentMigrations: Migr
   return migrationsError ? null : getTableRows(currentMigrations)
 }
 
+interface SortableHeaderProps {
+  sortKeyName: keyof Migration
+  label: string
+  style?: React.CSSProperties
+  currentSortKey: keyof Migration | null
+  sortDir: SortDirection
+  onSort: (key: keyof Migration) => void
+}
+
+/**
+ * Renders a sortable table header cell with appropriate aria-sort attributes and sort icons.
+ *
+ * @param sortKeyName - The migration property key this header controls
+ * @param label - Display label for the header
+ * @param style - Optional CSS styles for the header cell
+ * @param currentSortKey - The currently active sort key
+ * @param sortDir - The current sort direction
+ * @param onSort - Callback to handle sort changes
+ * @returns A memoized sortable header cell with click handler and sort indicator icon
+ */
+const SortableHeader = memo<SortableHeaderProps>(
+  ({ sortKeyName, label, style, currentSortKey, sortDir, onSort }) => {
+    const getSortIcon = () => {
+      if (currentSortKey !== sortKeyName)
+        return <ChevronsUpDown size={14} className="ms-1 text-muted opacity-50" />
+      return sortDir === 'asc' ? (
+        <ChevronUp size={14} className="ms-1 text-primary" />
+      ) : (
+        <ChevronDown size={14} className="ms-1 text-primary" />
+      )
+    }
+
+    return (
+      <CTableHeaderCell
+        style={style}
+        aria-sort={currentSortKey === sortKeyName ? getSortOrder(sortDir) : 'none'}
+      >
+        <button
+          type="button"
+          onClick={() => onSort(sortKeyName)}
+          style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+          className="user-select-none"
+          aria-label={`Sort by ${label}`}
+        >
+          {label} {getSortIcon()}
+        </button>
+      </CTableHeaderCell>
+    )
+  },
+)
+
 const Dashboard = () => {
   // Data State
   const [migrations, setMigrations] = useState<MigrationPage | null>(null)
@@ -159,30 +210,6 @@ const Dashboard = () => {
   const [sortKey, setSortKey] = useState<keyof Migration | null>('createdAt')
   const [sortDir, setSortDir] = useState<SortDirection>('desc')
   const pageSize = 10
-
-  // Sortable header component
-  const renderSortableHeader = (
-    sortKeyName: keyof Migration,
-    label: string,
-    style?: React.CSSProperties,
-  ) => {
-    return (
-      <CTableHeaderCell
-        style={style}
-        aria-sort={sortKey === sortKeyName ? getSortOrder(sortDir) : 'none'}
-      >
-        <button
-          type="button"
-          onClick={() => handleSort(sortKeyName)}
-          style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
-          className="user-select-none"
-          aria-label={`Sort by ${label}`}
-        >
-          {label} {getSortIcon(sortKeyName)}
-        </button>
-      </CTableHeaderCell>
-    )
-  }
 
   // Effect 1: Fetch migration stats (independent of pagination/sorting)
   useEffect(() => {
@@ -287,15 +314,6 @@ const Dashboard = () => {
     setCurrentPage(1) // Reset to first page on new sort
   }
 
-  const getSortIcon = (key: keyof Migration) => {
-    if (sortKey !== key) return <ChevronsUpDown size={14} className="ms-1 text-muted opacity-50" />
-    return sortDir === 'asc' ? (
-      <ChevronUp size={14} className="ms-1 text-primary" />
-    ) : (
-      <ChevronDown size={14} className="ms-1 text-primary" />
-    )
-  }
-
   // Stats Calculations
   const inProgress = (migrationStats?.pending ?? 0) + (migrationStats?.running ?? 0)
   const getPercent = (val?: number) =>
@@ -361,11 +379,42 @@ const Dashboard = () => {
         <CTable align="middle" responsive hover striped className="mb-0">
           <CTableHead>
             <CTableRow>
-              {renderSortableHeader('id', 'ID', { width: '10%' })}
-              {renderSortableHeader('docId', 'Doc ID')}
-              {renderSortableHeader('status', 'Status')}
-              {renderSortableHeader('createdAt', 'Created At')}
-              {renderSortableHeader('updatedAt', 'Updated At')}
+              <SortableHeader
+                sortKeyName="id"
+                label="ID"
+                style={{ width: '10%' }}
+                currentSortKey={sortKey}
+                sortDir={sortDir}
+                onSort={handleSort}
+              />
+              <SortableHeader
+                sortKeyName="docId"
+                label="Doc ID"
+                currentSortKey={sortKey}
+                sortDir={sortDir}
+                onSort={handleSort}
+              />
+              <SortableHeader
+                sortKeyName="status"
+                label="Status"
+                currentSortKey={sortKey}
+                sortDir={sortDir}
+                onSort={handleSort}
+              />
+              <SortableHeader
+                sortKeyName="createdAt"
+                label="Created At"
+                currentSortKey={sortKey}
+                sortDir={sortDir}
+                onSort={handleSort}
+              />
+              <SortableHeader
+                sortKeyName="updatedAt"
+                label="Updated At"
+                currentSortKey={sortKey}
+                sortDir={sortDir}
+                onSort={handleSort}
+              />
               <CTableHeaderCell className="text-center">Action</CTableHeaderCell>
             </CTableRow>
           </CTableHead>
