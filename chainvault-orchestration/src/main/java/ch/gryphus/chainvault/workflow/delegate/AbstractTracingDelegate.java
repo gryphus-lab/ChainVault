@@ -119,7 +119,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
                     switch (status) {
                         case FAILED -> "Failure";
                         case SUCCESS -> "Success";
-                        case RUNNING -> "Running";
+                        case RUNNING -> "Step completed — workflow still running";
                         default -> "In Progress";
                     };
 
@@ -145,7 +145,7 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
                 switch (status) {
                     case FAILED -> "%s failed".formatted(taskType);
                     case SUCCESS -> "%s completed successfully".formatted(taskType);
-                    case RUNNING -> "%s is running".formatted(taskType);
+                    case RUNNING -> "%s completed — migration still in progress".formatted(taskType);
                     default -> "%s is in progress".formatted(taskType);
                 };
         MigrationEventDto event = new MigrationEventDto();
