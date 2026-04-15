@@ -4,7 +4,15 @@
 package ch.gryphus.chainvault.model.dto;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+/**
+ * The type Migration page.
+ */
+@Data
+@AllArgsConstructor
 public class MigrationPage {
-    public MigrationPage(List<Migration> migrations, long total) {}
+    private List<Migration> items;
+    private long total;
 }

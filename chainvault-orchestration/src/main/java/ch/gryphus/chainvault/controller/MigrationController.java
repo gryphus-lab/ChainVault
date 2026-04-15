@@ -3,15 +3,19 @@
  */
 package ch.gryphus.chainvault.controller;
 
+import ch.gryphus.chainvault.service.SseEmitterService;
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -23,16 +27,22 @@ public class MigrationController {
 
     private final AuditEventService auditEventService;
     private final ObjectMapper objectMapper;
+    private final SseEmitterService sseEmitterService;
 
     /**
      * Instantiates a new Migration controller.
      *
      * @param auditEventService the audit event service
      * @param objectMapper      the object mapper
+     * @param sseEmitterService the sse emitter service
      */
-    public MigrationController(AuditEventService auditEventService, ObjectMapper objectMapper) {
+    public MigrationController(
+            AuditEventService auditEventService,
+            ObjectMapper objectMapper,
+            SseEmitterService sseEmitterService) {
         this.auditEventService = auditEventService;
         this.objectMapper = objectMapper;
+        this.sseEmitterService = sseEmitterService;
     }
 
     /**
@@ -93,5 +103,16 @@ public class MigrationController {
     public ResponseEntity<String> getDetail(@PathVariable String id) {
         return new ResponseEntity<>(
                 objectMapper.writeValueAsString(auditEventService.getDetail(id)), HttpStatus.OK);
+    }
+
+    /**
+     * Subscribe to real-time migration events via Server-Sent Events.
+     *
+     * @return an SseEmitter that pushes migration events to the client
+     */
+    @GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribeToMigrationEvents() {
+        String clientId = UUID.randomUUID().toString();
+        return sseEmitterService.createEmitter(clientId);
     }
 }
