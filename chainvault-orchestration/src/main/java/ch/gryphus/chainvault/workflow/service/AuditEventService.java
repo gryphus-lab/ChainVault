@@ -12,6 +12,7 @@ import ch.gryphus.chainvault.model.entity.MigrationAudit;
 import ch.gryphus.chainvault.model.entity.MigrationEvent;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.repository.MigrationEventRepository;
+import ch.gryphus.chainvault.workflow.util.OffsetBasedPageRequest;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -23,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.flowable.engine.delegate.BpmnError;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -341,7 +341,7 @@ public class AuditEventService {
      * Gets a paginated and optionally sorted list of migrations.
      *
      * @param limit   the page size
-     * @param offset  the zero-based offset
+     * @param offset  the zero-based row offset
      * @param sortKey the field to sort by (e.g. "createdAt", "docId"); defaults to "createdAt"
      * @param sortDir "asc" or "desc"; defaults to "desc"
      * @return a MigrationPage containing the items for the requested page and the total count
@@ -354,10 +354,9 @@ public class AuditEventService {
         Sort.Direction direction =
                 "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-        int pageNumber = (limit > 0) ? offset / limit : 0;
         Pageable pageable =
-                PageRequest.of(
-                        pageNumber, limit > 0 ? limit : 100, Sort.by(direction, resolvedSortKey));
+                new OffsetBasedPageRequest(
+                        offset, limit > 0 ? limit : 100, Sort.by(direction, resolvedSortKey));
 
         List<MigrationAudit> auditRecords = auditRepo.getAllByCompletedAtIsNotNull(pageable);
         long total = auditRepo.countByCompletedAtIsNotNull();
