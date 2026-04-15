@@ -24,6 +24,12 @@ import { safeFormat } from '../../lib/utils'
 
 type SortDirection = 'asc' | 'desc' | null
 
+/**
+ * Map a migration's status to the corresponding Bootstrap badge CSS classes.
+ *
+ * @param m - The migration object whose `status` determines the badge styling.
+ * @returns A space-separated CSS class string for the badge that matches the migration's status.
+ */
 function getBadgeColor(m: Migration) {
   switch (m.status) {
     case 'SUCCESS':
@@ -39,6 +45,12 @@ function getBadgeColor(m: Migration) {
   }
 }
 
+/**
+ * Render table rows for the provided migrations or a single empty-state row when none exist.
+ *
+ * @param currentMigrations - The migrations to render (expected to be the current page of results).
+ * @returns A JSX element (single row) or an array of JSX elements (one row per migration). When `currentMigrations` is empty, returns a single table row spanning six columns with the message "No migration data found."
+ */
 function getTableRows(currentMigrations: Migration[]) {
   return currentMigrations.length === 0 ? (
     <CTableRow>
@@ -66,11 +78,25 @@ function getTableRows(currentMigrations: Migration[]) {
   )
 }
 
+/**
+ * Map a sort direction token to the corresponding `aria-sort` string.
+ *
+ * @param sortDir - The sort direction (`'asc'`, `'desc'`, or `null`)
+ * @returns `'ascending'` when `sortDir` is `'asc'`, `'descending'` otherwise
+ */
 function getSortOrder(sortDir: 'asc' | 'desc' | null) {
   if (sortDir === null) return 'none'
   return sortDir === 'asc' ? 'ascending' : 'descending'
 }
 
+/**
+ * Build a pagination sequence containing page numbers and optional ellipsis markers for compact display.
+ *
+ * @param totalPages - Total number of pages available (must be >= 1)
+ * @param currentPage - Currently active page (1-based)
+ * @param maxPagesToShow - Maximum number of numeric page buttons to display before using ellipses
+ * @returns An array of page entries where numeric values represent visible page buttons and the strings `'ellipsis-left'` or `'ellipsis-right'` indicate omitted page ranges
+ */
 function computePaginationPages(
   totalPages: number,
   currentPage: number,
