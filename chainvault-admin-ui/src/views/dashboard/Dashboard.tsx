@@ -278,11 +278,8 @@ const Dashboard = () => {
   // Handlers
   const handleSort = (key: keyof Migration) => {
     if (sortKey === key) {
-      if (sortDir === 'asc') setSortDir('desc')
-      else if (sortDir === 'desc') {
-        setSortKey(null)
-        setSortDir(null)
-      }
+      // Toggle between asc and desc only
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
     } else {
       setSortKey(key)
       setSortDir('asc')
