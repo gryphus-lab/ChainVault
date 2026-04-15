@@ -309,7 +309,6 @@ class AuditEventServiceTest {
                 .isInstanceOf(IllegalStateException.class);
     }
 
-
     /**
      * Test get stats.
      */
