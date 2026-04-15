@@ -149,7 +149,8 @@ const Dashboard = () => {
   // Data State
   const [migrations, setMigrations] = useState<MigrationPage | null>(null)
   const [migrationStats, setMigrationStats] = useState<MigrationStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isStatsLoading, setIsStatsLoading] = useState(true)
+  const [isMigrationsLoading, setIsMigrationsLoading] = useState(true)
   const [statsError, setStatsError] = useState<string | null>(null)
   const [migrationsError, setMigrationsError] = useState<string | null>(null)
 
@@ -183,48 +184,73 @@ const Dashboard = () => {
     )
   }
 
+  // Effect 1: Fetch migration stats (independent of pagination/sorting)
   useEffect(() => {
     let isActive = true
 
-    const fetchData = async () => {
+    const fetchStats = async () => {
       if (isActive) {
-        setIsLoading(true)
+        setIsStatsLoading(true)
         setStatsError(null)
+      }
+
+      try {
+        const stats = await getMigrationStats()
+        if (isActive) {
+          setMigrationStats(stats)
+        }
+      } catch (error) {
+        if (isActive) {
+          console.error('Migration stats fetch error:', error)
+          setStatsError('Failed to load migration statistics.')
+        }
+      } finally {
+        if (isActive) {
+          setIsStatsLoading(false)
+        }
+      }
+    }
+
+    fetchStats()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
+  // Effect 2: Fetch migrations (depends on pagination/sorting)
+  useEffect(() => {
+    let isActive = true
+
+    const fetchMigrations = async () => {
+      if (isActive) {
+        setIsMigrationsLoading(true)
         setMigrationsError(null)
       }
 
-      // Fetch endpoints independently so one failure doesn't discard the other result
-      const results = await Promise.allSettled([
-        getMigrationStats(),
-        getMigrations({
+      try {
+        const data = await getMigrations({
           limit: pageSize,
           offset: (currentPage - 1) * pageSize,
           sortKey: sortKey ?? undefined,
           sortDir: sortDir ?? undefined,
-        }),
-      ])
-
-      if (!isActive) return
-
-      // Handle stats result
-      if (results[0].status === 'fulfilled') {
-        setMigrationStats(results[0].value)
-      } else {
-        console.error('Migration stats fetch error:', results[0].reason)
-        setStatsError('Failed to load migration statistics.')
+        })
+        if (isActive) {
+          setMigrations(data)
+        }
+      } catch (error) {
+        if (isActive) {
+          console.error('Migrations fetch error:', error)
+          setMigrationsError('Failed to load migration records.')
+        }
+      } finally {
+        if (isActive) {
+          setIsMigrationsLoading(false)
+        }
       }
-
-      // Handle migrations result
-      if (results[1].status === 'fulfilled') {
-        setMigrations(results[1].value)
-      } else {
-        console.error('Migrations fetch error:', results[1].reason)
-        setMigrationsError('Failed to load migration records.')
-      }
-
-      setIsLoading(false)
     }
-    fetchData()
+
+    fetchMigrations()
 
     return () => {
       isActive = false
@@ -232,7 +258,7 @@ const Dashboard = () => {
   }, [currentPage, pageSize, sortKey, sortDir])
 
   const getDisplayValue = (value: number | undefined) => {
-    if (isLoading) return '—'
+    if (isStatsLoading) return '—'
     if (statsError) return 'Unavailable'
     return value?.toString() ?? '0'
   }
@@ -347,7 +373,7 @@ const Dashboard = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {isLoading ? (
+            {isMigrationsLoading ? (
               <CTableRow>
                 <CTableDataCell colSpan={6} className="text-center py-5">
                   <CSpinner color="primary" size="sm" className="me-2" />
@@ -361,7 +387,7 @@ const Dashboard = () => {
         </CTable>
 
         {/* Pagination Footer */}
-        {!isLoading && totalPages > 1 && (
+        {!isMigrationsLoading && totalPages > 1 && (
           <div className="d-flex justify-content-between align-items-center mt-4">
             <div className="small text-muted">
               Showing <strong>{(currentPage - 1) * pageSize + 1}</strong> to{' '}
