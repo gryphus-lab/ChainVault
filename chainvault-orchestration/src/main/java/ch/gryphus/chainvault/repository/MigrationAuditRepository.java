@@ -7,6 +7,7 @@ import ch.gryphus.chainvault.model.entity.MigrationAudit;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -49,10 +50,25 @@ public interface MigrationAuditRepository extends JpaRepository<MigrationAudit, 
     int countAllByStatus(MigrationAudit.MigrationStatus status);
 
     /**
-     * Gets all by completed at is not null.
+     * Retrieve MigrationAudit records whose `completedAt` timestamp is not null, constrained by the provided limit.
      *
-     * @param of the of
-     * @return the all by completed at is not null
+     * @param of the maximum number of results to return
+     * @return a list of MigrationAudit entries with a non-null `completedAt`, limited by `of`
      */
     List<MigrationAudit> getAllByCompletedAtIsNotNull(Limit of);
+
+    /**
+     * Retrieve MigrationAudit records with a non-null completedAt using the given pagination.
+     *
+     * @param pageable controls page size, page number, and sorting for the query
+     * @return a list of MigrationAudit entities whose completedAt is not null for the requested page
+     */
+    List<MigrationAudit> getAllByCompletedAtIsNotNull(Pageable pageable);
+
+    /**
+     * Count MigrationAudit records whose `completedAt` timestamp is not null.
+     *
+     * @return the number of MigrationAudit records with a non-null `completedAt`
+     */
+    long countByCompletedAtIsNotNull();
 }

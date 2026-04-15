@@ -26,6 +26,11 @@ export interface MigrationStats {
   last24h: number
 }
 
+export interface MigrationPage {
+  items: Migration[]
+  total: number
+}
+
 export interface MigrationEvent {
   id: string
   migrationId: string

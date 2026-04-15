@@ -4,6 +4,7 @@
 package ch.gryphus.chainvault.controller;
 
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,15 +36,39 @@ public class MigrationController {
     }
 
     /**
-     * Gets migrations.
+     * Retrieve a paginated, optionally sorted list of migrations.
+     * <p>
+     * If `limit` is less than or equal to 0 or `page` is negative, the method responds
+     * with HTTP 400 and a JSON error message.
      *
-     * @param limit the limit
-     * @return the migrations
+     * @param limit   page size; default 100; must be greater than 0
+     * @param page    zero-based page number; default 0; must be greater than or equal to 0
+     * @param sortKey optional field to sort by (default "createdAt")
+     * @param sortDir optional sort direction, either "asc" or "desc" (default "desc")
+     * @return a ResponseEntity containing a JSON string with the matching migrations and the total count,
+     *         or a JSON error message when input validation fails
      */
     @GetMapping
-    public ResponseEntity<String> getMigrations(@RequestParam(defaultValue = "100") int limit) {
+    public ResponseEntity<String> getMigrations(
+            @RequestParam(defaultValue = "100") int limit,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String sortKey,
+            @RequestParam(required = false) String sortDir) {
+        if (limit <= 0) {
+            return new ResponseEntity<>(
+                    objectMapper.writeValueAsString(
+                            Map.of("error", "limit must be greater than 0")),
+                    HttpStatus.BAD_REQUEST);
+        }
+        if (page < 0) {
+            return new ResponseEntity<>(
+                    objectMapper.writeValueAsString(
+                            Map.of("error", "page must be greater than or equal to 0")),
+                    HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(
-                objectMapper.writeValueAsString(auditEventService.getMigrations(limit)),
+                objectMapper.writeValueAsString(
+                        auditEventService.getMigrations(limit, page, sortKey, sortDir)),
                 HttpStatus.OK);
     }
 
@@ -59,10 +84,10 @@ public class MigrationController {
     }
 
     /**
-     * Gets detail.
+     * Retrieve detailed information for a migration by its identifier.
      *
-     * @param id the id
-     * @return the detail
+     * @param id the migration identifier
+     * @return ResponseEntity containing a JSON string with the migration detail and HTTP 200 (OK) status
      */
     @GetMapping("/{id}/detail")
     public ResponseEntity<String> getDetail(@PathVariable String id) {

@@ -6,6 +6,7 @@ package ch.gryphus.chainvault.workflow.service;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.model.dto.Migration;
 import ch.gryphus.chainvault.model.dto.MigrationDetail;
+import ch.gryphus.chainvault.model.dto.MigrationPage;
 import ch.gryphus.chainvault.model.dto.MigrationStats;
 import ch.gryphus.chainvault.model.entity.MigrationAudit;
 import ch.gryphus.chainvault.model.entity.MigrationEvent;
@@ -22,7 +23,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.flowable.engine.delegate.BpmnError;
-import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,12 +37,45 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(noRollbackForClassName = {"org.flowable.engine.delegate.BpmnError"})
 public class AuditEventService {
 
+    private static final String DEFAULT_SORT_KEY = "createdAt";
+    private static final Set<String> ALLOWED_SORT_KEYS =
+            Set.of(
+                    "id",
+                    "processInstanceKey",
+                    "processDefinitionKey",
+                    "bpmnProcessId",
+                    "documentId",
+                    "documentExternalId",
+                    "sourceSystem",
+                    "targetSystem",
+                    "status",
+                    "failureReason",
+                    "errorCode",
+                    "attemptCount",
+                    DEFAULT_SORT_KEY,
+                    "startedAt",
+                    "completedAt",
+                    "lastUpdatedAt",
+                    "inputPayloadHash",
+                    "outputFileKey",
+                    "chainOfCustodyZip",
+                    "mergedPdfHash",
+                    "traceId",
+                    "ocrAttempted",
+                    "ocrPageCount",
+                    "ocrTotalTextLength",
+                    "ocrSuccess",
+                    "ocrErrorCode",
+                    "ocrErrorMessage",
+                    "ocrResultReference",
+                    "ocrCompletedAt");
+
     private final MigrationAuditRepository auditRepo;
     private final MigrationEventRepository eventRepo;
 
     /**
      * Mark the migration audit identified by piKey as started and record a TASK_STARTED event.
-     *
+     * <p>
      * Sets the audit's document id, increments its attempt count, sets status to RUNNING,
      * records the start time and the span's trace id, persists the audit, and creates a TASK_STARTED MigrationEvent.
      *
@@ -70,7 +106,7 @@ public class AuditEventService {
 
     /**
      * Finalize an audit record and record a corresponding migration event.
-     *
+     * <p>
      * Updates the MigrationAudit identified by the given process-instance key with the provided status,
      * completion metadata, and any details derived from varMap, then creates and persists a MigrationEvent
      * describing the task completion or failure.
@@ -262,14 +298,14 @@ public class AuditEventService {
     }
 
     /**
-     * Applies OCR-derived results from the provided variables map to the given audit, recording attempt and success flags, completion time, a truncated OCR text preview, and optional page/count metrics.
+     * Apply OCR results from the provided variables to the given audit, marking OCR as attempted and successful, recording completion time, storing a truncated text preview, and optionally setting page count and total text length.
      *
      * @param audit the MigrationAudit to update
      * @param varMap a map that may contain:
      *               <ul>
      *                 <li><code>"ocrResults"</code>: a List or other object used to generate the OCR preview (list entries are joined with '\n');</li>
      *                 <li><code>"ocrPageCount"</code>: an Integer to set the page count;</li>
-     *                 <li><code>"ocrTextLength"</code>: a Long to set the total OCR text length.</li>
+     *                 <li><code>"ocrTextLength"</code>: a Number to set the total OCR text length.</li>
      *               </ul>
      */
     private void applyOcrResults(MigrationAudit audit, Map<String, Object> varMap) {
@@ -303,13 +339,30 @@ public class AuditEventService {
     }
 
     /**
-     * Gets migrations.
+     * Gets a paginated and optionally sorted list of migrations.
      *
-     * @param limit the limit
-     * @return the migrations
+     * @param limit   the page size
+     * @param page    the zero-based page number
+     * @param sortKey the field to sort by (e.g. "createdAt", "docId"); defaults to "createdAt"
+     * @param sortDir "asc" or "desc"; defaults to "desc"
+     * @return a MigrationPage containing the items for the requested page and the total count
      */
-    public List<Migration> getMigrations(int limit) {
-        List<MigrationAudit> auditRecords = auditRepo.getAllByCompletedAtIsNotNull(Limit.of(limit));
+    public MigrationPage getMigrations(int limit, int page, String sortKey, String sortDir) {
+        String normalizedSortKey =
+                (sortKey != null && !sortKey.isBlank()) ? sortKey.trim() : DEFAULT_SORT_KEY;
+        String resolvedSortKey =
+                ALLOWED_SORT_KEYS.contains(normalizedSortKey)
+                        ? normalizedSortKey
+                        : DEFAULT_SORT_KEY;
+        Sort.Direction direction =
+                "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable =
+                PageRequest.of(page, limit > 0 ? limit : 100, Sort.by(direction, resolvedSortKey));
+
+        List<MigrationAudit> auditRecords = auditRepo.getAllByCompletedAtIsNotNull(pageable);
+        long total = auditRepo.countByCompletedAtIsNotNull();
+
         List<Migration> migrations = new ArrayList<>();
         auditRecords.forEach(
                 audit -> {
@@ -327,7 +380,7 @@ public class AuditEventService {
                     m.setOcrTotalTextLength(audit.getOcrTotalTextLength());
                     migrations.add(m);
                 });
-        return migrations;
+        return new MigrationPage(migrations, total);
     }
 
     /**
@@ -346,10 +399,14 @@ public class AuditEventService {
     }
 
     /**
-     * Retrieve detailed migration information for the audit with the given id.
+     * Return detailed migration metadata for the audit identified by the given id.
+     * <p>
+     * The returned detail includes audit identifiers and timestamps, migration status,
+     * document id, OCR metrics and preview, trace id, associated migration events,
+     * chain-of-custody zip URL, and output PDF URL.
      *
-     * @param id the audit id as a decimal string
-     * @return a MigrationDetail populated with audit metadata (id, status, document id, created/updated timestamps), OCR fields (page count, attempted, success, total text length, text preview), trace id, associated events, chain-of-custody zip URL, and output PDF URL
+     * @param id the audit id represented as a decimal string
+     * @return a MigrationDetail populated with the audit's metadata, OCR information, events, and related file URLs
      * @throws EntityNotFoundException if no audit exists for the provided id
      */
     public MigrationDetail getDetail(String id) {

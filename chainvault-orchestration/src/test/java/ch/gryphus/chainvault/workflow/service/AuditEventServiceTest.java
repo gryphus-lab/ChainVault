@@ -10,508 +10,301 @@ import static org.mockito.Mockito.*;
 import ch.gryphus.chainvault.domain.MigrationContext;
 import ch.gryphus.chainvault.model.dto.Migration;
 import ch.gryphus.chainvault.model.dto.MigrationDetail;
+import ch.gryphus.chainvault.model.dto.MigrationPage;
 import ch.gryphus.chainvault.model.dto.MigrationStats;
-import ch.gryphus.chainvault.model.entity.*;
+import ch.gryphus.chainvault.model.entity.MigrationAudit;
+import ch.gryphus.chainvault.model.entity.MigrationEvent;
 import ch.gryphus.chainvault.repository.MigrationAuditRepository;
 import ch.gryphus.chainvault.repository.MigrationEventRepository;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.flowable.engine.delegate.BpmnError;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
-/**
- * The type Audit event service test.
- */
 @ExtendWith(MockitoExtension.class)
 class AuditEventServiceTest {
 
-    @Mock private MigrationAuditRepository mockAuditRepo;
-    @Mock private MigrationEventRepository mockEventRepo;
+    @Mock private MigrationAuditRepository auditRepo;
+    @Mock private MigrationEventRepository eventRepo;
+    @Mock private Span span;
+    @Mock private SpanContext spanContext;
 
-    private AuditEventService auditEventServiceUnderTest;
-    private MigrationContext migrationContext;
+    @InjectMocks private AuditEventService auditEventService;
 
-    /**
-     * Sets up.
-     */
+    private MigrationAudit testAudit;
+    private static final String PI_KEY = "proc-123";
+    private static final String TRACE_ID = "trace-888";
+
     @BeforeEach
     void setUp() {
-        auditEventServiceUnderTest = new AuditEventService(mockAuditRepo, mockEventRepo);
-        migrationContext = new MigrationContext();
+        testAudit = new MigrationAudit();
+        testAudit.setId(1L);
+        testAudit.setProcessInstanceKey(PI_KEY);
+        testAudit.setAttemptCount(0);
+
+        lenient().when(span.getSpanContext()).thenReturn(spanContext);
+        lenient().when(spanContext.getTraceId()).thenReturn(TRACE_ID);
     }
 
-    /**
-     * Test update audit event start.
-     */
     @Test
-    void testUpdateAuditEventStart() {
-        // Setup
-        Span span = Span.current();
+    @DisplayName("updateAuditEventStart: Should increment attempts and set RUNNING status")
+    void updateAuditEventStartSuccess() {
+        when(auditRepo.findByProcessInstanceKey(PI_KEY)).thenReturn(Optional.of(testAudit));
 
-        // Configure MigrationAuditRepository.findByProcessInstanceKey(...).
-        Optional<MigrationAudit> migrationAudit =
-                Optional.of(
-                        MigrationAudit.builder()
-                                .id(0L)
-                                .processInstanceKey("processInstanceId")
-                                .documentId("docId")
-                                .status(MigrationAudit.MigrationStatus.PENDING)
-                                .failureReason("errorMsg")
-                                .errorCode("errorCode")
-                                .attemptCount(0)
-                                .startedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .completedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .inputPayloadHash("inputPayloadHash")
-                                .outputFileKey("outputFileKey")
-                                .chainOfCustodyZip("chainOfCustodyZip")
-                                .mergedPdfHash("mergedPdfHash")
-                                .traceId("traceId")
-                                .build());
-        when(mockAuditRepo.findByProcessInstanceKey("processInstanceId"))
-                .thenReturn(migrationAudit);
+        auditEventService.updateAuditEventStart(PI_KEY, "DOC-001", "INIT_TASK", span);
 
-        // Run the test
-        auditEventServiceUnderTest.updateAuditEventStart(
-                "processInstanceId", "docId", "eventTaskType", span);
+        assertThat(testAudit.getStatus()).isEqualTo(MigrationAudit.MigrationStatus.RUNNING);
+        assertThat(testAudit.getAttemptCount()).isEqualTo(1);
+        assertThat(testAudit.getDocumentId()).isEqualTo("DOC-001");
+        assertThat(testAudit.getTraceId()).isEqualTo(TRACE_ID);
 
-        // Verify the results
-        verify(mockAuditRepo).save(any(MigrationAudit.class));
-        verify(mockEventRepo).save(any(MigrationEvent.class));
+        verify(auditRepo).save(testAudit);
+        verify(eventRepo).save(any(MigrationEvent.class));
     }
 
-    /**
-     * Test update audit event start migration audit repository find by process instance key returns absent.
-     */
     @Test
-    void testUpdateAuditEventStart_MigrationAuditRepositoryFindByProcessInstanceKeyReturnsAbsent() {
-        // Setup
-        Span span = Span.current();
-        when(mockAuditRepo.findByProcessInstanceKey("processInstanceId"))
-                .thenReturn(Optional.empty());
+    @DisplayName("updateAuditEventEnd: Should handle SUCCESS with OCR results")
+    void updateAuditEventEndSuccessWithOcr() {
+        when(auditRepo.findByProcessInstanceKey(PI_KEY)).thenReturn(Optional.of(testAudit));
 
-        // Run the test
-        assertThatThrownBy(
-                        () ->
-                                auditEventServiceUnderTest.updateAuditEventStart(
-                                        "processInstanceId", "docId", "eventTaskType", span))
-                .isInstanceOf(IllegalStateException.class);
-    }
+        Map<String, Object> varMap = new HashMap<>();
+        varMap.put("ocrResults", List.of("Page 1 text", "Page 2 text"));
+        varMap.put("ocrPageCount", 2);
+        varMap.put("outputFileKey", "s3://path/file.pdf");
 
-    /**
-     * Test update audit event end.
-     */
-    @Test
-    void testUpdateAuditEventEnd() {
-        // Setup
-        Span span = Span.current();
-        migrationContext.setPayloadHash("payloadHash");
-        migrationContext.setPdfHash("pdfHash");
-        Map<String, Object> varMap =
-                Map.of(
-                        "outputFileKey",
-                        "pathToOutputFile",
-                        "chainOfCustodyZip",
-                        "pathToChainOfCustodyZipFile",
-                        "migrationContext",
-                        migrationContext);
-
-        // Configure MigrationAuditRepository.findByProcessInstanceKey(...).
-        Optional<MigrationAudit> migrationAudit =
-                Optional.of(
-                        MigrationAudit.builder()
-                                .id(0L)
-                                .processInstanceKey("processInstanceId")
-                                .documentId("docId")
-                                .status(MigrationAudit.MigrationStatus.PENDING)
-                                .failureReason("errorMsg")
-                                .errorCode("errorCode")
-                                .attemptCount(0)
-                                .startedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .completedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .inputPayloadHash("inputPayloadHash")
-                                .outputFileKey("outputFileKey")
-                                .chainOfCustodyZip("chainOfCustodyZip")
-                                .mergedPdfHash("mergedPdfHash")
-                                .traceId("traceId")
-                                .build());
-        when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(migrationAudit);
-
-        // Run the test
-        auditEventServiceUnderTest.updateAuditEventEnd(
-                "piKey",
-                MigrationAudit.MigrationStatus.PENDING,
-                "errorCode",
+        auditEventService.updateAuditEventEnd(
+                PI_KEY,
+                MigrationAudit.MigrationStatus.SUCCESS,
                 null,
-                "eventTaskType",
-                "eventMsg",
+                null,
+                "perform-ocr",
+                "Done",
                 varMap,
                 span);
 
-        // Verify the results
-        verify(mockAuditRepo).save(any(MigrationAudit.class));
-        verify(mockEventRepo).save(any(MigrationEvent.class));
+        assertThat(testAudit.getStatus()).isEqualTo(MigrationAudit.MigrationStatus.SUCCESS);
+        assertThat(testAudit.getOcrSuccess()).isTrue();
+        assertThat(testAudit.getOcrPageCount()).isEqualTo(2);
+        assertThat(testAudit.getOutputFileKey()).isEqualTo("s3://path/file.pdf");
+        assertThat(testAudit.getOcrResultReference()).contains("Page 1 text");
+
+        verify(eventRepo)
+                .save(
+                        argThat(
+                                e ->
+                                        e.getEventType()
+                                                == MigrationEvent.MigrationEventType
+                                                        .TASK_COMPLETED));
     }
 
-    /**
-     * Test update audit event end migration audit repository find by process instance key returns absent.
-     */
     @Test
-    void testUpdateAuditEventEnd_MigrationAuditRepositoryFindByProcessInstanceKeyReturnsAbsent() {
-        // Setup
-        Span span = Span.current();
-        Map<String, Object> varMap = Map.ofEntries(Map.entry("value", "value"));
-        when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(Optional.empty());
+    @DisplayName("updateAuditEventEnd: Should handle FAILED status and OCR specific failures")
+    void updateAuditEventEndFailure() {
+        when(auditRepo.findByProcessInstanceKey(PI_KEY)).thenReturn(Optional.of(testAudit));
 
-        // Run the test
+        auditEventService.updateAuditEventEnd(
+                PI_KEY,
+                MigrationAudit.MigrationStatus.FAILED,
+                "ERR_001",
+                "Stacktrace",
+                "perform-ocr",
+                "Failed task",
+                Collections.emptyMap(),
+                span);
+
+        assertThat(testAudit.getStatus()).isEqualTo(MigrationAudit.MigrationStatus.FAILED);
+        assertThat(testAudit.getErrorCode()).isEqualTo("ERR_001");
+        assertThat(testAudit.getOcrErrorCode()).isEqualTo("OCR_TESSERACT_ERROR");
+
+        verify(eventRepo)
+                .save(
+                        argThat(
+                                e ->
+                                        e.getEventType()
+                                                == MigrationEvent.MigrationEventType.TASK_FAILED));
+    }
+
+    @Test
+    @DisplayName("handleException: Should record exception on span and throw BpmnError")
+    void handleExceptionFlow() {
+        when(auditRepo.findByProcessInstanceKey(PI_KEY)).thenReturn(Optional.of(testAudit));
+        Exception ex = new RuntimeException("DB Timeout");
+
         assertThatThrownBy(
                         () ->
-                                auditEventServiceUnderTest.updateAuditEventEnd(
-                                        "piKey",
-                                        MigrationAudit.MigrationStatus.PENDING,
-                                        "errorCode",
-                                        "errorMsg",
-                                        "eventTaskType",
-                                        "eventMsg",
-                                        varMap,
-                                        span))
-                .isInstanceOf(IllegalStateException.class);
-    }
-
-    /**
-     * Test handle exception throws bpmn error.
-     */
-    @Test
-    void testHandleException_ThrowsBpmnError() {
-        // Setup
-        Span span = Span.current();
-
-        // Configure MigrationAuditRepository.findByProcessInstanceKey(...).
-        Optional<MigrationAudit> migrationAudit =
-                Optional.of(
-                        MigrationAudit.builder()
-                                .id(0L)
-                                .processInstanceKey("processInstanceId")
-                                .documentId("docId")
-                                .status(MigrationAudit.MigrationStatus.PENDING)
-                                .failureReason("errorMsg")
-                                .errorCode("errorCode")
-                                .attemptCount(0)
-                                .startedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .completedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .inputPayloadHash("inputPayloadHash")
-                                .outputFileKey("outputFileKey")
-                                .chainOfCustodyZip("chainOfCustodyZip")
-                                .mergedPdfHash("mergedPdfHash")
-                                .traceId("traceId")
-                                .build());
-        when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(migrationAudit);
-
-        // Run the test
-        assertThatRuntimeException()
-                .isThrownBy(
-                        () ->
-                                auditEventServiceUnderTest.handleException(
-                                        new Exception("errorMsg"),
-                                        span,
-                                        "piKey",
-                                        "errorCode",
-                                        "eventTaskType"))
+                                auditEventService.handleException(
+                                        ex, span, PI_KEY, "BPMN_ERR_500", "task-a"))
                 .isInstanceOf(BpmnError.class);
-        verify(mockAuditRepo).save(any(MigrationAudit.class));
-        verify(mockEventRepo).save(any(MigrationEvent.class));
+
+        verify(span).recordException(ex);
+        verify(auditRepo).save(testAudit);
     }
 
-    /**
-     * Test handle exception logs ocr exception details.
-     */
     @Test
-    void testHandleException_LogsOCRExceptionDetails() {
-        // Setup
-        Span span = Span.current();
+    @DisplayName("updateAuditDetails: Should apply MigrationContext hashes")
+    void updateAuditDetailsContextHashes() {
+        when(auditRepo.findByProcessInstanceKey(PI_KEY)).thenReturn(Optional.of(testAudit));
+        MigrationContext context = new MigrationContext();
+        context.setPayloadHash("hash123");
+        context.setPdfHash("pdf456");
 
-        // Configure MigrationAuditRepository.findByProcessInstanceKey(...).
-        Optional<MigrationAudit> migrationAudit =
-                Optional.of(
-                        MigrationAudit.builder()
-                                .id(0L)
-                                .processInstanceKey("processInstanceId")
-                                .documentId("docId")
-                                .status(MigrationAudit.MigrationStatus.PENDING)
-                                .failureReason("errorMsg")
-                                .errorCode("OCR_FAILED")
-                                .attemptCount(0)
-                                .startedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .completedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .inputPayloadHash("inputPayloadHash")
-                                .traceId("traceId")
-                                .build());
-        when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(migrationAudit);
+        auditEventService.updateAuditEventEnd(
+                PI_KEY,
+                MigrationAudit.MigrationStatus.SUCCESS,
+                null,
+                null,
+                "any",
+                "msg",
+                Map.of("migrationContext", context),
+                span);
 
-        // Run the test
-        assertThatRuntimeException()
-                .isThrownBy(
-                        () ->
-                                auditEventServiceUnderTest.handleException(
-                                        new Exception("errorMsg"),
-                                        span,
-                                        "piKey",
-                                        "errorCode",
-                                        "perform-ocr"))
-                .isInstanceOf(BpmnError.class);
-        verify(mockAuditRepo).save(any(MigrationAudit.class));
-        verify(mockEventRepo).save(any(MigrationEvent.class));
+        assertThat(testAudit.getInputPayloadHash()).isEqualTo("hash123");
+        assertThat(testAudit.getMergedPdfHash()).isEqualTo("pdf456");
     }
 
-    /**
-     * Test handle exception migration audit repository find by process instance key returns absent.
-     */
     @Test
-    void testHandleException_MigrationAuditRepositoryFindByProcessInstanceKeyReturnsAbsent() {
-        // Setup
-        Span span = Span.current();
-        when(mockAuditRepo.findByProcessInstanceKey("piKey")).thenReturn(Optional.empty());
-
-        // Run the test
-        assertThatException()
-                .isThrownBy(
-                        () ->
-                                auditEventServiceUnderTest.handleException(
-                                        new Exception("errorMsg"),
-                                        span,
-                                        "piKey",
-                                        "errorCode",
-                                        "eventTaskType"))
-                .isInstanceOf(IllegalStateException.class);
-    }
-
-    /**
-     * Test get migrations.
-     */
-    @Test
-    void testGetMigrations() {
-        // Setup
-        final Migration migration = new Migration();
-        migration.setId("0");
-        migration.setDocId("DOC-TEST-123");
-        migration.setStatus("PENDING");
-        migration.setCreatedAt(LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0).toInstant(ZoneOffset.UTC));
-        migration.setUpdatedAt(LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0).toInstant(ZoneOffset.UTC));
-        migration.setProcessInstanceKey("abcd-1234");
-        migration.setTraceId("abcd-1234");
-        migration.setOcrAttempted(false);
-        migration.setOcrSuccess(false);
-        migration.setOcrPageCount(0);
-        migration.setOcrTotalTextLength(0L);
-        final List<Migration> expectedResult = List.of(migration);
-
-        // Configure MigrationAuditRepository.getAllByCompletedAtIsNotNull(...).
-        final List<MigrationAudit> list =
-                List.of(
-                        MigrationAudit.builder()
-                                .id(0L)
-                                .processInstanceKey("abcd-1234")
-                                .documentId("DOC-TEST-123")
-                                .status(MigrationAudit.MigrationStatus.PENDING)
-                                .failureReason("errorMsg")
-                                .errorCode("errorCode")
-                                .attemptCount(0)
-                                .createdAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .startedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .completedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .lastUpdatedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .inputPayloadHash("inputPayloadHash")
-                                .outputFileKey("outputFileKey")
-                                .chainOfCustodyZip("chainOfCustodyZip")
-                                .mergedPdfHash("mergedPdfHash")
-                                .traceId("abcd-1234")
-                                .ocrAttempted(false)
-                                .ocrPageCount(0)
-                                .ocrTotalTextLength(0L)
-                                .ocrSuccess(false)
-                                .ocrErrorCode("ocrErrorCode")
-                                .ocrErrorMessage("errorMsg")
-                                .ocrCompletedAt(
-                                        LocalDateTime.of(2020, 1, 1, 0, 0, 0, 0)
-                                                .toInstant(ZoneOffset.UTC))
-                                .build());
-        when(mockAuditRepo.getAllByCompletedAtIsNotNull(any(Limit.class))).thenReturn(list);
-
-        // Run the test
-        final List<Migration> result = auditEventServiceUnderTest.getMigrations(0);
-
-        // Verify the results
-        assertThat(result).isEqualTo(expectedResult);
-    }
-
-    /**
-     * Test get migrations migration audit repository returns no items.
-     */
-    @Test
-    void testGetMigrations_MigrationAuditRepositoryReturnsNoItems() {
-        // Setup
-        when(mockAuditRepo.getAllByCompletedAtIsNotNull(any(Limit.class)))
+    @DisplayName("getMigrations: Should sort correctly with valid and invalid keys")
+    void getMigrationsSorting() {
+        when(auditRepo.getAllByCompletedAtIsNotNull(any(Pageable.class)))
                 .thenReturn(Collections.emptyList());
 
-        // Run the test
-        final List<Migration> result = auditEventServiceUnderTest.getMigrations(0);
+        // Test valid sort
+        auditEventService.getMigrations(10, 0, "documentId", "asc");
+        // Test invalid sort (should fallback to default)
+        auditEventService.getMigrations(10, 0, "invalid_key", "desc");
 
-        // Verify the results
-        assertThat(result).isEqualTo(Collections.emptyList());
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(auditRepo, times(2)).getAllByCompletedAtIsNotNull(captor.capture());
+
+        assertThat(captor.getAllValues().get(0).getSort().getOrderFor("documentId")).isNotNull();
+        assertThat(captor.getAllValues().get(1).getSort().getOrderFor("createdAt")).isNotNull();
     }
 
-    /**
-     * Test get stats.
-     */
     @Test
-    void testGetStats() {
-        // Setup
-        final MigrationStats expectedResult = new MigrationStats();
-        expectedResult.setTotal(20L);
-        expectedResult.setPending(5);
-        expectedResult.setRunning(5);
-        expectedResult.setSuccess(5);
-        expectedResult.setFailed(5);
+    @DisplayName("getMigrations: Should return a fully populated MigrationPage with mapped DTOs")
+    void getMigrationsFullPageMapping() {
+        // Arrange
+        int limit = 2;
+        int page = 0;
+        Instant now = Instant.now();
 
-        when(mockAuditRepo.count()).thenReturn(20L);
-        when(mockAuditRepo.countAllByStatus(any())).thenReturn(5);
+        MigrationAudit audit1 = new MigrationAudit();
+        audit1.setId(101L);
+        audit1.setProcessInstanceKey("PI-101");
+        audit1.setDocumentId("DOC-101");
+        audit1.setStatus(MigrationAudit.MigrationStatus.SUCCESS);
+        audit1.setCreatedAt(now.minusSeconds(100));
+        audit1.setLastUpdatedAt(now);
+        audit1.setTraceId("TRACE-101");
+        audit1.setOcrPageCount(5);
+        audit1.setOcrAttempted(true);
+        audit1.setOcrSuccess(true);
+        audit1.setOcrTotalTextLength(1500L);
 
-        // Run the test
-        final MigrationStats result = auditEventServiceUnderTest.getStats();
+        MigrationAudit audit2 = new MigrationAudit();
+        audit2.setId(102L);
+        audit2.setStatus(MigrationAudit.MigrationStatus.FAILED);
 
-        // Verify the results
-        assertThat(result).isEqualTo(expectedResult);
+        List<MigrationAudit> mockRecords = List.of(audit1, audit2);
+
+        when(auditRepo.getAllByCompletedAtIsNotNull(any(Pageable.class))).thenReturn(mockRecords);
+        when(auditRepo.countByCompletedAtIsNotNull()).thenReturn(50L);
+
+        // Act
+        MigrationPage result = auditEventService.getMigrations(limit, page, "createdAt", "desc");
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.getTotal()).isEqualTo(50L);
+        assertThat(result.getItems()).hasSize(2);
+
+        // Verify detailed mapping for the first item
+        Migration firstDto = result.getItems().getFirst();
+        assertThat(firstDto.getId()).isEqualTo("101");
+        assertThat(firstDto.getProcessInstanceKey()).isEqualTo("PI-101");
+        assertThat(firstDto.getDocId()).isEqualTo("DOC-101");
+        assertThat(firstDto.getStatus()).isEqualTo("SUCCESS");
+        assertThat(firstDto.getCreatedAt()).isEqualTo(audit1.getCreatedAt());
+        assertThat(firstDto.getTraceId()).isEqualTo("TRACE-101");
+        assertThat(firstDto.getOcrPageCount()).isEqualTo(5);
+        assertThat(firstDto.getOcrAttempted()).isTrue();
+        assertThat(firstDto.getOcrSuccess()).isTrue();
+        assertThat(firstDto.getOcrTotalTextLength()).isEqualTo(1500L);
+
+        // Verify mapping for second item (minimal data)
+        Migration secondDto = result.getItems().get(1);
+        assertThat(secondDto.getId()).isEqualTo("102");
+        assertThat(secondDto.getStatus()).isEqualTo("FAILED");
+
+        // Verify Pageable parameters
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(auditRepo).getAllByCompletedAtIsNotNull(pageableCaptor.capture());
+        Pageable capturedPageable = pageableCaptor.getValue();
+
+        assertThat(capturedPageable.getPageNumber()).isZero();
+        assertThat(capturedPageable.getPageSize()).isEqualTo(2);
+        assertThat(
+                        Objects.requireNonNull(capturedPageable.getSort().getOrderFor("createdAt"))
+                                .getDirection())
+                .isEqualTo(Sort.Direction.DESC);
     }
 
-    /**
-     * Test get detail returns expected results.
-     */
     @Test
-    void testGetDetail_ReturnsExpectedResults() {
-        // Setup
-        final MigrationDetail expectedResult = new MigrationDetail();
-        expectedResult.setId("123");
-        expectedResult.setDocId("docId");
-        expectedResult.setStatus("status");
-        expectedResult.setCreatedAt(Instant.now());
-        expectedResult.setTraceId("traceId");
-        expectedResult.setOcrAttempted(false);
-        expectedResult.setOcrSuccess(false);
-        expectedResult.setOcrPageCount(0);
-        expectedResult.setOcrTotalTextLength(0L);
-        expectedResult.setEvents(
-                List.of(
-                        MigrationEvent.builder()
-                                .migrationAuditId(123L)
-                                .eventType(MigrationEvent.MigrationEventType.PROCESS_STARTED)
-                                .taskType("eventTaskType")
-                                .message("eventMsg")
-                                .errorCode("errorCode")
-                                .errorMessage("errorMsg")
-                                .createdAt(Instant.now())
-                                .eventData(Map.ofEntries(Map.entry("value", "value")))
-                                .traceId("traceId")
-                                .build()));
-        expectedResult.setChainZipUrl("chainOfCustodyZip");
-        expectedResult.setPdfUrl("outputFileKey");
+    @DisplayName("getStats: Should aggregate counts from repository")
+    void getStatsAggregation() {
+        when(auditRepo.count()).thenReturn(10L);
+        when(auditRepo.countAllByStatus(MigrationAudit.MigrationStatus.SUCCESS)).thenReturn(5);
 
-        // Configure MigrationAuditRepository.getReferenceById(...).
-        final MigrationAudit migrationAudit =
-                MigrationAudit.builder()
-                        .id(123L)
-                        .processInstanceKey("processInstanceId")
-                        .documentId("docId")
-                        .status(MigrationAudit.MigrationStatus.PENDING)
-                        .failureReason("errorMsg")
-                        .errorCode("errorCode")
-                        .attemptCount(0)
-                        .createdAt(Instant.now())
-                        .startedAt(Instant.now())
-                        .completedAt(Instant.now())
-                        .inputPayloadHash("inputPayloadHash")
-                        .outputFileKey("outputFileKey")
-                        .chainOfCustodyZip("chainOfCustodyZip")
-                        .mergedPdfHash("mergedPdfHash")
-                        .traceId("traceId")
-                        .ocrAttempted(false)
-                        .ocrPageCount(0)
-                        .ocrTotalTextLength(0L)
-                        .ocrSuccess(false)
-                        .ocrErrorCode("ocrErrorCode")
-                        .ocrErrorMessage("errorMsg")
-                        .ocrCompletedAt(Instant.now())
-                        .build();
-        when(mockAuditRepo.findById(any())).thenReturn(Optional.ofNullable(migrationAudit));
+        MigrationStats stats = auditEventService.getStats();
 
-        // Configure MigrationEventRepository.getAllByMigrationAuditId(...).
-        final List<MigrationEvent> migrationEvents =
-                List.of(
-                        MigrationEvent.builder()
-                                .migrationAuditId(123L)
-                                .eventType(MigrationEvent.MigrationEventType.PROCESS_STARTED)
-                                .taskType("eventTaskType")
-                                .message("eventMsg")
-                                .errorCode("errorCode")
-                                .errorMessage("errorMsg")
-                                .createdAt(Instant.now())
-                                .eventData(Map.ofEntries(Map.entry("value", "value")))
-                                .traceId("traceId")
-                                .build());
-        when(mockEventRepo.getAllByMigrationAuditId(any())).thenReturn(migrationEvents);
-
-        // Run the test
-        final MigrationDetail result = auditEventServiceUnderTest.getDetail("123");
-
-        // Verify the results
-        assertThat(result.getEvents()).hasSize(1);
+        assertThat(stats.getTotal()).isEqualTo(10L);
+        assertThat(stats.getSuccess()).isEqualTo(5L);
+        verify(auditRepo, times(4)).countAllByStatus(any());
     }
 
-    /**
-     * Test get detail should throw exception when id does not exist.
-     */
     @Test
-    void testGetDetail_ShouldThrowExceptionWhenIdDoesNotExist() {
-        // Setup
-        String nonExistentId = "999";
+    @DisplayName("getDetail: Should throw EntityNotFoundException if ID missing")
+    void getDetailNotFound() {
+        when(auditRepo.findById(99L)).thenReturn(Optional.empty());
 
-        // Run the test
-        assertThatExceptionOfType(EntityNotFoundException.class)
-                .isThrownBy(() -> auditEventServiceUnderTest.getDetail(nonExistentId))
-                .withMessageContaining("Migration not found: %s".formatted(nonExistentId));
+        assertThatThrownBy(() -> auditEventService.getDetail("99"))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("getDetail: Should map all fields correctly")
+    void getDetailMapping() {
+        testAudit.setStatus(MigrationAudit.MigrationStatus.SUCCESS);
+        testAudit.setOcrResultReference("Preview");
+        when(auditRepo.findById(1L)).thenReturn(Optional.of(testAudit));
+        when(eventRepo.getAllByMigrationAuditId(1L)).thenReturn(Collections.emptyList());
+
+        MigrationDetail detail = auditEventService.getDetail("1");
+
+        assertThat(detail.getId()).isEqualTo("1");
+        assertThat(detail.getStatus()).isEqualTo("SUCCESS");
+        assertThat(detail.getOcrTextPreview()).isEqualTo("Preview");
+    }
+
+    @Test
+    @DisplayName("findAudit: Should throw IllegalStateException if PI Key not found")
+    void findAuditThrowsException() {
+        when(auditRepo.findByProcessInstanceKey("unknown")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> auditEventService.updateAuditEventStart("unknown", "d", "t", span))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No audit found");
     }
 }

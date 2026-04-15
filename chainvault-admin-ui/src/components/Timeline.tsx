@@ -78,9 +78,11 @@ const Timeline = ({ events }: TimelineProps) => {
                 </p>
 
                 {event.errorMessage && (
-                  <CAlert color="danger" className="py-2 px-3 mt-2 mb-2 small">
-                    <strong>Error:</strong> {event.errorMessage}
-                  </CAlert>
+                  <div className="font-monospace text-muted mt-1" style={{ fontSize: '0.75rem' }}>
+                    <CAlert color="danger" className="py-2 px-3 mt-2 mb-2 small">
+                      <strong>Error:</strong> {event.errorMessage}
+                    </CAlert>
+                  </div>
                 )}
 
                 {event.traceId && (
