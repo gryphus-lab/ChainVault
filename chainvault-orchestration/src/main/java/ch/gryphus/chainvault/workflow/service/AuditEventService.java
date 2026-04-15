@@ -38,6 +38,38 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(noRollbackForClassName = {"org.flowable.engine.delegate.BpmnError"})
 public class AuditEventService {
 
+    private static final Set<String> ALLOWED_SORT_KEYS =
+            Set.of(
+                    "id",
+                    "processInstanceKey",
+                    "processDefinitionKey",
+                    "bpmnProcessId",
+                    "documentId",
+                    "documentExternalId",
+                    "sourceSystem",
+                    "targetSystem",
+                    "status",
+                    "failureReason",
+                    "errorCode",
+                    "attemptCount",
+                    "createdAt",
+                    "startedAt",
+                    "completedAt",
+                    "lastUpdatedAt",
+                    "inputPayloadHash",
+                    "outputFileKey",
+                    "chainOfCustodyZip",
+                    "mergedPdfHash",
+                    "traceId",
+                    "ocrAttempted",
+                    "ocrPageCount",
+                    "ocrTotalTextLength",
+                    "ocrSuccess",
+                    "ocrErrorCode",
+                    "ocrErrorMessage",
+                    "ocrResultReference",
+                    "ocrCompletedAt");
+
     private final MigrationAuditRepository auditRepo;
     private final MigrationEventRepository eventRepo;
 
@@ -316,8 +348,10 @@ public class AuditEventService {
      * @return a MigrationPage containing the items for the requested page and the total count
      */
     public MigrationPage getMigrations(int limit, int offset, String sortKey, String sortDir) {
+        String normalizedSortKey =
+                (sortKey != null && !sortKey.isBlank()) ? sortKey.trim() : "createdAt";
         String resolvedSortKey =
-                (sortKey != null && !sortKey.isBlank()) ? sortKey : "createdAt";
+                ALLOWED_SORT_KEYS.contains(normalizedSortKey) ? normalizedSortKey : "createdAt";
         Sort.Direction direction =
                 "asc".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
 

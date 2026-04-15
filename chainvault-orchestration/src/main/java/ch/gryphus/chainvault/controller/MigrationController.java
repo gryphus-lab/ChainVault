@@ -4,6 +4,7 @@
 package ch.gryphus.chainvault.controller;
 
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +50,18 @@ public class MigrationController {
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(required = false) String sortKey,
             @RequestParam(required = false) String sortDir) {
+        if (limit <= 0) {
+            return new ResponseEntity<>(
+                    objectMapper.writeValueAsString(
+                            Map.of("error", "limit must be greater than 0")),
+                    HttpStatus.BAD_REQUEST);
+        }
+        if (offset < 0) {
+            return new ResponseEntity<>(
+                    objectMapper.writeValueAsString(
+                            Map.of("error", "offset must be greater than or equal to 0")),
+                    HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(
                 objectMapper.writeValueAsString(
                         auditEventService.getMigrations(limit, offset, sortKey, sortDir)),
