@@ -17,7 +17,6 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -102,21 +101,30 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
                             });
 
             var status =
-                    Objects.equals(taskType, "handle-error")
-                            ? MigrationAudit.MigrationStatus.FAILED
-                            : MigrationAudit.MigrationStatus.SUCCESS;
+                    switch (taskType) {
+                        case "handle-error" ->
+                                MigrationAudit.MigrationStatus
+                                        .FAILED; // mark audit as failed for handle-error task
+                        case "upload-sftp" ->
+                                MigrationAudit.MigrationStatus
+                                        .SUCCESS; // mark audit as success for upload-sftp task
+                        case null, default ->
+                                MigrationAudit.MigrationStatus
+                                        .RUNNING; // default status for a running workflow
+                    };
 
             sendSseEvent(processInstanceId, span, status);
 
+            String eventMessage =
+                    switch (status) {
+                        case FAILED -> "Failure";
+                        case SUCCESS -> "Success";
+                        case RUNNING -> "Step completed — workflow still running";
+                        default -> "In Progress";
+                    };
+
             auditService.updateAuditEventEnd(
-                    processInstanceId,
-                    status,
-                    null,
-                    null,
-                    taskType,
-                    status == MigrationAudit.MigrationStatus.FAILED ? "Failure" : "Success",
-                    outputMap,
-                    span);
+                    processInstanceId, status, null, null, taskType, eventMessage, outputMap, span);
 
             log.info("{} finished", taskType);
         } catch (Exception e) {
@@ -134,9 +142,12 @@ public abstract class AbstractTracingDelegate implements JavaDelegate {
             String piKey, @NonNull Span span, MigrationAudit.MigrationStatus status) {
         log.info("{} sending SSE event", taskType);
         String message =
-                status == MigrationAudit.MigrationStatus.FAILED
-                        ? "%s failed".formatted(taskType)
-                        : "%s completed successfully".formatted(taskType);
+                switch (status) {
+                    case FAILED -> "%s failed".formatted(taskType);
+                    case SUCCESS -> "%s completed successfully".formatted(taskType);
+                    case RUNNING -> "%s completed — migration still in progress".formatted(taskType);
+                    default -> "%s is in progress".formatted(taskType);
+                };
         MigrationEventDto event = new MigrationEventDto();
         event.setId(UUID.randomUUID().toString());
         event.setMigrationId(piKey);
