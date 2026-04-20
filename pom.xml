@@ -62,7 +62,7 @@
         <testcontainers.version>2.0.3</testcontainers.version>
         <tika-core.version>3.3.0</tika-core.version>
         <xmlunit.version>2.11.0</xmlunit.version>
-        <archunit-junit5.version>1.4.1</archunit-junit5.version>
+        <archunit-junit5.version>1.4.2</archunit-junit5.version>
         
         <!-- plugins -->
         <dependency-versions-check-maven-plugin.version>4.0.1</dependency-versions-check-maven-plugin.version>
