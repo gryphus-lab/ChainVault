@@ -64,7 +64,7 @@ services:
   postgres:
     image: postgres:18-alpine
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
       - ./docker-resources/db/init-scripts:/docker-entrypoint-initdb.d:ro
     environment:
       POSTGRES_DB: chainvault

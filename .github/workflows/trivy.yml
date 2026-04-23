@@ -34,7 +34,7 @@ jobs:
           docker build -t gryphus-lab/chainvault:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'gryphus-lab/chainvault:${{ github.sha }}'
           format: 'template'
