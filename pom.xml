@@ -86,8 +86,8 @@
         <!-- monitoring -->
         <opentelemetry.version>1.61.0</opentelemetry.version>
         <opentelemetry-exporter-prometheus.version>1.61.0-alpha</opentelemetry-exporter-prometheus.version>
+        <opentelemetry-logback-mdc-1.0.version>2.27.0-alpha</opentelemetry-logback-mdc-1.0.version>
         <opentelemetry-logback-appender-1.0.version>2.27.0-alpha</opentelemetry-logback-appender-1.0.version>
-        <opentelemetry-logback-mdc-1.0.version>2.26.1-alpha</opentelemetry-logback-mdc-1.0.version>
         <maven-scm-publish-plugin.version>3.3.0</maven-scm-publish-plugin.version>
     </properties>
     <dependencyManagement>
