@@ -30,6 +30,7 @@ public class MigrationController {
      * @param auditEventService the audit event service
      * @param objectMapper      the object mapper
      */
+    @SuppressWarnings("spotbugs:EI_EXPOSE_REP2")
     public MigrationController(AuditEventService auditEventService, ObjectMapper objectMapper) {
         this.auditEventService = auditEventService;
         this.objectMapper = objectMapper;

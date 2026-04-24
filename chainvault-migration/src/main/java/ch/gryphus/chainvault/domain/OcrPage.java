@@ -3,6 +3,8 @@
  */
 package ch.gryphus.chainvault.domain;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Arrays;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,11 +42,20 @@ public class OcrPage {
      * @param mimeType the mime type
      * @param settings the settings
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public OcrPage(String name, byte[] data, String mimeType, OcrSettings settings) {
         this.name = Objects.requireNonNull(name);
-        this.data = Objects.requireNonNull(data);
+        this.data = Arrays.copyOf(Objects.requireNonNull(data), data.length);
         this.mimeType = Objects.requireNonNullElse(mimeType, "image/tiff");
-        this.settings = Objects.requireNonNullElseGet(settings, OcrSettings::new);
+        this.settings =
+                settings != null
+                        ? new OcrSettings(
+                                settings.getLanguage(),
+                                settings.getPageSegMode(),
+                                settings.getOcrEngineMode(),
+                                settings.getDpi(),
+                                settings.isPreprocessEnabled())
+                        : new OcrSettings();
     }
 
     /**

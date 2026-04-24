@@ -36,6 +36,7 @@ public class OrchestrationService {
      * @param auditRepo      the audit repo
      * @param tracer         the tracer
      */
+    @SuppressWarnings("spotbugs:EI_EXPOSE_REP2")
     public OrchestrationService(
             RuntimeService runtimeService, MigrationAuditRepository auditRepo, Tracer tracer) {
         this.runtimeService = runtimeService;

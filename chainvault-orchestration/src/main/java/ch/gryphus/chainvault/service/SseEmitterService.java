@@ -25,6 +25,7 @@ public class SseEmitterService {
      *
      * @param objectMapper the object mapper
      */
+    @SuppressWarnings("spotbugs:EI_EXPOSE_REP2")
     public SseEmitterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }

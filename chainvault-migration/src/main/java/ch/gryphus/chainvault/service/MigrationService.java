@@ -13,6 +13,7 @@ import ch.gryphus.chainvault.util.HashUtils;
 import ch.gryphus.chainvault.util.MigrationUtils;
 import ch.gryphus.chainvault.util.OcrUtils;
 import ch.gryphus.chainvault.util.SftpUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.*;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
@@ -58,6 +59,7 @@ public class MigrationService {
      * @param sftpTargetConfig   the sftp target config
      * @param props              the props
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public MigrationService(
             RestClient restClient,
             SftpRemoteFileTemplate remoteFileTemplate,
