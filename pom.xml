@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.5</version>
+        <version>4.0.6</version>
     </parent>
     
     <groupId>ch.gryphus</groupId>
@@ -39,7 +39,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         
         <!-- spring boot -->
-        <spring-boot.version>4.0.5</spring-boot.version>
+        <spring-boot.version>4.0.6</spring-boot.version>
         
         <!-- flowable -->
         <flowable.version>8.0.0</flowable.version>
@@ -90,7 +90,7 @@
         <opentelemetry-logback-mdc-1.0.version>2.27.0-alpha</opentelemetry-logback-mdc-1.0.version>
         <opentelemetry-logback-appender-1.0.version>2.27.0-alpha</opentelemetry-logback-appender-1.0.version>
         <maven-scm-publish-plugin.version>3.3.0</maven-scm-publish-plugin.version>
-        <thymeleaf.version>3.1.4.RELEASE</thymeleaf.version>
+        <thymeleaf.version>3.1.5.RELEASE</thymeleaf.version>
     </properties>
     <dependencyManagement>
         <dependencies>
