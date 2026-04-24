@@ -4,6 +4,7 @@
 package ch.gryphus.chainvault.service;
 
 import ch.gryphus.chainvault.model.dto.MigrationEventDto;
+import com.github.spotbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +26,7 @@ public class SseEmitterService {
      *
      * @param objectMapper the object mapper
      */
-    @SuppressWarnings("spotbugs:EI_EXPOSE_REP2")
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public SseEmitterService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }

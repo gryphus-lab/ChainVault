@@ -58,7 +58,9 @@ public class MigrationService {
      * @param sftpTargetConfig   the sftp target config
      * @param props              the props
      */
-    @SuppressWarnings("spotbugs:EI_EXPOSE_REP2")
+    @SuppressWarnings(
+            value = "spotbugs:EI_EXPOSE_REP2",
+            justification = "Spring-injected singleton beans are effectively immutable references")
     public MigrationService(
             RestClient restClient,
             SftpRemoteFileTemplate remoteFileTemplate,

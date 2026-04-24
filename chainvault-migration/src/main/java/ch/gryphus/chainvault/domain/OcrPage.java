@@ -3,7 +3,6 @@
  */
 package ch.gryphus.chainvault.domain;
 
-import java.util.Arrays;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,10 +40,9 @@ public class OcrPage {
      * @param mimeType the mime type
      * @param settings the settings
      */
-    @SuppressWarnings("spotbugs:EI_EXPOSE_REP2")
     public OcrPage(String name, byte[] data, String mimeType, OcrSettings settings) {
         this.name = Objects.requireNonNull(name);
-        this.data = Arrays.copyOf(Objects.requireNonNull(data), data.length);
+        this.data = Objects.requireNonNull(data).clone();
         this.mimeType = Objects.requireNonNullElse(mimeType, "image/tiff");
         this.settings =
                 settings != null

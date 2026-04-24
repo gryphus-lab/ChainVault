@@ -4,6 +4,7 @@
 package ch.gryphus.chainvault.controller;
 
 import ch.gryphus.chainvault.workflow.service.AuditEventService;
+import com.github.spotbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class MigrationController {
      * @param auditEventService the audit event service
      * @param objectMapper      the object mapper
      */
-    @SuppressWarnings("spotbugs:EI_EXPOSE_REP2")
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public MigrationController(AuditEventService auditEventService, ObjectMapper objectMapper) {
         this.auditEventService = auditEventService;
         this.objectMapper = objectMapper;
