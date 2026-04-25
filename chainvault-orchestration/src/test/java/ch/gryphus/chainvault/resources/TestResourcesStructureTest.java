@@ -218,7 +218,8 @@ class TestResourcesStructureTest {
     @Test
     void indexHtml_ShouldHaveUtf8MetaCharset() throws Exception {
         String html = readClasspathResource("templates/index.html");
-        assertThat(html).containsIgnoringCase("charset=\"UTF-8\"");
+        // Case-insensitive regex accepting single or double quotes around UTF-8
+        assertThat(html).containsPattern("(?i)charset\\s*=\\s*['\"]utf-8['\"]");
     }
 
     @Test
@@ -234,7 +235,11 @@ class TestResourcesStructureTest {
     @Test
     void indexHtml_ShouldHaveFaviconLink() throws Exception {
         String html = readClasspathResource("templates/index.html");
-        assertThat(html).contains("rel=\"icon\"").contains("href=\"/favicon.svg\"");
+        // Verify both rel="icon" and href="/favicon.svg" are on the same <link> tag
+        assertThat(html)
+                .containsPattern(
+                        "<link[^>]*\\brel=\"icon\"[^>]*\\bhref=\"/favicon\\.svg\"[^>]*>"
+                                + "|<link[^>]*\\bhref=\"/favicon\\.svg\"[^>]*\\brel=\"icon\"[^>]*>");
     }
 
     @Test
