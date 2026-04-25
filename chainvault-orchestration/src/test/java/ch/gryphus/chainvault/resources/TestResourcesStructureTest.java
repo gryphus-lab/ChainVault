@@ -161,7 +161,7 @@ class TestResourcesStructureTest {
                     {
                       "id": "DOC-ARCH-2025-003",
                       "docId": "DOC-ARCH-2025-003",
-                      "title": "Invoice #7923 - Stark Industries",
+                      "title": "Invoice #7924 - Stark Industries",
                       "creationDate": "2025-01-31T20:53:05Z",
                       "clientId": "CHE-738.760.530",
                       "accountNo": "CH6900762067743211524",
@@ -174,7 +174,7 @@ class TestResourcesStructureTest {
                   ]
                 }
                 """;
-        JSONAssert.assertEquals(expectedFragment, content, JSONCompareMode.NON_EXTENSIBLE);
+        JSONAssert.assertEquals(expectedFragment, content, JSONCompareMode.STRICT);
     }
 
     @Test

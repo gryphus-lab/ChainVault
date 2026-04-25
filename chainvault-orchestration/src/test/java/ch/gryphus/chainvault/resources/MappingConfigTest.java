@@ -32,6 +32,9 @@ class MappingConfigTest {
             assertThat(is).as("mapping-config.yml must exist on the main classpath").isNotNull();
             Yaml yaml = new Yaml();
             config = yaml.load(is);
+            assertThat(config)
+                    .as("mapping-config.yml must not be empty or contain only whitespace")
+                    .isNotNull();
         }
     }
 
