@@ -30,7 +30,7 @@ const STATUS_CLASSES: Record<string, string> = {
 
 /**
  * Validates that a URL string uses a safe scheme and is properly formatted.
- * Only allows http:, https:, and blob: schemes to prevent XSS attacks via javascript: URLs.
+ * Only allows http:, https:, and blob: schemes to prevent XSS attacks via JavaScript: URLs.
  *
  * @param urlString - The URL string to validate
  * @returns `true` if the URL is safe, `false` otherwise

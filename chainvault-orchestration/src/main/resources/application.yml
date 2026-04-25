@@ -100,28 +100,28 @@ flowable:
         default-async-job-acquire-wait-time: PT10S
         default-queue-size-full-wait-time: PT5S
         default-timer-job-acquire-wait-time: PT10S
-        max-async-jobs-due-per-acquisition: '1'
+        max-async-jobs-due-per-acquisition: "1"
         timer-lock-time: PT5M
     async-executor-activate: true
-    definition-cache-limit: '-1'
+    definition-cache-limit: "-1"
     enable-safe-xml: true
     servlet:
-      load-on-startup: '-1'
+      load-on-startup: "-1"
       name: Flowable BPMN Rest API
       path: /process-api
-  process-definition-location-prefix: 'classpath*:/processes/'
-  process-definition-location-suffixes: '**.bpmn20.xml,**.bpmn'
+  process-definition-location-prefix: "classpath*:/processes/"
+  process-definition-location-suffixes: "**.bpmn20.xml,**.bpmn"
   rest:
     enabled: true
     path: /flowable-restrest
     app:
       cors:
         allow-credentials: true
-        allowed-headers: '*'
-        allowed-methods: 'DELETE,GET,PATCH,POST,PUT'
-        allowed-origins: '*'
+        allowed-headers: "*"
+        allowed-methods: "DELETE,GET,PATCH,POST,PUT"
+        allowed-origins: "*"
         enabled: true
-        exposed-headers: '*'
+        exposed-headers: "*"
   external-task:
     client:
       base-url: http://localhost:${server.port}/flowable-rest/service
@@ -133,7 +133,7 @@ flowable:
 management:
   tracing:
     sampling:
-      probability: 1.0  # 100% sampling for development
+      probability: 1.0 # 100% sampling for development
   otlp:
     metrics:
       export:

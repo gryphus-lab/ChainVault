@@ -1,6 +1,6 @@
 failure-threshold: error
 format: tty
 no-color: false
-no-fail: false                      
-strict-labels: true                
+no-fail: false
+strict-labels: true
 disable-ignore-pragma: false

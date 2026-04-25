@@ -64,9 +64,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -129,9 +127,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -195,9 +191,7 @@
         "orientation": "auto",
         "pieType": "pie",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -278,9 +272,7 @@
               "operator": "=",
               "scope": "resource",
               "tag": "service.name",
-              "value": [
-                "chainvault-document-migration"
-              ],
+              "value": ["chainvault-document-migration"],
               "valueType": "string"
             },
             {
@@ -303,9 +295,7 @@
               "operator": "=",
               "scope": "span",
               "tag": "name",
-              "value": [
-                "http post /chainvault/process"
-              ],
+              "value": ["http post /chainvault/process"],
               "valueType": "string"
             },
             {
@@ -446,22 +436,13 @@
   "preload": false,
   "refresh": "",
   "schemaVersion": 42,
-  "tags": [
-    "chainvault",
-    "migration",
-    "flowable",
-    "opentelemetry"
-  ],
+  "tags": ["chainvault", "migration", "flowable", "opentelemetry"],
   "templating": {
     "list": [
       {
         "current": {
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "text": ["All"],
+          "value": ["$__all"]
         },
         "datasource": {
           "type": "tempo",

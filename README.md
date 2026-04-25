@@ -109,7 +109,7 @@ One-time mise setup:
 # install mise
 curl https://mise.run | sh
 # Add to shell (zsh/bash/fish) as shown during installation
-mise doctor     # should show Java 25 + Maven ready 
+mise doctor     # should show Java 25 + Maven ready
 ```
 
 ## Quick Start
@@ -126,8 +126,8 @@ mise dev
 
 After startup check:
 
-- Health:          <http://localhost:8085/actuator/health>
-- Swagger UI:      <http://localhost:8085/swagger-ui.html>
+- Health: <http://localhost:8085/actuator/health>
+- Swagger UI: <http://localhost:8085/swagger-ui.html>
 - Dashboard (SPA): <http://localhost:8085/>
 
 ## Local Development
@@ -141,9 +141,9 @@ mise test-docker            # Full Docker integration tests (Testcontainers)
 mise verify                 # Full build + tests + JaCoCo aggregate coverage
 mise docker-build           # Build & tag local Docker image
 mise docker-build-versioned # Build & tag Docker image with version from POM
-mise compose-down           # Docker compose down - all services                         
-mise compose-down-full      # Docker compose down - all services and volumes             
-mise compose-up             # Docker compose up - all services             
+mise compose-down           # Docker compose down - all services
+mise compose-down-full      # Docker compose down - all services and volumes
+mise compose-up             # Docker compose up - all services
 mise smoke-test             # Run smoke test
 mise load-test              # Run load test (1000 iterations)
 mise check                  # Check formatting via Spotless
@@ -158,9 +158,9 @@ docker compose -f docker-compose-lgtm.yml up -d
 
 Access:
 
-- Grafana:     <http://localhost:3000>  (admin/admin by default)
-- Prometheus:  <http://localhost:9090>
-- Loki:        <http://localhost:3100>  (via Grafana datasource)
+- Grafana: <http://localhost:3000> (admin/admin by default)
+- Prometheus: <http://localhost:9090>
+- Loki: <http://localhost:3100> (via Grafana datasource)
 
 ## REST API
 
@@ -248,7 +248,7 @@ mvn failsafe:integration-test -Dtest=DockerServicesIT
 mvn failsafe:integration-test -Dtest=DockerComposeIT
 ```
 
-Coverage report location after ```mise verify```:
+Coverage report location after `mise verify`:
 
 ```text
 chainvault-report-aggregate/target/site/jacoco-aggregate/index.html

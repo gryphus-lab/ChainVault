@@ -62,7 +62,7 @@ class ResizeObserverMock {
 }
 globalThis.ResizeObserver = ResizeObserverMock
 
-window.scrollTo = vi.fn() as typeof window.scrollTo
+globalThis.scrollTo = vi.fn() as typeof globalThis.scrollTo
 
 const matchMediaFn = (query: string) => ({
   matches: false,
@@ -75,13 +75,13 @@ const matchMediaFn = (query: string) => ({
   dispatchEvent: () => false,
 })
 
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(matchMediaFn),
 })
 
-const origGetComputedStyle = window.getComputedStyle.bind(window)
-window.getComputedStyle = ((elt: Element, pseudoElt?: string | null) => {
+const origGetComputedStyle = globalThis.getComputedStyle.bind(globalThis)
+globalThis.getComputedStyle = ((elt: Element, pseudoElt?: string | null) => {
   if (pseudoElt) {
     return origGetComputedStyle(document.documentElement) as CSSStyleDeclaration
   }
@@ -93,7 +93,7 @@ window.getComputedStyle = ((elt: Element, pseudoElt?: string | null) => {
   } catch {
     return origGetComputedStyle(document.documentElement)
   }
-}) as typeof window.getComputedStyle
+}) as typeof globalThis.getComputedStyle
 
 class Canvas2DMock {
   canvas: HTMLCanvasElement
