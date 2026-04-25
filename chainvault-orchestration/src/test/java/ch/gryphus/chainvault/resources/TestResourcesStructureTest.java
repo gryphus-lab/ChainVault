@@ -129,13 +129,50 @@ class TestResourcesStructureTest {
                 """
                 {
                   "documents": [
-                    {"id": "DOC-ARCH-2025-001", "status": "ARCHIVED", "tags": ["finance","2025","batch"]},
-                    {"id": "DOC-ARCH-2025-002", "status": "ARCHIVED", "tags": ["finance","2025","batch"]},
-                    {"id": "DOC-ARCH-2025-003", "status": "ARCHIVED", "tags": ["finance","2025","batch"]}
+                    {
+                      "id": "DOC-ARCH-2025-001",
+                      "docId": "DOC-ARCH-2025-001",
+                      "title": "Invoice #7836 - Stark Industries",
+                      "creationDate": "2025-01-31T20:53:05Z",
+                      "clientId": "CHE-738.760.530",
+                      "accountNo": "CH6900762067743211524",
+                      "documentType": "INVOICE",
+                      "department": "Accounts Payable",
+                      "status": "ARCHIVED",
+                      "originalSizeBytes": 5242880,
+                      "pageCount": 5,
+                      "tags": ["finance", "2025", "batch"],
+                      "payloadUrl": "/payloads/invoice_001.zip"
+                    },
+                    {
+                      "id": "DOC-ARCH-2025-002",
+                      "docId": "DOC-ARCH-2025-002",
+                      "title": "Invoice #7923 - Stark Industries",
+                      "creationDate": "2025-01-31T20:53:05Z",
+                      "clientId": "CHE-738.760.530",
+                      "accountNo": "CH6900762067743211524",
+                      "documentType": "INVOICE",
+                      "department": "Accounts Payable",
+                      "status": "ARCHIVED",
+                      "tags": ["finance", "2025", "batch"]
+                    },
+                    {
+                      "id": "DOC-ARCH-2025-003",
+                      "docId": "DOC-ARCH-2025-002",
+                      "title": "Invoice #7923 - Stark Industries",
+                      "creationDate": "2025-01-31T20:53:05Z",
+                      "clientId": "CHE-738.760.530",
+                      "accountNo": "CH6900762067743211524",
+                      "documentType": "INVOICE",
+                      "department": "Accounts Payable",
+                      "status": "ARCHIVED",
+                      "tags": ["finance", "2025", "batch"],
+                      "payloadUrl": "/payloads/invoice_001.zip"
+                    }
                   ]
                 }
                 """;
-        JSONAssert.assertEquals(expectedFragment, content, JSONCompareMode.LENIENT);
+        JSONAssert.assertEquals(expectedFragment, content, JSONCompareMode.NON_EXTENSIBLE);
     }
 
     @Test

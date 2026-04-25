@@ -51,65 +51,69 @@ class MappingConfigTest {
     }
 
     // -----------------------------------------------------------------------
+    // Helper methods
+    // -----------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> getMappings() {
+        return (List<Map<String, Object>>) config.get("mappings");
+    }
+
+    private static Map<String, Object> getMapping(int i) {
+        return getMappings().get(i);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> getEnrichment() {
+        return (Map<String, Object>) config.get("enrichment");
+    }
+
+    // -----------------------------------------------------------------------
     // mappings[] tests
     // -----------------------------------------------------------------------
 
     @Test
-    @SuppressWarnings("unchecked")
     void mappings_ShouldContainExactlyTwoEntries() {
-        List<Map<String, Object>> mappings = (List<Map<String, Object>>) config.get("mappings");
-        assertThat(mappings).hasSize(2);
+        assertThat(getMappings()).hasSize(2);
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void mappings_FirstEntryShouldMapTitleToTitle() {
-        List<Map<String, Object>> mappings = (List<Map<String, Object>>) config.get("mappings");
-        Map<String, Object> first = mappings.get(0);
+        Map<String, Object> first = getMapping(0);
         assertThat(first.get("source")).isEqualTo("title");
         assertThat(first.get("target")).isEqualTo("title");
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void mappings_FirstEntryShouldHaveDcElementsNamespace() {
-        List<Map<String, Object>> mappings = (List<Map<String, Object>>) config.get("mappings");
-        Map<String, Object> first = mappings.get(0);
+        Map<String, Object> first = getMapping(0);
         assertThat(first.get("namespace")).isEqualTo("http://purl.org/dc/elements/1.1/");
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void mappings_SecondEntryShouldMapCreationDateToCreated() {
-        List<Map<String, Object>> mappings = (List<Map<String, Object>>) config.get("mappings");
-        Map<String, Object> second = mappings.get(1);
+        Map<String, Object> second = getMapping(1);
         assertThat(second.get("source")).isEqualTo("creationDate");
         assertThat(second.get("target")).isEqualTo("created");
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void mappings_SecondEntryShouldHaveDcTermsNamespace() {
-        List<Map<String, Object>> mappings = (List<Map<String, Object>>) config.get("mappings");
-        Map<String, Object> second = mappings.get(1);
+        Map<String, Object> second = getMapping(1);
         assertThat(second.get("namespace")).isEqualTo("http://purl.org/dc/terms/");
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void mappings_SecondEntryShouldHaveToIso8601Transform() {
         // PR changed: `transform: "toIso8601"  # comment` → `transform: "toIso8601" # comment`
         // Semantic value must still be "toIso8601"
-        List<Map<String, Object>> mappings = (List<Map<String, Object>>) config.get("mappings");
-        Map<String, Object> second = mappings.get(1);
+        Map<String, Object> second = getMapping(1);
         assertThat(second.get("transform")).isEqualTo("toIso8601");
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void mappings_FirstEntryShouldNotHaveTransform() {
-        List<Map<String, Object>> mappings = (List<Map<String, Object>>) config.get("mappings");
-        Map<String, Object> first = mappings.get(0);
+        Map<String, Object> first = getMapping(0);
         assertThat(first).doesNotContainKey("transform");
     }
 
@@ -118,25 +122,21 @@ class MappingConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    @SuppressWarnings("unchecked")
     void enrichment_ShouldHaveMigrationSection() {
-        Map<String, Object> enrichment = (Map<String, Object>) config.get("enrichment");
-        assertThat(enrichment).containsKey("migration");
+        assertThat(getEnrichment()).containsKey("migration");
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void enrichment_MigrationEventTypeShouldBeMigration() {
-        Map<String, Object> enrichment = (Map<String, Object>) config.get("enrichment");
-        Map<String, Object> migration = (Map<String, Object>) enrichment.get("migration");
+        Map<String, Object> migration = (Map<String, Object>) getEnrichment().get("migration");
         assertThat(migration.get("eventType")).isEqualTo("Migration");
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void enrichment_MigrationToolShouldBeSwissArchiveMigrator() {
-        Map<String, Object> enrichment = (Map<String, Object>) config.get("enrichment");
-        Map<String, Object> migration = (Map<String, Object>) enrichment.get("migration");
+        Map<String, Object> migration = (Map<String, Object>) getEnrichment().get("migration");
         assertThat(migration.get("tool")).isEqualTo("SwissArchiveMigrator v1.0");
     }
 
@@ -145,8 +145,7 @@ class MappingConfigTest {
     void enrichment_MigrationEventDateTimeShouldBeNowPlaceholder() {
         // PR changed: `eventDateTime: "${now}"  # placeholder` → `eventDateTime: "${now}" # placeholder`
         // Semantic value remains the placeholder string
-        Map<String, Object> enrichment = (Map<String, Object>) config.get("enrichment");
-        Map<String, Object> migration = (Map<String, Object>) enrichment.get("migration");
+        Map<String, Object> migration = (Map<String, Object>) getEnrichment().get("migration");
         assertThat(migration.get("eventDateTime")).isEqualTo("${now}");
     }
 
@@ -155,18 +154,15 @@ class MappingConfigTest {
     // -----------------------------------------------------------------------
 
     @Test
-    @SuppressWarnings("unchecked")
     void enrichment_ShouldHaveIntegritySection() {
-        Map<String, Object> enrichment = (Map<String, Object>) config.get("enrichment");
-        assertThat(enrichment).containsKey("integrity");
+        assertThat(getEnrichment()).containsKey("integrity");
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void enrichment_IntegrityAlgorithmShouldBeSha256() {
         // PR fixed missing newline at EOF; value must remain "SHA-256"
-        Map<String, Object> enrichment = (Map<String, Object>) config.get("enrichment");
-        Map<String, Object> integrity = (Map<String, Object>) enrichment.get("integrity");
+        Map<String, Object> integrity = (Map<String, Object>) getEnrichment().get("integrity");
         assertThat(integrity.get("algorithm")).isEqualTo("SHA-256");
     }
 
