@@ -357,9 +357,8 @@
                         <yaml>
                             <includes>
                                 <include>**/*.yaml</include>
-                                <include>**/*.xml</include>
+                                <include>**/*.yml</include>
                             </includes>
-                            
                             <prettier/>
                         </yaml>
                     </configuration>
