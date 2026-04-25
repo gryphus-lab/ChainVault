@@ -5,9 +5,9 @@ permissions:
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 concurrency:
   group: ${{ github.ref }}
@@ -23,7 +23,7 @@ env:
 jobs:
   build:
     name: Build and analyze
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       actions: write
       pull-requests: write
@@ -44,7 +44,7 @@ jobs:
           sudo apt-get install -y libtesseract-dev tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng \
             libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libwebp-dev libopenjp2-7-dev libgif-dev \
             autoconf automake libtool pkg-config
-          
+
           curl --proto "=https" --tlsv1.2 -sSfLO "https://github.com/DanBloomberg/leptonica/releases/download/${{ env.LEPTONICA_VERSION }}/leptonica-${{ env.LEPTONICA_VERSION }}.tar.gz"
 
           tar -xf leptonica-${{ env.LEPTONICA_VERSION }}.tar.gz
@@ -87,7 +87,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: ctrf-io/github-test-reporter@v1
         with:
-          report-path: '**/target/surefire-reports/*.xml'
+          report-path: "**/target/surefire-reports/*.xml"
           pull-request-report: true
           integrations-config: |
             {

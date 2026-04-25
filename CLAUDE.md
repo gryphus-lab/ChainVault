@@ -85,11 +85,13 @@ PostgreSQL 18 with Liquibase migrations in `chainvault-orchestration/src/main/re
 ## Key Configuration
 
 **`application-local.yml`** — active when `SPRING_PROFILES_ACTIVE=local` (set by mise):
+
 - OpenTelemetry disabled
 - SFTP: `testuser:testpass123` @ `localhost:2222`
 - Source API: `http://localhost:9091`
 
 **Environment variables** set by `mise.toml`:
+
 - `TESSDATA_PREFIX=/opt/homebrew/share/tessdata` (macOS; adjust for your system)
 - `SPRING_PROFILES_ACTIVE=local`
 - `_JAVA_OPTIONS="-Xmx2048m -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto"`
@@ -111,6 +113,7 @@ PostgreSQL 18 with Liquibase migrations in `chainvault-orchestration/src/main/re
 ## Observability
 
 When running with `mise compose-up` (LGTM stack):
+
 - Grafana: http://localhost:3000 (admin/admin)
 - Prometheus: http://localhost:9090
 - App metrics: http://localhost:8085/actuator/prometheus

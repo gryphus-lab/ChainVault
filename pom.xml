@@ -354,6 +354,14 @@
                                 <extensions>YamlFrontMatter,Emoji</extensions>
                             </flexmark>
                         </markdown>
+                        <yaml>
+                            <includes>
+                                <include>**/*.yaml</include>
+                                <include>**/*.xml</include>
+                            </includes>
+                            
+                            <prettier/>
+                        </yaml>
                     </configuration>
                 </plugin>
                 <plugin>

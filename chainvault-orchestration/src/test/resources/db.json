@@ -12,11 +12,7 @@
       "status": "ARCHIVED",
       "originalSizeBytes": 5242880,
       "pageCount": 5,
-      "tags": [
-        "finance",
-        "2025",
-        "batch"
-      ],
+      "tags": ["finance", "2025", "batch"],
       "payloadUrl": "/payloads/invoice_001.zip"
     },
     {
@@ -29,11 +25,7 @@
       "documentType": "INVOICE",
       "department": "Accounts Payable",
       "status": "ARCHIVED",
-      "tags": [
-        "finance",
-        "2025",
-        "batch"
-      ]
+      "tags": ["finance", "2025", "batch"]
     },
     {
       "id": "DOC-ARCH-2025-003",
@@ -45,11 +37,7 @@
       "documentType": "INVOICE",
       "department": "Accounts Payable",
       "status": "ARCHIVED",
-      "tags": [
-        "finance",
-        "2025",
-        "batch"
-      ],
+      "tags": ["finance", "2025", "batch"],
       "payloadUrl": "/payloads/invoice_001.zip"
     }
   ]

@@ -16,7 +16,7 @@ providers:
     options:
       path: /otel-lgtm/grafana-dashboard-jvm-metrics.json
       foldersFromFilesStructure: false
-  - name: "ChainVault Migration Dashboard
+  - name: "ChainVault Migration Dashboard"
     type: file
     options:
       path: /otel-lgtm/grafana-dashboard-chainvault.json
