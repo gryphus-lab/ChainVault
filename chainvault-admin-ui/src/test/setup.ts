@@ -83,7 +83,7 @@ Object.defineProperty(globalThis, 'matchMedia', {
 const origGetComputedStyle = globalThis.getComputedStyle.bind(globalThis)
 globalThis.getComputedStyle = ((elt: Element, pseudoElt?: string | null) => {
   if (pseudoElt) {
-    return origGetComputedStyle(document.documentElement) as CSSStyleDeclaration
+    return origGetComputedStyle(document.documentElement)
   }
   if (!elt) {
     return origGetComputedStyle(document.documentElement)

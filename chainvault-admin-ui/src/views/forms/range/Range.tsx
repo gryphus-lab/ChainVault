@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026. Gryphus Lab
+ */
 import React from 'react'
 import { CCard, CCardBody, CCardHeader, CCol, CFormLabel, CFormRange, CRow } from '@coreui/react'
 import { DocsComponents, DocsExample } from '../../../components'
@@ -47,7 +50,7 @@ const Range = () => {
           </CCardHeader>
           <CCardBody>
             <p className="text-body-secondary small">
-              Range inputs have implicit values for <code>min</code> and <code>max</code>—
+              Range inputs have implicit values for <code>min</code> and <code>max</code>—{' '}
               <code>0</code> and <code>100</code>, respectively. You may specify new values for
               those using the <code>min</code> and <code>max</code> attributes.
             </p>

@@ -45,8 +45,8 @@ const FloatingLabels = () => {
               </CFormFloating>
             </DocsExample>
             <p className="text-body-secondary small">
-              When there&#39;s a <code>value</code> already defined, <code>&lt;CFormLabel&gt;</code>
-              s will automatically adjust to their floated position.
+              When there&#39;s a <code>value</code> already defined, <code>&lt;CFormLabel&gt;</code>s
+              will automatically adjust to their floated position.
             </p>
             <DocsExample href="forms/floating-labels">
               <CFormFloating>

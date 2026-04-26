@@ -94,7 +94,7 @@ const TableRenderer = ({
     <CTableHead color={headColor}>
       <CTableRow>
         {head.map((h, i) => (
-          <CTableHeaderCell key={`header-${i}`} scope="col">
+          <CTableHeaderCell key={`${h}-${i}`} scope="col">
             {h}
           </CTableHeaderCell>
         ))}
@@ -103,7 +103,7 @@ const TableRenderer = ({
 
     <CTableBody>
       {rows.map((row, i) => (
-        <CTableRow key={`row-${i}`} color={row.color} active={row.active}>
+        <CTableRow key={`${row.color}-${i}`} color={row.color} active={row.active}>
           {row.header !== undefined && (
             <CTableHeaderCell scope="row">{row.header}</CTableHeaderCell>
           )}
@@ -133,7 +133,7 @@ const TableSection = ({ title, subtitle, description, href, tables }: TableSecti
         {description && <p className="text-body-secondary small">{description}</p>}
 
         {tables.map((table, i) => (
-          <DocsExample key={`table-${i}`} href={href}>
+          <DocsExample key={`${table.head}-${i}`} href={href}>
             <TableRenderer
               head={table.head}
               rows={table.rows}
@@ -240,7 +240,7 @@ const Tables: React.FC = () => {
 
       {SECTIONS.map((section, index) => (
         <TableSection
-          key={`section-${index}`}
+          key={`${section.href}-${index}`}
           title={section.title}
           subtitle={section.subtitle}
           description={section.description}

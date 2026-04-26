@@ -104,8 +104,7 @@ const ListGroups = () => {
               <em>actionable</em> list group items with hover, disabled, and active states by adding{' '}
               <code>as=&#34;a|button&#34;</code>. We separate these pseudo-classes to ensure list
               groups made of non-interactive elements (like <code>&lt;li&gt;</code>s or{' '}
-              <code>&lt;div&gt;</code>
-              s) don&#39;tprovide a click or tap affordance.
+              <code>&lt;div&gt;</code>s) don&#39;t provide a click or tap affordance.
             </p>
             <DocsExample href="components/list-group/#links-and-buttons">
               <CListGroup>

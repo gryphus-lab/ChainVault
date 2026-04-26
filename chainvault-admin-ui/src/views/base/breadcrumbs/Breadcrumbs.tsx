@@ -36,8 +36,7 @@ const Breadcrumbs = () => {
               <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/content">
                 {' '}
                 <code>content</code>
-              </a>
-              .
+              </a>.
             </p>
             <DocsExample href="components/breadcrumb">
               <CBreadcrumb>
