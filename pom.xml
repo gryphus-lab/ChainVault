@@ -50,14 +50,14 @@
         <commons-io.version>2.22.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <jackson.version>3.1.2</jackson.version>
-        <jackson-2.version>2.21.2</jackson-2.version>
+        <jackson-2.version>2.21.3</jackson-2.version>
         <jackson-annotations.version>2.21</jackson-annotations.version>
         <jsonassert.version>1.5.3</jsonassert.version>
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
         <lombok.version>1.18.46</lombok.version>
         <pdfbox.version>3.0.7</pdfbox.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
-        <swagger-core-jakarta.version>2.2.48</swagger-core-jakarta.version>
+        <swagger-core-jakarta.version>2.2.49</swagger-core-jakarta.version>
         <tess4j.version>5.18.0</tess4j.version>
         <testcontainers.version>2.0.3</testcontainers.version>
         <tika-core.version>3.3.0</tika-core.version>

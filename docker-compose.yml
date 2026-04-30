@@ -15,7 +15,7 @@ services:
       - ./logs:/app/logs
     environment:
       # Java options
-      _JAVA_OPTIONS: "-Xmx1g -XX:+UseZGC -Djdk.virtualThreadScheduler.parallelism=auto"
+      _JAVA_OPTIONS: "-Xmx1g -Djdk.virtualThreadScheduler.parallelism=auto"
       SPRING_PROFILES_ACTIVE: default
       # SFTP (from sftp-test)
       target.sftp.host: sftp-test
