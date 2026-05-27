@@ -58,7 +58,7 @@
         <pdfbox.version>3.0.7</pdfbox.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
         <swagger-core-jakarta.version>2.2.50</swagger-core-jakarta.version>
-        <tess4j.version>5.18.0</tess4j.version>
+        <tess4j.version>5.19.0</tess4j.version>
         <testcontainers.version>2.0.3</testcontainers.version>
         <tika-core.version>3.3.0</tika-core.version>
         <xmlunit.version>2.11.0</xmlunit.version>
